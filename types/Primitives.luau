@@ -27,7 +27,7 @@ export type Event = {
     --- The name of the event.
     name: string,
     --- The data of the event.
-    data: unknown,
+    data: any,
     --- Whether the event can be denied.
     is_deniable: boolean,
     --- The unique identifier ID of the event. Will be guaranteed to be unique at a per-guild level.
@@ -66,7 +66,7 @@ export type TemplateData = {
 --- DOES NOT RUNTIME ERROR**
 export type TemplateContext = {
     --- The data associated with the template.
-    data: TemplateData,
+    template_data: TemplateData,
 }
 
 return {}

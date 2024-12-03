@@ -11,33 +11,5 @@ export type LuaStream<T> = {
     for_each: (self: LuaStream<T>, callback: (T) -> ()) -> (),
 }
 
-local DummyLuaStream: LuaStream<string> = {
-    ___contents = {
-        "a",
-        "b",
-        "c"
-    },
-    ___index = 0,
-    next = function(self: LuaStream<string>): string?
-        local s: any = self;
 
-        if s.__index >= #s.__contents then
-            return nil;
-        end
-
-        s.__index = s.__index + 1;
-        return s.__contents[s.__index];
-    end,
-    for_each = function(self: LuaStream<string>, callback: (string) -> ())
-        local item: string? = self:next();
-        while item do
-            callback(item);
-            item = self:next();
-        end
-        return
-    end
-}
-
-return {
-    DummyLuaStream = DummyLuaStream
-}
+return {}
