@@ -18,11 +18,16 @@ do
         return {}
     end
     function __DARKLUA_BUNDLE_MODULES.b()
+        __DARKLUA_BUNDLE_MODULES.load('a')
+
         return {}
     end
     function __DARKLUA_BUNDLE_MODULES.c()
+        return {}
+    end
+    function __DARKLUA_BUNDLE_MODULES.d()
+        __DARKLUA_BUNDLE_MODULES.load('c')
         __DARKLUA_BUNDLE_MODULES.load('b')
-        __DARKLUA_BUNDLE_MODULES.load('a')
 
         local DummyLuaStream = {
             ___contents = {
@@ -109,6 +114,13 @@ do
         function CreateDummyTemplateContext(data)
             local tab = {
                 template_data = table.clone(data),
+                guild_id = '1',
+                current_user = {
+                    id = '1234567890',
+                    username = 'DummyUser',
+                    discriminator = '0000',
+                    global_name = 'DummyUser1234',
+                },
             }
 
             tab.__index = function(self, key)
@@ -138,14 +150,14 @@ do
     end
 end
 
-__DARKLUA_BUNDLE_MODULES.load('a')
 __DARKLUA_BUNDLE_MODULES.load('b')
+__DARKLUA_BUNDLE_MODULES.load('c')
 
-local DummyLuaStream = __DARKLUA_BUNDLE_MODULES.load('c').DummyLuaStream
-local CreateDummyEvent = __DARKLUA_BUNDLE_MODULES.load('c').CreateDummyEvent
-local CreateDummyTemplateContext = __DARKLUA_BUNDLE_MODULES.load('c').CreateDummyTemplateContext
-local CreateDummyTemplateData = __DARKLUA_BUNDLE_MODULES.load('c').CreateDummyTemplateData
-local CreateDummyTemplatePragma = __DARKLUA_BUNDLE_MODULES.load('c').CreateDummyTemplatePragma
+local DummyLuaStream = __DARKLUA_BUNDLE_MODULES.load('d').DummyLuaStream
+local CreateDummyEvent = __DARKLUA_BUNDLE_MODULES.load('d').CreateDummyEvent
+local CreateDummyTemplateContext = __DARKLUA_BUNDLE_MODULES.load('d').CreateDummyTemplateContext
+local CreateDummyTemplateData = __DARKLUA_BUNDLE_MODULES.load('d').CreateDummyTemplateData
+local CreateDummyTemplatePragma = __DARKLUA_BUNDLE_MODULES.load('d').CreateDummyTemplatePragma
 local MyDummyStream = DummyLuaStream
 local next_value_in_stream = MyDummyStream.next(MyDummyStream)
 

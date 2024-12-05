@@ -7,3 +7,7 @@ if not isDummyEvent then
     local interop = require "@antiraid/interop"
     print(interop)
 end
+
+local sleep = require("@antiraid/async").sleep
+
+sleep(1)

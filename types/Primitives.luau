@@ -1,3 +1,5 @@
+local aloha = require("./@aloha/DiscordTypes")
+
 -- AntiRaid primitives, see https://docs.antiraid.xyz/user/templating/2-plugins#primitives
 -- 
 -- Last updated: December 3rd 2024
@@ -67,6 +69,10 @@ export type TemplateData = {
 export type TemplateContext = {
     --- The data associated with the template.
     template_data: TemplateData,
+    --- The current guild ID the template is running on.
+    guild_id: string,
+    --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
+    current_user: aloha.UserData
 }
 
 return {}

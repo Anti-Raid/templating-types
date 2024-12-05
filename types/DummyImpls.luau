@@ -82,6 +82,13 @@ end
 function CreateDummyTemplateContext(data: Primitives.TemplateData) : Primitives.TemplateContext
     local tab = {
         template_data = table.clone(data),
+        guild_id = "1",
+        current_user = {
+            id = "1234567890",
+            username = "DummyUser",
+            discriminator = "0000",
+            global_name = "DummyUser1234",
+        }
     }
 
     tab.__index = function(self, key)
@@ -105,5 +112,5 @@ return {
     CreateDummyEvent = CreateDummyEvent,
     CreateDummyTemplatePragma = CreateDummyTemplatePragma,
     CreateDummyTemplateData = CreateDummyTemplateData,
-    CreateDummyTemplateContext = CreateDummyTemplateContext
+    CreateDummyTemplateContext = CreateDummyTemplateContext,
 }

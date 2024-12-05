@@ -17,9 +17,14 @@ do
     function __DARKLUA_BUNDLE_MODULES.a()
         return {}
     end
+    function __DARKLUA_BUNDLE_MODULES.b()
+        __DARKLUA_BUNDLE_MODULES.load('a')
+
+        return {}
+    end
 end
 
-__DARKLUA_BUNDLE_MODULES.load('a')
+__DARKLUA_BUNDLE_MODULES.load('b')
 
 local args, token = ...
 local isDummyEvent = args == nil or token == nil
@@ -31,3 +36,7 @@ if not isDummyEvent then
 
     print(interop)
 end
+
+local sleep = require('@antiraid/async').sleep
+
+sleep(1)
