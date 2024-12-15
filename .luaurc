@@ -7,6 +7,7 @@
     "typeErrors": true,
     "globals": [],
     "aliases": {
-        "antiraid": "./@antiraid/"
+        "antiraid": "./@antiraid/",
+        "antiraid-ext": "./@antiraid-ext/"
     }
 }

@@ -68,11 +68,11 @@ export type TemplateData = {
 --- DOES NOT RUNTIME ERROR**
 export type TemplateContext = {
     --- The data associated with the template.
-    template_data: TemplateData,
+    read template_data: TemplateData,
     --- The current guild ID the template is running on.
-    guild_id: string,
+    read guild_id: string,
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
-    current_user: aloha.UserData
+    read current_user: aloha.UserData
 }
 
 return {}

@@ -1,3 +1,4 @@
+--!nocheck
 -- DummyImpls provides dummy implementations of many common things for testing AntiRaid APIs
 
 local LuaStream = require ("./LuaStream")
@@ -10,24 +11,6 @@ local DummyLuaStream: LuaStream.LuaStream<string> = {
         "c"
     },
     ___index = 0,
-    next = function(self: LuaStream.LuaStream<string>): string?
-        local s: any = self;
-
-        if s.___index >= #s.___contents then
-            return nil;
-        end
-
-        s.___index = s.___index + 1;
-        return s.___contents[s.___index];
-    end,
-    for_each = function(self: LuaStream.LuaStream<string>, callback: (string) -> ())
-        local item: string? = self:next();
-        while item do
-            callback(item);
-            item = self:next();
-        end
-        return
-    end
 }
 
 -- Creates a random string for the dummy functions
@@ -61,7 +44,8 @@ function CreateDummyEvent(title: string, base_name: string, name: string, data: 
     table.freeze(tab)
 
     local ud = newproxy(true)
-    getmetatable(ud).__index = tab
+    local mt: any = getmetatable(ud)
+    mt.__index = tab
     return ud
 end
 
@@ -91,7 +75,7 @@ function CreateDummyTemplateContext(data: Primitives.TemplateData) : Primitives.
         }
     }
 
-    tab.__index = function(self, key)
+    tab.__index = function(self, key: string)
         if key == "template_data" then
             return table.clone(data)
         end
@@ -102,7 +86,8 @@ function CreateDummyTemplateContext(data: Primitives.TemplateData) : Primitives.
 
     local ud = newproxy(true)
 
-    getmetatable(ud).__index = tab
+    local mt: any = getmetatable(ud)
+    mt.__index = tab
 
     return ud
 end

@@ -15,5 +15,5 @@ return {
     },
     memusage = function()
         return 0
-    end
+    end,
 }
