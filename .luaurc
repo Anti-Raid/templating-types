@@ -8,6 +8,7 @@
     "globals": [],
     "aliases": {
         "antiraid": "./@antiraid/",
+        "antiraid-core": "./@antiraid-core/",
         "antiraid-ext": "./@antiraid-ext/"
     }
 }

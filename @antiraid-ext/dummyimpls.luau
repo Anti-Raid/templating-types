@@ -1,8 +1,8 @@
 --!nocheck
 -- DummyImpls provides dummy implementations of many common things for testing AntiRaid APIs
 
-local LuaStream = require ("./LuaStream")
-local Primitives = require ("./Primitives")
+local LuaStream = require ("@antiraid/stream")
+local Primitives = require ("@antiraid-core/primitives")
 
 local DummyLuaStream: LuaStream.LuaStream<string> = {
     ___contents = {

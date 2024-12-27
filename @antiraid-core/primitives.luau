@@ -1,4 +1,4 @@
-local aloha = require("./@aloha/DiscordTypes")
+local aloha = require("@aloha/DiscordTypes")
 
 -- AntiRaid primitives, see https://docs.antiraid.xyz/user/templating/2-plugins#primitives
 -- 
