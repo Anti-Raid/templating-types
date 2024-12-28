@@ -1,15 +1,25 @@
-local timeouts = {}
-local intervals = {}
+type TimeoutThread = {
+    thread: thread,
+    isDone: boolean,
+    isCancelled: boolean
+}
+
+type IntervalThread = {
+    intervalWaiter: thread,
+    isWaiting: boolean,
+    isCancelled: boolean
+}
+
+
+local timeouts: { [number]: TimeoutThread } = {}
+local intervals: { [number]: IntervalThread } = {}
 
 --- Implementation of setTimeout for the AntiRaid runtime.
 ---
 --- Functions like JavaScript's setTimeout.
 ---
 --- Should also work on Roblox as well
-local function setTimeout(callback: (any) -> (), delay: number?, ...): number
-    local tid = #timeouts + 1
-    timeouts[tid] = true
-    
+local function setTimeout(callback: (any) -> (), delay: number?, ...): number 
     local args = {...}
 
     if(typeof(delay) == "string") then
@@ -20,19 +30,21 @@ local function setTimeout(callback: (any) -> (), delay: number?, ...): number
     -- Default delay is 0
     delay = (delay or 0)
 
-    task.spawn(function()
-        if(not timeouts[tid]) then
+    local tid = #timeouts + 1
+
+    timeouts[tid] = {
+        isCancelled = false,
+        isDone = false
+    } :: TimeoutThread;
+
+    timeouts[tid].thread = task.delay((delay :: number)/1000, function() 
+        timeouts[tid].isDone = true -- Mark as done
+        if(not timeouts[tid] or timeouts[tid].isCancelled) then
             return
         end
 
-        task.wait((delay :: number)/1000)
-
-        if(not timeouts[tid]) then
-            return
-        end
-
-        task.spawn(function() callback(args) end)
-    end)
+        callback(args)
+    end);
 
     return tid
 end
@@ -43,7 +55,19 @@ end
 ---
 --- Should also work on Roblox as well
 local function clearTimeout(tid: number)
-    timeouts[tid] = false
+    local th = timeouts[tid]
+
+    if(not th) then
+        return
+    end
+
+    timeouts[tid].isCancelled = true
+
+    if not timeouts[tid].isDone then
+        if _G.scheduler.removeWaiting(th.thread) < 1 then
+            error("Failed to remove timeout thread from scheduler")
+        end    
+    end
 end
 
 --- Implementation of setInterval for the AntiRaid runtime.
@@ -51,10 +75,7 @@ end
 --- Functions like JavaScript's setInterval.
 ---
 --- Should also work on Roblox as well
-local function setInterval(callback: (any) -> (), delay: number?, ...): number
-    local tid = #intervals + 1
-    intervals[tid] = true
-    
+local function setInterval(callback: (any) -> (), delay: number?, ...): number    
     local args = {...}
     if(typeof(delay) == "string") then
         -- Convert string to number
@@ -64,21 +85,28 @@ local function setInterval(callback: (any) -> (), delay: number?, ...): number
     -- Default delay is 0
     delay = delay or 0
 
-    task.spawn(function()
+    local tid = #intervals + 1
+    intervals[tid] = {
+        isWaiting = false,
+        isCancelled = false
+    } :: IntervalThread; -- Ensure its set initially
+    intervals[tid].intervalWaiter = task.spawn(function()
         while true do
-            if(not intervals[tid]) then
+            if(not intervals[tid] or intervals[tid].isCancelled) then
                 return
             end
 
-            task.wait((delay :: number)/1000)
+            intervals[tid].isWaiting = true
+            task.wait((delay :: number)/1000);
+            intervals[tid].isWaiting = false
 
-            if(not intervals[tid]) then
+            if(not intervals[tid] or intervals[tid].isCancelled) then
                 return
             end
 
-            task.spawn(function() callback(args) end)
+            callback(args)
         end
-    end)
+    end);
 
     return tid
 end
@@ -89,7 +117,20 @@ end
 ---
 --- Should also work on Roblox as well
 local function clearInterval(tid: number)
-    intervals[tid] = false
+    local th = intervals[tid]
+
+    if(not th) then
+        return
+    end
+
+    intervals[tid].isCancelled = true
+
+    -- If isWaiting, remove the intervalWaiter from waiting queue
+    if intervals[tid].isWaiting then
+        if _G.scheduler.removeWaiting(intervals[tid].intervalWaiter) < 1 then
+            error("Failed to remove interval thread from scheduler")
+        end
+    end
 end
 
 -- Test
@@ -119,6 +160,30 @@ if(_G._TEST_ASYNC_WORK ~= nil) then
         if(idx >= 5) then
             clearInterval(tid :: number)
         end
+    end, 1000)
+
+    while(idx < 5) do
+        task.wait(0.1)
+    end
+
+    print("Hello, world C")
+
+    local sidABC = setInterval(function()
+        print("This should not print")
+    end, 10000)
+
+    setTimeout(function()
+        clearInterval(sidABC :: number)
+    end, 100)
+
+    print("Hello, world D")
+
+    local tidABC = setTimeout(function()
+        print("This should also not print")
+    end, 10000)
+
+    setTimeout(function()
+        clearTimeout(tidABC :: number)
     end, 1000)
 end
 

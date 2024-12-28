@@ -75,4 +75,21 @@ export type TemplateContext = {
     read current_user: aloha.UserData
 }
 
+
+--- Scheduler primitive. Exposed via ``_G.scheduler`` (``@antiraid/concurrency`` re-exports this if you want to avoid casting).
+export type Scheduler = {
+    --- Adds a thread to the waiting queue
+    read addWaiting: (th: thread, resume: f64) -> (),
+    --- Adds a thread to the waiting queue with arguments
+    read addWaitingWithArgs: (f: (any) -> () | thread, resume: f64, ...any) -> (),
+    --- Removes a thread from the waiting queue, returning the number of threads removed
+    read removeWaiting: (th: thread) -> u64,
+    --- Adds a thread to the deferred queue at the front
+    read addDeferredFront: (f: (any) -> () | thread, ...any) -> (),
+    --- Adds a thread to the deferred queue at the back
+    read addDeferredBack: (f: (any) -> () | thread, ...any) -> (),
+    --- Removes a thread from the deferred queue returning the number of threads removed
+    read removeDeferred: (th: thread) -> u64,
+}
+
 return {}
