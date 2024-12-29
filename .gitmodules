@@ -1,0 +1,4 @@
+[submodule "discord-luau"]
+	path = discord-luau
+	url = https://github.com/DiscordLuau/discord-luau
+	branch = refactor/monorepository-origin
