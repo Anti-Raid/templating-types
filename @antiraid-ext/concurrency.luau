@@ -185,6 +185,8 @@ if(_G._TEST_ASYNC_WORK ~= nil) then
     setTimeout(function()
         clearTimeout(tidABC :: number)
     end, 1000)
+
+    --return -1
 end
 
 return {
