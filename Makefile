@@ -1,2 +1,2 @@
 bundle-test:
-	darklua process test.luau bundled.luau
+	./darklua/darklua process test.luau bundled.luau

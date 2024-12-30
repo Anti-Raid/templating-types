@@ -1,8 +1,8 @@
-local aloha = require("@aloha/DiscordTypes")
+local discord = require("@discord-types/apiTypes")
 
 -- AntiRaid primitives, see https://docs.antiraid.xyz/user/templating/2-plugins#primitives
 -- 
--- Last updated: December 3rd 2024
+-- Last updated: December 30th 2024
 
 -- Core types
 export type u8 = number
@@ -17,6 +17,7 @@ export type f32 = number
 export type f64 = number
 export type bool = boolean
 export type char = string
+export type byte = number
 
 --- An event that has been dispatched to the template. 
 --- 
@@ -72,7 +73,7 @@ export type TemplateContext = {
     --- The current guild ID the template is running on.
     read guild_id: string,
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
-    read current_user: aloha.UserData
+    read current_user: discord.UserObject
 }
 
 
