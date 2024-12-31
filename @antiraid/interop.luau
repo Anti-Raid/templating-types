@@ -10,7 +10,7 @@ return {
     null = null,
     array_metatable = {
         __index = function(tab, key)
-            return rawget(tab, key)
+            return rawget(tab, key) -- Placeholder for AntiRaid's actual array metatable
         end
     },
     memusage = function()
