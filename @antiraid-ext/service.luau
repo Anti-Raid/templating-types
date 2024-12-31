@@ -1,42 +1,26 @@
-local signal = require("signal.luau")
-
 local globname = "___services"
-
-type Service<T, U> = {
-    exports: T,
-    signal: signal.Identity<U>
-}
 
 --- Creates a new service returning the created data
 ---
 --- @param name string
 --- @param data T
 --- @return Service<any>
-local function CreateService<T, U>(name: string, exports: T): Service<T, U>
+local function CreateService<T>(name: string, exports: T): T
     if not _G[globname] then
         _G[globname] = {}
     end
 
-    local service = {
-        exports = exports,
-        signal = signal()
-    }
-
-    -- If onFire is defined on exports, connect it to the signal
-    local exportsCast = exports :: any -- Needed to avoid type errors
-    if exportsCast.onFire and typeof(exportsCast) == "function" then
-        service.signal:connect(exportsCast.onFire :: (U) -> ())
-    end
+    local service = exports
 
     _G[globname][name] = service
-    return service
+    return service :: T
 end
 
 --- Returns a service by name
 ---
 --- @param name string
 --- @return any
-local function GetService<T, U>(name: string): Service<T, U>?
+local function GetService<T>(name: string): T?
     if not _G[globname] then
         return nil
     end
@@ -62,15 +46,15 @@ end
 --- This requires that task.start() has been called to start the task scheduler before calling this function
 --- @param name string
 --- @return Service<any, any>
-local function WaitForService<T, U>(name: string): Service<T, U>
-    local service = GetService(name) :: Service<T, U>?;
+local function WaitForService<T>(name: string): T
+    local service = GetService(name) :: T?;
     while not service do
         task.wait(0.1)
-        service = GetService(name) :: Service<T, U>?
+        service = GetService(name) :: T?
     end
 
     if not service then
-        error("Service was not created")
+        error("Service " .. name .. " was not created")
     end
 
     return service
@@ -82,8 +66,8 @@ end
 --- @param name string
 --- @param n number
 --- @return any
-local function WaitForServiceWithTimeout<T, U>(name: string, n: number): Service<T, U>?
-    local service = GetService(name) :: Service<any, any>?
+local function WaitForServiceWithTimeout<T>(name: string, n: number): T?
+    local service = GetService(name) :: T?
     local start = os.clock()
     while not service do
         if os.clock() - start >= n then
@@ -91,10 +75,56 @@ local function WaitForServiceWithTimeout<T, U>(name: string, n: number): Service
         end
 
         task.wait(0.1)
-        service = GetService(name) :: Service<any, any>?
+        service = GetService(name) :: T?
     end
 
     return service
+end
+
+
+-- Test
+if(_G._TEST_ASYNC_WORK ~= nil) then
+    local signal = require("signal")
+
+    -- Create new FooService
+    local fooServiceSignal = signal()
+    fooServiceSignal:connect(function(n: number)
+        print("FooService fired!")
+    end)
+
+    type FooService = {
+        signal: signal.Identity<number>,
+    }
+
+    local fooService = CreateService("FooService", {
+        signal = fooServiceSignal,
+    }) 
+
+    -- Get FooService
+    local fooService2 = GetService("FooService") :: FooService?
+
+    assert(fooService2 == fooService, "GetService returned wrong service")
+    
+    local fooService3 = WaitForService("FooService") :: FooService
+
+    -- Fire FooService
+    local signalFire = fooService3.signal
+    signalFire:fire(10)
+
+    -- Test timeout with WaitForServiceWithTimeout on non-existing service
+    local start = os.clock()
+    local fooService4 = WaitForServiceWithTimeout("FooService2", 1) :: FooService
+    local elapsed = os.clock() - start
+
+    assert(fooService4 == nil, "WaitForServiceWithTimeout returned wrong service")
+    assert(elapsed < 2, "WaitForServiceWithTimeout did not wait for 1 second, waited for " .. tostring(elapsed))
+
+    -- Destroy FooService
+    DestroyService("FooService")
+
+    -- Test that FooService is destroyed
+    local fooService5 = GetService("FooService") :: FooService
+    assert(fooService5 == nil, "DestroyService did not destroy service")
 end
 
 return {

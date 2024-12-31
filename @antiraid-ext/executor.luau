@@ -7,3 +7,7 @@ local function yieldOrReturn<T>(v: promise.LuaPromise<T> | T): T
         return v
     end
 end
+
+return {
+    yieldOrReturn = yieldOrReturn
+}
