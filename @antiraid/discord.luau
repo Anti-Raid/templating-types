@@ -137,17 +137,17 @@ export type CreateMessageAttachment = {
 --- A handle to a message in Discord, as represented by AntiRaid. Internal fields are subject to change
 export type MessageHandle = {
     --- Gets the data of the message
-    data: () -> discord.MessageObject,
+    data: (self: MessageHandle) -> discord.MessageObject,
     --- Awaits a component interaction on the message
-    await_component_interaction: () -> Stream.LuaStream<MessageComponentHandle>,
+    await_component_interaction: (self: MessageHandle) -> Stream.LuaStream<MessageComponentHandle>,
 }
 
 --- A handle to a message component interaction in Discord, as represented by AntiRaid. Internal fields are subject to change
 export type MessageComponentHandle = {
     --- The inner data of the message component interaction
-    data: () -> discord.InteractionDataObject,
+    data: (self: MessageComponentHandle) -> discord.InteractionDataObject,
     --- The custom ID of the message component interaction
-    custom_id: () -> string,
+    custom_id: (self: MessageComponentHandle) -> string,
 }
 
 --- Options for sending a message in a channel in Discord
@@ -159,17 +159,17 @@ export type SendMessageChannelAction = {
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
     --- Gets the audit logs
-    get_audit_logs: (data: GetAuditLogOptions) -> Promise.LuaPromise<discord.AuditLogObject>,
+    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> Promise.LuaPromise<discord.AuditLogObject>,
     --- Gets a channel
-    get_channel: (data: GetChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
     --- Edits a channel
-    edit_channel: (data: EditChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
     --- Edits a thread
-    edit_thread: (data: EditThreadOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> Promise.LuaPromise<discord.ChannelObject>,
     --- Deletes a channel
-    delete_channel: (data: DeleteChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
     --- Creates a message
-    create_message: (data: SendMessageChannelAction) -> Promise.LuaPromise<MessageHandle>,
+    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> Promise.LuaPromise<MessageHandle>,
 }
 
 local function new(token: Primitives.TemplateContext): DiscordExecutor
