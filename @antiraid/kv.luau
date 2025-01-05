@@ -1,5 +1,6 @@
 local Promise = require("@antiraid/promise")
 local Primitives = require "@antiraid-core/primitives"
+local ExecutorScope = require "@antiraid-core/executorscope"
 
 --- KvRecord represents a key-value record with metadata.
 ---@class KvRecord
@@ -19,6 +20,13 @@ export type KvRecord = {
 --- KvExecutor allows templates to get, store and find persistent data within a server.
 ---@class KvExecutor
 export type KvExecutor = {
+    --- The guild ID the executor will perform key-value operations on.
+    read guild_id: string,
+    --- The originating guild ID (the guild ID of the template itself).
+    read origin_guild_id: string,
+    --- The scope of the executor.
+    read scope: ExecutorScope.ExecutorScope,
+
     --- Finds records in the key-value store.
     --- @param query string The key to search for. % matches zero or more characters; _ matches a single character. To search anywhere in a string, surround {KEY} with %, e.g. %{KEY}%
     --- @return {KvRecord} The records.
@@ -41,7 +49,7 @@ export type KvExecutor = {
     delete: (key: string) -> Promise.LuaPromise<nil>,
 }
 
-local function new(token: Primitives.TemplateContext): KvExecutor
+local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): KvExecutor
     error("Implemented internally in AntiRaid runtime!")
 end
 

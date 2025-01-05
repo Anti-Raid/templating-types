@@ -1,5 +1,9 @@
 local kittycat = require "@antiraid-core/kittycat"
 
+export type Permission = kittycat.Permission
+export type StaffPermissions = kittycat.StaffPermissions
+export type CheckPatchChangesError = kittycat.CheckPatchChangesError
+
 --- Returns a Permission object from a string.
 local function permission_from_string(str: string): kittycat.Permission
     return kittycat.Permission.from_string(str)
