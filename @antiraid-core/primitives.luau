@@ -23,8 +23,6 @@ export type byte = number
 --- 
 --- In templates, this is ``arg``.
 export type Event = {
-    --- The title name of the event.
-    title: string,
     --- The base name of the event.
     base_name: string,
     --- The name of the event.
@@ -50,13 +48,11 @@ export type TemplatePragma = {
 }
 
 --- TemplateData
-export type TemplateData = {
-    --- The path of the template
-    ---
-    --- Official docs say "template token" but this is incorrect and a known doc inaccuracy
-    path: string,
-    --- The pragma of the template.
-    pragma: TemplatePragma,
+export type Template = {
+    --- The language of the template.
+    language: string,
+    --- The allowed capabilities provided to the template
+    allowed_caps: {string},
 }
 
 --- TemplateContext is a struct that represents the context of a template. 
@@ -69,7 +65,7 @@ export type TemplateData = {
 --- DOES NOT RUNTIME ERROR**
 export type TemplateContext = {
     --- The data associated with the template.
-    read template_data: TemplateData,
+    read template_data: Template,
     --- The current guild ID the template is running on.
     read guild_id: string,
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
