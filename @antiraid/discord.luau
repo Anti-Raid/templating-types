@@ -1,6 +1,7 @@
 local Primitives = require "@antiraid-core/primitives"
 local discord = require "@discord-types/apiTypes"
 local lazy = require "@antiraid/lazy"
+local promise = require "@antiraid/promise"
  
 --- @class GetAuditLogOptions
 --- @field action_type discord.AuditLogEventType? The action type to filter by
@@ -147,17 +148,17 @@ export type SendMessageChannelAction = {
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
     --- Gets the audit logs
-    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> lazy.LazyPromise<discord.AuditLogObject>,
+    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> promise.LuaPromise<lazy.Lazy<discord.AuditLogObject>>,
     --- Gets a channel
-    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> lazy.LazyPromise<discord.ChannelObject>,
+    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>, 
     --- Edits a channel
-    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> lazy.LazyPromise<discord.ChannelObject>,
+    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>,
     --- Edits a thread
-    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> lazy.LazyPromise<discord.ChannelObject>,
+    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>,
     --- Deletes a channel
-    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> lazy.LazyPromise<discord.ChannelObject>,
+    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>,
     --- Creates a message
-    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> lazy.LazyPromise<discord.MessageObject>,
+    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> promise.LuaPromise<lazy.Lazy<discord.MessageObject>>,
 }
 
 local function new(token: Primitives.TemplateContext): DiscordExecutor
