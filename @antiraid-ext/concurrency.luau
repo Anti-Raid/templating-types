@@ -64,9 +64,7 @@ local function clearTimeout(tid: number)
     timeouts[tid].isCancelled = true
 
     if not timeouts[tid].isDone then
-        if _G.scheduler.removeWaiting(th.thread) < 1 then
-            error("Failed to remove timeout thread from scheduler")
-        end    
+        task.cancel(th.thread)
     end
 end
 
@@ -127,9 +125,7 @@ local function clearInterval(tid: number)
 
     -- If isWaiting, remove the intervalWaiter from waiting queue
     if intervals[tid].isWaiting then
-        if _G.scheduler.removeWaiting(intervals[tid].intervalWaiter) < 1 then
-            error("Failed to remove interval thread from scheduler")
-        end
+        task.cancel(intervals[tid].intervalWaiter)
     end
 end
 
@@ -173,6 +169,7 @@ if(_G._TEST_ASYNC_WORK ~= nil) then
     end, 10000)
 
     setTimeout(function()
+        print("Clearing interval for sidABC")
         clearInterval(sidABC :: number)
     end, 100)
 
@@ -183,8 +180,11 @@ if(_G._TEST_ASYNC_WORK ~= nil) then
     end, 10000)
 
     setTimeout(function()
+        print("Clearing timeout for tidABC")
         clearTimeout(tidABC :: number)
     end, 1000)
+
+    task.wait(10)
 
     --return -1
 end

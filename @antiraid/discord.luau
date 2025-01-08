@@ -1,8 +1,12 @@
 local Primitives = require "@antiraid-core/primitives"
-local Promise = require "@antiraid/promise"
-local Stream = require "@antiraid/stream"
 local discord = require "@discord-types/apiTypes"
+local lazy = require "@antiraid/lazy"
 
+--- @class GetAuditLogOptions
+--- @field action_type discord.AuditLogEventType? The action type to filter by
+--- @field user_id discord.Snowflake? The user ID to filter by
+--- @field before discord.Snowflake? The audit log entry ID to filter before
+--- @field limit number? The number of entries to return
 --- Options for getting audit logs in Discord
 export type GetAuditLogOptions = {
     --- The action type to filter by
@@ -134,22 +138,6 @@ export type CreateMessageAttachment = {
     content: {Primitives.byte},
 }
 
---- A handle to a message in Discord, as represented by AntiRaid. Internal fields are subject to change
-export type MessageHandle = {
-    --- Gets the data of the message
-    data: (self: MessageHandle) -> discord.MessageObject,
-    --- Awaits a component interaction on the message
-    await_component_interaction: (self: MessageHandle) -> Stream.LuaStream<MessageComponentHandle>,
-}
-
---- A handle to a message component interaction in Discord, as represented by AntiRaid. Internal fields are subject to change
-export type MessageComponentHandle = {
-    --- The inner data of the message component interaction
-    data: (self: MessageComponentHandle) -> discord.InteractionDataObject,
-    --- The custom ID of the message component interaction
-    custom_id: (self: MessageComponentHandle) -> string,
-}
-
 --- Options for sending a message in a channel in Discord
 export type SendMessageChannelAction = {
     channel_id: discord.Snowflake,
@@ -159,17 +147,17 @@ export type SendMessageChannelAction = {
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
     --- Gets the audit logs
-    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> Promise.LuaPromise<discord.AuditLogObject>,
+    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> lazy.LazyPromise<discord.AuditLogObject>,
     --- Gets a channel
-    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> lazy.LazyPromise<discord.ChannelObject>,
     --- Edits a channel
-    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> lazy.LazyPromise<discord.ChannelObject>,
     --- Edits a thread
-    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> lazy.LazyPromise<discord.ChannelObject>,
     --- Deletes a channel
-    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> Promise.LuaPromise<discord.ChannelObject>,
+    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> lazy.LazyPromise<discord.ChannelObject>,
     --- Creates a message
-    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> Promise.LuaPromise<MessageHandle>,
+    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> lazy.LazyPromise<discord.MessageObject>,
 }
 
 local function new(token: Primitives.TemplateContext): DiscordExecutor
