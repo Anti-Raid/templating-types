@@ -142,7 +142,7 @@ export type CreateMessageAttachment = {
 --- Options for sending a message in a channel in Discord
 export type SendMessageChannelAction = {
     channel_id: discord.Snowflake,
-    data: CreateMessage
+    message: CreateMessage
 }
 
 --- Lazy<discord.AuditLogObject>
