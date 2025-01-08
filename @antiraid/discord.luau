@@ -145,20 +145,24 @@ export type SendMessageChannelAction = {
     data: CreateMessage
 }
 
+type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
+type LazyChannelObject = lazy.Lazy<discord.ChannelObject> 
+type LazyMessageObject = lazy.Lazy<discord.MessageObject>
+
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
     --- Gets the audit logs
-    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> promise.LuaPromise<lazy.Lazy<discord.AuditLogObject>>,
+    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> promise.LuaPromise<LazyAuditLogObject>,
     --- Gets a channel
-    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>, 
+    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> promise.LuaPromise<LazyChannelObject>, 
     --- Edits a channel
-    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>,
+    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Edits a thread
-    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>,
+    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Deletes a channel
-    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<lazy.Lazy<discord.ChannelObject>>,
+    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Creates a message
-    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> promise.LuaPromise<lazy.Lazy<discord.MessageObject>>,
+    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> promise.LuaPromise<LazyMessageObject>,
 }
  
 local function new(token: Primitives.TemplateContext): DiscordExecutor
