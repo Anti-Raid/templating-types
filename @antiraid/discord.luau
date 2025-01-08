@@ -145,8 +145,11 @@ export type SendMessageChannelAction = {
     data: CreateMessage
 }
 
+--- Lazy<discord.AuditLogObject>
 type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
-type LazyChannelObject = lazy.Lazy<discord.ChannelObject> 
+--- Lazy<discord.ChannelObject>
+type LazyChannelObject = lazy.Lazy<discord.ChannelObject>
+--- Lazy<discord.MessageObject> 
 type LazyMessageObject = lazy.Lazy<discord.MessageObject>
 
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
