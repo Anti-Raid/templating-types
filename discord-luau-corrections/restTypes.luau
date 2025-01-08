@@ -3,7 +3,7 @@
 	Mapping out all discord responses that we can get from the Discord v10 REST/HTTP API.
 ]]
 
-local objects = require("apiTypes")
+local objects = require("./apiTypes")
 
 -- [[ Base ]] --
 
