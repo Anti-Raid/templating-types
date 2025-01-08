@@ -1,7 +1,7 @@
 local Primitives = require("@antiraid-core/primitives")
 local discord = require("@discord-types/apiTypes")
-local discordGateway = require("@discord-types-corrections/gatewayTypes")
-  
+local discordGateway = require("@discord-types/gatewayTypes")
+   
 --- Function that checks if the event matches the name.
 ---
 --- An event matches name when its ``base_name`` or ``name`` is equal to the ``name`` argument or when ``{base_name}.{name}`` is equal to the ``name`` argument.

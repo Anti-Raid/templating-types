@@ -9,8 +9,7 @@
     "aliases": {
         "antiraid": "./@antiraid/",
         "antiraid-core": "./@antiraid-core/",
-        "discord-types": "./discord-luau/packages/api-types/src/",
-        "discord-types-corrections": "./discord-luau-corrections/",
+        "discord-types": "./discord-luau-corrections/",
         "antiraid-ext": "./@antiraid-ext/"
     }
 }
