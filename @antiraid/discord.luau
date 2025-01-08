@@ -160,7 +160,7 @@ export type DiscordExecutor = {
     --- Creates a message
     create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> promise.LuaPromise<lazy.Lazy<discord.MessageObject>>,
 }
-
+ 
 local function new(token: Primitives.TemplateContext): DiscordExecutor
     error("Implemented internally in AntiRaid runtime!")
 end
