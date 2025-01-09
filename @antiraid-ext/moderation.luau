@@ -7,16 +7,28 @@ type ModerationScope = {
     onEndNoCorrelation: ((event.ModerationEndEventData) -> ())?,
 }
 
-local moderationsDone: {[string]: event.ModerationStartEventData} = {}
+type ModerationsDoneData = {
+    evt: event.ModerationStartEventData,
+    removeThread: thread
+}
+
+local moderationsDone: {[string]: ModerationsDoneData} = {}
 
 local function on(evt: Primitives.Event, scope: ModerationScope)
     event.onModerationStart(evt, function(data)
-        moderationsDone[data.correlation_id] = data
-        scope.onStart(data)
+        local removeThread = task.delay(60, function() 
+            moderationsDone[data.correlation_id] = nil -- Clear the data so we don't keep it around forever
+        end)    
+        moderationsDone[data.correlation_id] = {
+            evt = data,
+            removeThread = removeThread,
+        }
+        scope.onStart(data) 
     end)
 
     event.onModerationEnd(evt, function(data)
         local modData = moderationsDone[data.correlation_id]
+        task.cancel(modData.removeThread)
         moderationsDone[data.correlation_id] = nil -- Clear the data so we don't keep it around forever
         if modData == nil then
             if scope.onEndNoCorrelation ~= nil then
@@ -25,7 +37,7 @@ local function on(evt: Primitives.Event, scope: ModerationScope)
             return
         end
 
-        scope.onEnd(modData)
+        scope.onEnd(modData.evt)
     end)
 end
 
