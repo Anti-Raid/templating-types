@@ -9,7 +9,7 @@ type ModerationScope = {
 
 local moderationsDone: {[string]: event.ModerationStartEventData} = {}
 
-local function onModeration(evt: Primitives.Event, scope: ModerationScope)
+local function on(evt: Primitives.Event, scope: ModerationScope)
     event.onModerationStart(evt, function(data)
         moderationsDone[data.correlation_id] = data
         scope.onStart(data)
@@ -29,5 +29,5 @@ local function onModeration(evt: Primitives.Event, scope: ModerationScope)
 end
 
 return {
-    onModeration = onModeration,
+    on = on,
 }
