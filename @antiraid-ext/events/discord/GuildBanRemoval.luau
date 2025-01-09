@@ -11,4 +11,6 @@ local function onGuildBanRemoval(event: Primitives.Event, callback: (user: disco
     onEvent(event, "Discord.GuildBanRemoval", function(event)
         callback(event.data["GuildBanRemoval"]["unbanned_user"], event.data["GuildBanRemoval"]["guild_id"])
     end)
-end
+end 
+
+return onGuildBanRemoval
