@@ -22,6 +22,7 @@ local function on(evt: Primitives.Event, scope: ModerationScope)
             if scope.onEndNoCorrelation ~= nil then
                 scope.onEndNoCorrelation(data)
             end
+            return
         end
 
         scope.onEnd(modData)
