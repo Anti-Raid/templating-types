@@ -1,22 +1,24 @@
 local Primitives = require("@antiraid-core/primitives")
-local event = require("@antiraid-ext/event")
+local ModerationStart = require("@antiraid-ext/events/antiraid/ModerationStart")
+local ModerationEnd = require("@antiraid-ext/events/antiraid/ModerationEnd")
+local events = require("@antiraid-core/events")
 local cache = require("@antiraid-ext/cache")
 
 type ModerationScope = {
-    onStart: (event.ModerationStartEventData) -> (),
-    onEnd: (event.ModerationStartEventData) -> (),
-    onEndNoCorrelation: ((event.ModerationEndEventData) -> ())?,
+    onStart: (events.ModerationStartEventData) -> (),
+    onEnd: (events.ModerationStartEventData) -> (),
+    onEndNoCorrelation: ((events.ModerationEndEventData) -> ())?,
 }
 
-local moderationsDone = cache.CachedTable.new() :: cache.CachedTable<string, event.ModerationStartEventData>
+local moderationsDone = cache.CachedTable.new() :: cache.CachedTable<string, events.ModerationStartEventData>
 
 local function on(evt: Primitives.Event, scope: ModerationScope)
-    event.onModerationStart(evt, function(data)
+    ModerationStart(evt, function(data)
         moderationsDone:set(data.correlation_id, data, 60)
         scope.onStart(data) 
     end)
 
-    event.onModerationEnd(evt, function(data)
+    ModerationEnd(evt, function(data)
         local modData = moderationsDone:get(data.correlation_id)
         moderationsDone:remove(data.correlation_id) -- Clear the data so we don't keep it around forever
         if modData == nil then
