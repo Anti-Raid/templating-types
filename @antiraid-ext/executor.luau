@@ -1,6 +1,5 @@
 local Primitives = require "@antiraid-core/primitives"
 local promise = require("@antiraid/promise")
-local stream = require("@antiraid/stream")
 local discord = require "@antiraid/discord"
 local kv = require "@antiraid/kv"
 local lockdowns = require "@antiraid/lockdowns"
@@ -15,34 +14,6 @@ local function yieldOrReturn<T>(v: promise.LuaPromise<T> | T): T
     else
         return v
     end
-end
-
---- Given a LuaStream, runs callback on each value
----
---- Note that this method will yield for each streamed value
-local function streamForEach<T>(s: stream.LuaStream<T>, callback: (v: T) -> ())
-    while true do
-        local v = stream.next(s)
-        if v == nil then
-            break
-        end
-        callback(v)
-    end
-end
-
---- Given a LuaStream, runs callback on each value, returning the returned values
----
---- Note that this method will yield for each streamed value
-local function streamMap<T, U>(s: stream.LuaStream<T>, callback: (v: T) -> U): {U}
-    local results = {}
-    while true do
-        local v = stream.next(s)
-        if v == nil then
-            break
-        end
-        table.insert(results, callback(v))
-    end
-    return results
 end
 
 --- @class GlobalExecutor
@@ -107,7 +78,5 @@ end
 
 return {
     yieldOrReturn = yieldOrReturn,
-    streamForEach = streamForEach,
-    streamMap = streamMap,
     NewGlobalExecutor = NewGlobalExecutor,
 }
