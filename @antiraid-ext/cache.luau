@@ -3,6 +3,7 @@ export type CachedTable<K, V> = {
     set: (self: CachedTable<K, V>, key: K, value: V, expiry: number) -> (),
     remove: (self: CachedTable<K, V>, key: K) -> (),
     close: (self: CachedTable<K, V>) -> (),
+    len: (self: CachedTable<K, V>) -> number,
 }
 
 --- @class CachedTable<K, V>
@@ -40,6 +41,11 @@ function CachedTable:close<K, V>()
     for key, _ in pairs(self.__tab) do
         self:remove(key)
     end
+end
+
+function CachedTable:len<K, V>(): number
+    local tab: {} = self.__tab
+    return #tab
 end
 
 -- Test
