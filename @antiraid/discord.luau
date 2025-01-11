@@ -1,5 +1,6 @@
 local Primitives = require "@antiraid-core/primitives"
 local discord = require "@discord-types/apiTypes"
+local discordRest = require "@discord-types/restTypes"
 local lazy = require "@antiraid/lazy"
 local promise = require "@antiraid/promise"
  
@@ -17,6 +18,39 @@ export type GetAuditLogOptions = {
     limit: number?
 }
 
+--[[
+#[derive(serde::Serialize, Default, serde::Deserialize)]
+pub struct EditChannelOptions {
+    pub channel_id: serenity::all::ChannelId,
+    pub reason: String,
+    pub data: EditChannel,
+}
+
+#[derive(serde::Serialize, Default, serde::Deserialize)]
+pub struct DeleteChannelOptions {
+    pub channel_id: serenity::all::ChannelId,
+    pub reason: String,
+}
+
+#[derive(serde::Serialize, Default, serde::Deserialize)]
+pub struct CreateMessageOptions {
+    pub channel_id: serenity::all::ChannelId, // Channel *must* be in the same guild
+    pub data: CreateMessage,
+}
+
+#[derive(serde::Serialize, Default, serde::Deserialize)]
+pub struct CreateCommandOptions {
+    pub data: CreateCommand,
+}
+
+#[derive(serde::Serialize, Default, serde::Deserialize)]
+pub struct CreateInteractionResponseOptions {
+    pub interaction_id: serenity::all::InteractionId,
+    pub interaction_token: String,
+    pub data: CreateInteractionResponse,
+}
+]]--
+
 --- Options for getting a channel in Discord
 export type GetChannelOptions = {
     --- The channel ID
@@ -25,124 +59,44 @@ export type GetChannelOptions = {
 
 --- Options for editing a channel in Discord
 export type EditChannelOptions = {
+    --- The channel ID
     channel_id: discord.Snowflake,
+    --- The reason for the edit
     reason: string,
-    name: string?,
-    type: number?,
-    position: number?,
-    topic: string?,
-    nsfw: boolean?,
-    rate_limit_per_user: number?,
-    bitrate: number?,
-    permission_overwrites: discord.OverwriteObject?,
-    parent_id: discord.Snowflake?,
-    rtc_region: string?,
-    video_quality_mode: number?,
-    default_auto_archive_duration: number?,
-    flags: string?,
-    available_tags: discord.ForumTagObject?,
-    default_reaction_emoji: discord.DefaultReactionObject?,
-    default_thread_rate_limit_per_user: number?,
-    default_sort_order: number?,
-    default_forum_layout: number?
-}
-
---- Options for editing a thread in Discord
-export type EditThreadOptions = {
-    channel_id: discord.Snowflake,
-    reason: string,
-    name: string?,
-    archived: boolean?,
-    auto_archive_duration: number?,
-    locked: boolean?,
-    invitable: boolean?,
-    rate_limit_per_user: number?,
-    flags: string?,
-    applied_tags: discord.ForumTagObject?
+    --- The data to edit the channel with
+    data: discordRest.ModifyChannelRequest
 }
 
 --- Options for deleting a channel in Discord
 export type DeleteChannelOptions = {
+    --- The channel ID
     channel_id: discord.Snowflake,
+    --- The reason for the deletion
     reason: string
 }
 
---- Options for creating a message in Discord
-export type CreateMessage = {
-    --- The embeds of the message
-    embeds: {CreateMessageEmbed}?,
-    --- The content of the message
-    content: string?,
-    --- The attachments of the message  
-    attachments: {CreateMessageAttachment}?,
-}  
-
---- An embed in a message
-export type CreateMessageEmbed = {
-    --- The title of the embed
-    title: string?,
-    --- The description of the embed
-    description: string?,
-    --- The URL of the embed
-    url: string?,
-    --- The timestamp of the embed
-    timestamp: string?,
-    --- The color of the embed
-    color: number?,
-    --- The footer of the embed
-    footer: CreateMessageEmbedFooter?,
-    --- The image URL of the embed
-    image: string?,
-    --- The thumbnail URL of the embed
-    thumbnail: string?,
-    --- The author of the embed
-    author: CreateMessageEmbedAuthor?,
-    --- The fields of the embed
-    fields: {CreateMessageEmbedField}?,
-}
-
---- A footer in a message embed
-export type CreateMessageEmbedFooter = {
-    --- The text of the footer
-    text: string,
-    --- The icon URL of the footer
-    icon_url: string?,
-}
-
---- An author in a message embed
-export type CreateMessageEmbedAuthor = {
-    --- The name of the author
-    name: string,
-    --- The URL of the author
-    url: string?,
-    --- The icon URL of the author
-    icon_url: string?,
-}
-
---- A field in a message embed
-export type CreateMessageEmbedField = {
-    --- The name of the field
-    name: string,
-    --- The value of the field
-    value: string,
-    --- Whether the field should be inline
-    inline: boolean?,
-}
-
---- An attachment in a message
-export type CreateMessageAttachment = {
-    --- The filename of the attachment
-    filename: string,
-    --- The description (if any) of the attachment
-    description: string?,
-    --- The content of the attachment
-    content: {Primitives.byte},
-}
-
---- Options for sending a message in a channel in Discord
-export type SendMessageChannelAction = {
+--- Options for sending a message to a channel in Discord
+export type CreateMessageOptions = {
+    --- The channel ID
     channel_id: discord.Snowflake,
-    message: CreateMessage
+    --- The data to send the message with
+    data: discordRest.CreateMessageRequest
+}
+
+--- Options for creating a command in Discord
+export type CreateCommandOptions = {
+    --- The data to create the command with
+    data: discordRest.CreateGuildApplicationCommandRequest
+}
+
+--- Options for creating an interaction response in Discord
+export type CreateInteractionResponseOptions = {
+    --- The interaction ID
+    interaction_id: discord.Snowflake,
+    --- The interaction token
+    interaction_token: string,
+    --- The data to create the interaction response with
+    data: discordRest.CreateInteractionRequest
 }
 
 --- Lazy<discord.AuditLogObject>
@@ -151,6 +105,8 @@ type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
 type LazyChannelObject = lazy.Lazy<discord.ChannelObject>
 --- Lazy<discord.MessageObject> 
 type LazyMessageObject = lazy.Lazy<discord.MessageObject>
+--- Lazy<discord.ApplicationCommandObject>
+type LazyApplicationCommandObject = lazy.Lazy<discord.ApplicationCommandObject>
 
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
@@ -160,12 +116,18 @@ export type DiscordExecutor = {
     get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> promise.LuaPromise<LazyChannelObject>, 
     --- Edits a channel
     edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
-    --- Edits a thread
-    edit_thread: (self: DiscordExecutor, data: EditThreadOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Deletes a channel
     delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Creates a message
-    create_message: (self: DiscordExecutor, data: SendMessageChannelAction) -> promise.LuaPromise<LazyMessageObject>,
+    create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    --- Creates an interaction response
+    create_interaction_response: (self: DiscordExecutor, data: CreateInteractionResponseOptions) -> promise.LuaPromise<nil>,
+    --- Gets the original interaction response
+    get_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> promise.LuaPromise<LazyMessageObject>,
+    --- Gets all guild commands currently registered
+    get_guild_commands: (self: DiscordExecutor) -> promise.LuaPromise<LazyApplicationCommandObject>,
+    --- Creates a guild command
+    create_guild_command: (self: DiscordExecutor, data: CreateCommandOptions) -> promise.LuaPromise<LazyApplicationCommandObject>,
 }
  
 local function new(token: Primitives.TemplateContext): DiscordExecutor

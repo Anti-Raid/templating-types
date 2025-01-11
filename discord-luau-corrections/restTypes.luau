@@ -3,12 +3,23 @@
 	Mapping out all discord responses that we can get from the Discord v10 REST/HTTP API.
 ]]
 
+local Primitives = require("@antiraid-core/primitives")
 local objects = require("./apiTypes")
 
 -- [[ Base ]] --
 
 export type Response<DATA> = DATA
 export type Request<DATA> = DATA
+
+--- An attachment in a message
+export type CreateMessageAttachment = {
+    --- The filename of the attachment
+    filename: string,
+    --- The description (if any) of the attachment
+    description: string?,
+    --- The content of the attachment
+    content: {Primitives.byte},
+}
 
 -- [[ Requests ]] --
 
@@ -83,6 +94,11 @@ export type ModifyChannelRequest = Request<{
 	default_thread_rate_limit_per_user: number?, -- the initial rate_limit_per_user to set on newly created threads in a channel. this field is copied to the thread at creation time and does not live update.
 	default_sort_order: objects.SortOrderType?, -- the default sort order type used to order posts in GUILD_FORUM and GUILD_MEDIA channels
 	default_forum_layout: objects.ForumLayoutType?, -- the default forum layout type used to display posts in GUILD_FORUM channels
+	archived: boolean?, -- whether the thread is archived
+	auto_archive_duration: number?, -- the thread will stop showing in the channel list after auto_archive_duration minutes of inactivity, can be set to: 60, 1440, 4320, 10080
+	locked: boolean?, -- whether the thread is locked; when a thread is locked, only users with MANAGE_THREADS can unarchive it
+	invitable: boolean?, -- whether non-moderators can add other non-moderators to a thread; only available on private threads
+	applied_tags: {objects.Snowflake} --- the IDs of the set of tags that have been applied to a thread in a GUILD_FORUM or a GUILD_MEDIA channel; limited to 5
 }>
 
 -- https://discord.com/developers/docs/resources/channel#create-message
@@ -97,7 +113,7 @@ export type CreateMessageRequest = Request<{
 	sticker_ids: { objects.Snowflake }?, -- IDs of up to 3 stickers in the server to send in the message
 	-- files: { },
 	-- payload_json: string,
-	attachments: { objects.AttachmentObject }?, -- Attachment objects with filename and description. See Uploading Files
+	attachments: { CreateMessageAttachment }?, -- Attachment objects with filename and description. See Uploading Files
 	flags: number?, -- Message flags combined as a bitfield (only SUPPRESS_EMBEDS and SUPPRESS_NOTIFICATIONS can be set)
 	enforce_nonce: boolean?, -- If true and nonce is present, it will be checked for uniqueness in the past few minutes. If another message was created by the same author with the same nonce, that message will be returned and no new message will be created.
 	poll: objects.PollObject?, -- The discord poll object
@@ -111,7 +127,7 @@ export type EditMessageRequest = Request<{
 	components: { objects.ComponentObjects }?, -- Components to include with the message
 	-- files: { },
 	-- payload_json: string,
-	attachments: { objects.AttachmentObject }?, -- Attachment objects with filename and description. See Uploading Files
+	attachments: { CreateMessageAttachment }?, -- Attachment objects with filename and description. See Uploading Files
 	flags: number?, -- Message flags combined as a bitfield (only SUPPRESS_EMBEDS and SUPPRESS_NOTIFICATIONS can be set)
 }>
 
@@ -486,7 +502,7 @@ export type ExecuteWebhookRequest = Request<{
 	components: { objects.ComponentObjects }, -- the components to include with the message
 	-- files: { },
 	-- payload_json: string,
-	attachments: { objects.AttachmentObject }, -- attachment objects with filename and description
+	attachments: { CreateMessageAttachment }, -- attachment objects with filename and description
 	flags: number, -- message flags combined as a bitfield (only SUPPRESS_EMBEDS and SUPPRESS_NOTIFICATIONS can be set can be set)
 	thread_name: string, -- name of thread to create (requires the webhook channel to be a forum or media channel)
 	applied_tags: { objects.Snowflake }, -- array of tag ids to apply to the thread (requires the webhook channel to be a forum or media channel)
@@ -512,7 +528,7 @@ export type EditWebhookMessageRequest = Request<{
 	components: { objects.ComponentObjects }, -- the components to include with the message
 	-- files: { },
 	-- payload_json: string,
-	attachments: objects.AttachmentObject, -- attached files to keep and possible descriptions for new files
+	attachments: { CreateMessageAttachment }, -- attached files to keep and possible descriptions for new files
     poll: objects.PollObject?, -- The discord poll object
 }>
 
@@ -574,6 +590,7 @@ export type CreateGuildApplicationCommandRequest = Request<{
 	contexts: { objects.InteractionContextType }?, -- Interaction context(s) where the command can be used
 	type: objects.ApplicationCommandType?, -- Type of command, defaults 1 if not set
 	nsfw: boolean?, -- Indicates whether the command is age-restricted
+	handler: number? -- 1 = AppHandler, 2 = DiscordLaunchActivity
 }>
 
 -- https://discord.com/developers/docs/interactions/application-commands#edit-guild-application-command

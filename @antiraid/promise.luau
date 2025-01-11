@@ -1,10 +1,12 @@
 --- Opaque promise type returned by antiraid
-export type LuaPromise<T> = {}
+export type LuaPromise<T> = {
+    --- Note: this will always actually be nil but is required to enforce nominal typing properly
+    __phantom_LuaPromiseT: T,
+}
 
 --- Yields the coroutine and resumes it returning the end value of the promise when it resolves
 local function yield<T>(promise: LuaPromise<T>): T 
-    -- This function is internally implemented and just returns nil here
-    return nil
+    error("Implemented internally in AntiRaid runtime!")
 end
 
 return {
