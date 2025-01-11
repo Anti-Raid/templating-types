@@ -22,10 +22,10 @@ end
 --- @param default any
 --- @param f fun(v: any): any
 --- @returns any
-local function update<T>(k: any, default: T, f: (T) -> T)
+local function update<T>(k: any, default: () -> T, f: (T) -> T)
     local v = _G[k]
     if v == nil then
-        v = default
+        v = default()
     end
     v = f(v :: T)
     _G[k] = v 
