@@ -1,6 +1,6 @@
 -- Define a RateLimiter class using the GCRA algorithm
 
-type RateLimiter<BucketKey> = {
+export type RateLimiter<BucketKey> = {
     count: number,  -- Maximum number of actions allowed
     period: number,  -- Time period for the rate limit
     emissionInterval: number,  -- Time interval between allowed actions
