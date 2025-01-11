@@ -21,27 +21,27 @@ export type Lockdown = {
 export type LockdownExecutor = {
     --- Lists all active lockdowns
     --- @return Promise.LuaPromise<{Lockdown}> The active lockdowns
-    list: () -> Promise.LuaPromise<{Lockdown}>,
+    list: (self: LockdownExecutor) -> Promise.LuaPromise<{Lockdown}>,
     --- Starts a quick server lockdown
     --- @param reason string The reason for the lockdown
-    qsl: (reason: string) -> Promise.LuaPromise<nil>,
+    qsl: (self: LockdownExecutor, reason: string) -> Promise.LuaPromise<nil>,
     --- Starts a traditional server lockdown.
     --- 
     --- This is *much* slower than a QSL but also does not require
     --- any special server setup.
     --- @param reason string The reason for the lockdown
-    tsl: (reason: string) -> Promise.LuaPromise<nil>,
+    tsl: (self: LockdownExecutor, reason: string) -> Promise.LuaPromise<nil>,
     --- Starts a lockdown on a single channel
     --- @param channel_id string The ID of the channel to lock down
     --- @param reason string The reason for the lockdown
-    scl: (channel_id: string, reason: string) -> Promise.LuaPromise<nil>,
+    scl: (self: LockdownExecutor, channel_id: string, reason: string) -> Promise.LuaPromise<nil>,
     --- Starts a lockdown on a role
     --- @param role_id string The ID of the role to lock down
     --- @param reason string The reason for the lockdown
-    role: (role_id: string, reason: string) -> Promise.LuaPromise<nil>,
+    role: (self: LockdownExecutor, role_id: string, reason: string) -> Promise.LuaPromise<nil>,
     --- Removes a lockdown (ends it)
     --- @param id string The ID of the lockdown to remove
-    remove: (id: string) -> Promise.LuaPromise<nil>,
+    remove: (self: LockdownExecutor, id: string) -> Promise.LuaPromise<nil>,
 }
 
 local function new(token: Primitives.TemplateContext?): LockdownExecutor

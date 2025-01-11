@@ -30,23 +30,23 @@ export type KvExecutor = {
     --- Finds records in the key-value store.
     --- @param query string The key to search for. % matches zero or more characters; _ matches a single character. To search anywhere in a string, surround {KEY} with %, e.g. %{KEY}%
     --- @return {KvRecord} The records.
-    find: (query: string) -> Promise.LuaPromise<{KvRecord}>,
+    find: (self: KvExecutor, query: string) -> Promise.LuaPromise<{KvRecord}>,
     --- Gets a value from the key-value store.
     --- @param key string The key of the record.
     --- @return any The value of the record.
-    get: (key: string) -> Promise.LuaPromise<any>,
+    get: (self: KvExecutor, key: string) -> Promise.LuaPromise<any>,
     --- Gets a record from the key-value store.
     --- @param key string The key of the record.
     --- @return KvRecord The record.
-    getrecord: (key: string) -> Promise.LuaPromise<KvRecord>,
+    getrecord: (self: KvExecutor, key: string) -> Promise.LuaPromise<KvRecord>,
     --- Sets a record in the key-value store.
     --- @param key string The key of the record.
     --- @param value any The value of the record.
     --- @return KvRecord The record.
-    set: (key: string, value: any) -> Promise.LuaPromise<KvRecord>,
+    set: (self: KvExecutor, key: string, value: any) -> Promise.LuaPromise<KvRecord>,
     --- Deletes a record from the key-value store.
     --- @param key string The key of the record.
-    delete: (key: string) -> Promise.LuaPromise<nil>,
+    delete: (self: KvExecutor, key: string) -> Promise.LuaPromise<nil>,
 }
 
 local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): KvExecutor

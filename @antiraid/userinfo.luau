@@ -32,7 +32,7 @@ export type UserInfo = {
 export type UserInfoExecutor = {
     --- Gets the UserInfo for a user
     --- @param user_id discord.Snowflake The ID of the user to get the UserInfo for
-    get: (user_id: discord.Snowflake) -> Promise.LuaPromise<UserInfo>,
+    get: (self: UserInfoExecutor, user_id: discord.Snowflake) -> Promise.LuaPromise<UserInfo>,
 }
 
 local function new(token: Primitives.TemplateContext?): UserInfoExecutor

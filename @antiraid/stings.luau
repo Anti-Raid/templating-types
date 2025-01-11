@@ -57,24 +57,24 @@ export type StingExecutor = {
     --- Lists a page of stings. The number of stings per page is undefined at this time
     --- @param page number The page to list
     --- @return Promise.LuaPromise<{Sting}> The list of stings
-    list: (page: number) -> Promise.LuaPromise<{Sting}>,
+    list: (self: StingExecutor, page: number) -> Promise.LuaPromise<{Sting}>,
     --- Gets a sting by its ID
     --- @param id string The ID of the sting
     --- @return Promise.LuaPromise<Sting> The sting
-    get: (id: string) -> Promise.LuaPromise<Sting>,
+    get: (self: StingExecutor, id: string) -> Promise.LuaPromise<Sting>,
     --- Creates a new sting
     --- @param data StingCreate The data to create the sting with
     --- @return Promise.LuaPromise<string> The ID of the created sting
-    create: (data: StingCreate) -> Promise.LuaPromise<string>,
+    create: (self: StingExecutor, data: StingCreate) -> Promise.LuaPromise<string>,
     --- Updates a sting 
     --- @param data Sting The data to update the sting with. Note that the ID of the sting must exist in DB and the previous sting
     --- with said ID will be replaced with ``data``.
     --- @return Promise.LuaPromise<nil>
-    update: (data: Sting) -> Promise.LuaPromise<nil>,
+    update: (self: StingExecutor, data: Sting) -> Promise.LuaPromise<nil>,
     --- Deletes a sting by its ID
     --- @param id string The ID of the sting
     --- @return Promise.LuaPromise<nil>
-    delete: (id: string) -> Promise.LuaPromise<nil>,
+    delete: (self: StingExecutor, id: string) -> Promise.LuaPromise<nil>,
 }
 
 local function new(token: Primitives.TemplateContext): StingExecutor
