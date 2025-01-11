@@ -1,3 +1,4 @@
+--!nocheck
 local function string_contains(str: string, sub: string)
     return str:find(sub, 1, true) ~= nil
 end
@@ -52,5 +53,5 @@ return {
     string_startswith = string_startswith,
     string_endswith = string_endswith,
     string_replace = string_replace,
-    string_insert = string_insert
+    string_insert = string_insert,
 }
