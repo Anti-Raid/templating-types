@@ -55,18 +55,22 @@ function RateLimiter.attemptAction<BucketKey>(rl: RateLimiter<BucketKey>, key: B
     return not reject
 end
 
--- Example Usage
-local limiter = RateLimiter.new(
-    5,
-    10
-)  -- 5 actions per 10 seconds
+-- Test
+if(_G._TEST_ASYNC_WORK ~= nil) then
+    local limiter = RateLimiter.new(
+        5,
+        10
+    )  -- 5 actions per 10 seconds
 
--- Try to perform actions in a loop
-for i = 1, 10 do
-    if limiter:attemptAction("abc") then
-        print("Action " .. tostring(i) .. " allowed!")
-    else
-        print("Action " .. tostring(i) .. " denied (rate limited)!")
+    -- Try to perform actions in a loop
+    for i = 1, 10 do
+        if limiter:attemptAction("abc") then
+            print("Action " .. tostring(i) .. " allowed!")
+        else
+            print("Action " .. tostring(i) .. " denied (rate limited)!")
+        end
+        task.wait(0.2)  
     end
-    task.wait(0.2)  
 end
+
+return RateLimiter
