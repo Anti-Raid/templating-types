@@ -96,7 +96,7 @@ export type DateTime = typeof(setmetatable({} :: {
     --- The base (non-DST) offset of the datetime.
     base_offset: TimeDelta,
     --- @field dst_offset: TimeDelta
-    --- The DST offset of the datetime
+    --- The additional DST offset of the datetime.
     dst_offset: TimeDelta,
     --- @function (TimeZone) -> DateTime
     --- Converts the datetime to the specified timezone.

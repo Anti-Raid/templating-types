@@ -99,12 +99,35 @@ export type CreateInteractionResponseOptions = {
     data: discordRest.CreateInteractionRequest
 }
 
+--- A message pagination object
+export type MessagePagination = { type: "After" | "Around" | "Before", id: discord.Snowflake }
+
+--- Options for getting messages in Discord
+export type GetMessagesOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The target message
+    target: MessagePagination?,
+    --- The limit of messages to get
+    limit: number?
+}
+
+--- Options for getting a message in Discord
+export type GetMessageOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The message ID
+    message_id: discord.Snowflake
+}
+
 --- Lazy<discord.AuditLogObject>
 type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
 --- Lazy<discord.ChannelObject>
 type LazyChannelObject = lazy.Lazy<discord.ChannelObject>
 --- Lazy<discord.MessageObject> 
 type LazyMessageObject = lazy.Lazy<discord.MessageObject>
+--- Lazy<{discord.MessageObject}>
+type LazyMessagesObject = lazy.Lazy<{discord.MessageObject}>
 --- Lazy<discord.ApplicationCommandObject>
 type LazyApplicationCommandObject = lazy.Lazy<discord.ApplicationCommandObject>
 
@@ -118,6 +141,10 @@ export type DiscordExecutor = {
     edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Deletes a channel
     delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
+    --- Gets messages from a channel
+    get_messages: (self: DiscordExecutor, data: GetMessagesOptions) -> promise.LuaPromise<LazyMessagesObject>,
+    --- Gets a message
+    get_message: (self: DiscordExecutor, data: GetMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
     --- Creates a message
     create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
     --- Creates an interaction response
