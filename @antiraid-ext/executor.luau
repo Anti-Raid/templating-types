@@ -24,7 +24,7 @@ end
 --- 
 --- GlobalExecutor is a type that does this for you. Executors are lazily 
 --- initialized when accessed using __index metamethod.
-type GlobalExecutor = {
+export type GlobalExecutor = {
     discord: discord.DiscordExecutor,
     kv: kv.KvExecutor,
     lockdowns: lockdowns.LockdownExecutor,
