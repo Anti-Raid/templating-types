@@ -18,7 +18,7 @@ export type TimeDelta = typeof(setmetatable({} :: {
     --- @function () -> string
     --- Returns an 'offset' string representation of the time delta.
     --- E.g. "+05:30" for 5 hours and 30 minutes.
-    offset_string: () -> string,
+    offset_string: (self: TimeDelta) -> string,
 }, {} :: {
     __add: (TimeDelta, TimeDelta) -> TimeDelta,
     __sub: (TimeDelta, TimeDelta) -> TimeDelta,
@@ -34,20 +34,20 @@ export type TimeZone = typeof(setmetatable({} :: {
     --- @function (year: number, month: number, day: number, hour: number, minute: number, second: number, all: boolean?) -> DateTime
     --- Translates a timestamp in UTC time to a datetime in the said specific timezone. If `all` is set to true, then multiple times
     --- may be returned in the case of ambiguous times, otherwise the first time is returned.
-    utcToTz: (year: number, month: number, day: number, hours: number, minutes: number, secs: number) -> DateTime,
+    utcToTz: (self: TimeZone, year: number, month: number, day: number, hours: number, minutes: number, secs: number) -> DateTime,
     --- @function (year: number, month: number, day: number, hour: number, minute: number, second: number, all: boolean?) -> DateTime
     --- Translates a timestamp in the specified timezone to a datetime in UTC. If `all` is set to true, then multiple times
     --- may be returned in the case of ambiguous times, otherwise the first time is returned.
-    tzToUtc: (year: number, month: number, day: number, hours: number, minutes: number, secs: number) -> DateTime,
+    tzToUtc: (self: TimeZone, year: number, month: number, day: number, hours: number, minutes: number, secs: number) -> DateTime,
     --- @function (hour: number, minute: number, second: number) -> DateTime
     --- Translates a time of the current day in UTC time to a datetime in the said specific timezone
-    timeUtcToTz: (hours: number, minutes: number, secs: number) -> DateTime,
+    timeUtcToTz: (self: TimeZone, hours: number, minutes: number, secs: number) -> DateTime,
     --- @function (hour: number, minute: number, second: number) -> DateTime
     --- Translates a time of the current day in the said specific timezone to a datetime in UTC
-    timeTzToUtc: (hours: number, minutes: number, secs: number) -> DateTime,
+    timeTzToUtc: (self: TimeZone, hours: number, minutes: number, secs: number) -> DateTime,
     --- @function () -> DateTime
     --- Translates the current timestamp to a datetime in the said specific timezone
-    now: () -> DateTime
+    now: (self: TimeZone) -> DateTime
 }, {} :: {
     __tostring: (TimeZone) -> string,
     __eq: (TimeZone, TimeZone) -> boolean
@@ -100,13 +100,13 @@ export type DateTime = typeof(setmetatable({} :: {
     dst_offset: TimeDelta,
     --- @function (TimeZone) -> DateTime
     --- Converts the datetime to the specified timezone.
-    with_timezone: (TimeZone) -> DateTime,
+    with_timezone: (self: TimeZone, TimeZone) -> DateTime,
     --- @function (string) -> string
     --- Formats the datetime using the specified format string.
-    format: (string) -> string,
+    format: (self: TimeZone, string) -> string,
     --- @function (DateTime) -> TimeDelta
     --- Calculates the duration between the current datetime and another datetime.
-    duration_since: (DateTime) -> TimeDelta
+    duration_since: (self: TimeZone, DateTime) -> TimeDelta
 }, {} :: {
     __add: (DateTime, TimeDelta) -> DateTime,
     __sub: (DateTime, TimeDelta) -> DateTime,
