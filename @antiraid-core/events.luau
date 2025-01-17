@@ -122,4 +122,14 @@ export type ModerationEndEventData = {
     correlation_id: string -- Will correlate with a ModerationStart's event data
 }
 
+--- Data sent when a key is updated externally (through the web dashboard etc)
+---
+--- NOTE: To avoid recursive template executions, this does not trigger on in-template
+--- key-value updates
+export type ExternalKeyUpdateEventData = {
+    key_modified: string,
+    author: discord.Snowflake,
+    action: "create" | "update" | "delete"
+}
+
 return {}
