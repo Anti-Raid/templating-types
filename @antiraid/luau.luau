@@ -1,4 +1,5 @@
 local Primitives = require("@antiraid-core/primitives")
+local Promise = require("@antiraid/promise")
 
 export type Chunk = {
     --- Requires the ``luau:eval.set_environment`` capability to modify
@@ -15,8 +16,8 @@ export type Chunk = {
     --- Requires the ``luau:eval.call_async`` capability to use. Takes in args and returns the
     --- returned values from the ``code`` being evaluated.
     ---
-    --- This runs the code asynchronously in a thread
-    call_async: (self: Chunk, args: any) -> thread,
+    --- This runs the code asynchronously
+    call_async: (self: Chunk, args: any) -> Promise.LuaPromise<any>,
 }
 
 --- Requires the ``luau:eval`` capability to use. Be careful as this allows
