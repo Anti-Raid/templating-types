@@ -1,10 +1,10 @@
-local kv = require "@antiraid/kv"
+local ge = require "@antiraid-ext/executor"
 local global = require "@antiraid-ext/global"
 
-local function _getOnce(kv: kv.KvExecutor, id: string): boolean
+local function _getOnce(ge: ge.GlobalExecutor, id: string): boolean
     if not global.get("__once:" .. id) then
         return true
-    elseif kv:get("__once:" .. id) then
+    elseif ge.kv:get("__once:" .. id) then
         global.set("__once:" .. id, "done")
         return true
     else
@@ -17,8 +17,8 @@ end
 ---
 --- @antiraid/kv is used for persistence here to avoid rerunning
 --- the function on worker restart
-local function once(kv: kv.KvExecutor, id: string, fn: () -> ())
-    local hasRun = _getOnce(kv, id)
+local function once(ge: ge.GlobalExecutor, id: string, fn: () -> ())
+    local hasRun = _getOnce(ge, id)
 
     if hasRun then
         return
@@ -29,7 +29,7 @@ local function once(kv: kv.KvExecutor, id: string, fn: () -> ())
 
     if ok then
         global.set("__once:" .. id, "done")
-        kv:set("__once:" .. id, true)
+        ge.kv:set("__once:" .. id, true)
     end
 end
 
