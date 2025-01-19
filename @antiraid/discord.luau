@@ -99,6 +99,14 @@ export type CreateInteractionResponseOptions = {
     data: discordRest.CreateInteractionRequest
 }
 
+--- Options for creating a followup message in Discord
+export type CreateFollowupMessageOptions = {
+    --- The interaction token
+    interaction_token: string,
+    --- The data to create the followup message with
+    data: discordRest.CreateFollowupMessageRequest
+}
+
 --- A message pagination object
 export type MessagePagination = { type: "After" | "Around" | "Before", id: discord.Snowflake }
 
@@ -149,6 +157,8 @@ export type DiscordExecutor = {
     create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
     --- Creates an interaction response
     create_interaction_response: (self: DiscordExecutor, data: CreateInteractionResponseOptions) -> promise.LuaPromise<nil>,
+    --- Creates a followup interaction response
+    create_followup_message: (self: DiscordExecutor, data: CreateFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
     --- Gets the original interaction response
     get_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> promise.LuaPromise<LazyMessageObject>,
     --- Gets all guild commands currently registered
