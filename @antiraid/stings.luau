@@ -1,5 +1,6 @@
 local Primitives = require "@antiraid-core/primitives"
 local Promise = require "@antiraid/promise"
+local ExecutorScope = require "@antiraid-core/executorscope"
 
 --- A type representing a new sting to be created.
 export type StingCreate = {
@@ -77,7 +78,7 @@ export type StingExecutor = {
     delete: (self: StingExecutor, id: string) -> Promise.LuaPromise<nil>,
 }
 
-local function new(token: Primitives.TemplateContext): StingExecutor
+local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): StingExecutor
     error("Implemented internally in AntiRaid runtime!")
 end
 

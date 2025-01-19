@@ -32,7 +32,8 @@ export type GlobalExecutor = {
     userinfo: userinfo.UserInfoExecutor,
 } 
 
---- Creates a new GlobalExecutor
+--- Creates a new GlobalExecutor. For safety reasons, scope will only be set
+--- for KvExecutor.
 --- 
 --- @param token Primitives.TemplateContext The token to use for the executors
 --- @param scope ExecutorScope.ExecutorScope The scope to use for the executors

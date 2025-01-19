@@ -1,5 +1,6 @@
 local Promise = require("@antiraid/promise")
 local Primitives = require "@antiraid-core/primitives"
+local ExecutorScope = require "@antiraid-core/executorscope"
 
 --- Lockdown represents a currently applied lockdown
 ---@class Lockdown
@@ -44,7 +45,7 @@ export type LockdownExecutor = {
     remove: (self: LockdownExecutor, id: string) -> Promise.LuaPromise<nil>,
 }
 
-local function new(token: Primitives.TemplateContext?): LockdownExecutor
+local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): LockdownExecutor
     error("Implemented internally in AntiRaid runtime!")
 end
 

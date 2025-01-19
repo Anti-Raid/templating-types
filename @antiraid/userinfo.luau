@@ -2,6 +2,7 @@ local Kittycat = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local Promise = require "@antiraid/promise"
 local discord = require "@discord-types/apiTypes"
+local ExecutorScope = require "@antiraid-core/executorscope"
 
 --- @class UserInfo
 ---
@@ -35,7 +36,7 @@ export type UserInfoExecutor = {
     get: (self: UserInfoExecutor, user_id: discord.Snowflake) -> Promise.LuaPromise<UserInfo>,
 }
 
-local function new(token: Primitives.TemplateContext?): UserInfoExecutor
+local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): UserInfoExecutor
     error("Implemented internally in AntiRaid runtime!")
 end
 

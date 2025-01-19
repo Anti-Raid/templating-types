@@ -3,7 +3,8 @@ local discord = require "@discord-types/apiTypes"
 local discordRest = require "@discord-types/restTypes"
 local lazy = require "@antiraid/lazy"
 local promise = require "@antiraid/promise"
- 
+local ExecutorScope = require "@antiraid-core/executorscope"
+
 --- @class GetAuditLogOptions
 --- @field action_type discord.AuditLogEventType? The action type to filter by
 --- @field user_id discord.Snowflake? The user ID to filter by
@@ -167,7 +168,7 @@ export type DiscordExecutor = {
     create_guild_command: (self: DiscordExecutor, data: CreateCommandOptions) -> promise.LuaPromise<LazyApplicationCommandObject>,
 }
  
-local function new(token: Primitives.TemplateContext): DiscordExecutor
+local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): DiscordExecutor
     error("Implemented internally in AntiRaid runtime!")
 end
 
