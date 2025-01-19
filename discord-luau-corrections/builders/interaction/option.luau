@@ -6,7 +6,8 @@
 
 	https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
 ]]
-
+ 
+local array = require("@antiraid-ext/array").toArray
 local apiTypes = require("@discord-types/apiTypes")
 local interactionTypes = require("@discord-types/interaction")
 local channelTypes = require("@discord-types/channel")
@@ -204,26 +205,19 @@ end
 	Responsible for buillding the default reaction object that the Discord API can understand.
 ]]
 function Option.Prototype.build(self: Option): JSON
-	local channelTypeArray = {}
-
-	for _, channelType in self.channelTypes do
-		table.insert(channelTypeArray, channelTypes.ChannelTypes[channelType])
-	end
-
 	assert(self.name, `Missing name for option: {self.name}`)
 	assert(self.description, `Missing description for option: {self.name}`)
-
+ 
 	return {
-		type = interactionTypes.InteractionType[self.type],
-		channel_types = channelTypeArray,
-
+		type = self.type,
+		channel_types = array(self.channelTypes),
 		name = self.name,
 		name_localizations = self.nameLocalizations,
 		description = self.description,
 		description_localizations = self.descriptionLocalizations,
 		required = self.required,
-		choices = self.choices,
-		options = self.options,
+		choices = array(self.choices),
+		options = array(self.options),
 		min_value = self.minValue,
 		max_value = self.maxValue,
 		min_length = self.minLength,

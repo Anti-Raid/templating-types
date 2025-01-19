@@ -8,6 +8,18 @@ local InteractionType = table.freeze(reflect({
 	ModalSubmit = 5,
 }))
 
+local InteractionCallbackType = table.freeze(reflect({
+	Pong = 1,
+	ChannelMessageWithSource = 4,
+	DeferredChannelMessageWithSource = 5,
+    DeferredUpdateMessage = 6,
+    UpdateMessage = 7,
+    ApplicationCommandAutocompleteResult = 8,
+    Modal = 9,
+    PremiumRequired = 10,
+    LaunchActivity = 12,
+}))
+
 local ApplicationCommandOptionType = table.freeze(reflect({
 	SubCommand = 1,
 	SubCommandGroup = 2,
@@ -53,6 +65,17 @@ export type InteractionType =
 	| "ApplicationCommandAutocomplete"
 	| "ModalSubmit"
 
+export type InteractionCallbackType =
+    "Pong"
+    | "ChannelMessageWithSource"
+    | "DeferredChannelMessageWithSource"
+    | "DeferredUpdateMessage"
+    | "UpdateMessage"
+    | "ApplicationCommandAutocompleteResult"
+    | "Modal"
+    | "PremiumRequired"
+    | "LaunchActivity"
+
 export type ComponentTypes =
 	"ActionRow"
 	| "Button"
@@ -86,4 +109,5 @@ return {
 	InteractionContextType = InteractionContextType,
 	ApplicationCommandType = ApplicationCommandType,
 	ComponentTypes = ComponentTypes,
+    InteractionCallbackType = InteractionCallbackType,
 }

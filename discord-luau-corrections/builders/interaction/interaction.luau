@@ -90,6 +90,12 @@ function Interaction.Prototype.setDescriptionLocalization(
 	return self
 end
 
+function Interaction.Prototype.option(self: Interaction, fn: (interactionOption.Option) -> interactionOption.JSON): Interaction
+	table.insert(self.options, fn(interactionOption.new()))
+
+	return self
+end
+
 --[[
 	the parameters for the command
 ]]
@@ -176,7 +182,7 @@ function Interaction.Prototype.build(self: Interaction): JSON
 		integration_types = integrationTypeArray,
 		contexts = contexts,
 		type = interactionTypes.ApplicationCommandType[self.type] or nil,
-		nsfw = self.nsfw,
+		nsfw = self.nsfw or false,
 	}
 end
 

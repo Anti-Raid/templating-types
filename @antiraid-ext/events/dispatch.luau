@@ -9,7 +9,7 @@ local Primitives = require("@antiraid-core/primitives")
 --- **Note that this function is case-insensitive and internally converts all strings to lowercase.**
 local function doesEventMatch(pat: string, event: Primitives.Event)
     local baseName = string.lower(event.base_name)
-    local name = string.lower(event.name)
+    local name = string.lower(event.name):gsub("_", "")
     local pattern = string.lower(pat)
     
     return baseName == pattern or name == pattern or (baseName .. "." .. name) == pattern
@@ -31,6 +31,7 @@ local function onEvent(event: Primitives.Event, pats: string | {string}, callbac
     end
 end
 
+assert(doesEventMatch("Discord.InteractionCreate", {base_name = "Discord", name = "INTERACTION_CREATE"}))
 
 return {
     doesEventMatch = doesEventMatch,

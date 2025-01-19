@@ -72,7 +72,19 @@ local function arraysEqual(o1, o2, ignore_mt)
     return internalProtectedEquals(o1, o2, ignore_mt or true, {})
 end
 
+local function toArray<T>(a: T): T --[[ Converts a value to an array. If the value is already an array, it is returned as is. If the value is not an array, it is wrapped in an array. ]]
+    if typeof(a) == "table" then
+        if getmetatable(a) == interop.array_metatable then
+            return a
+        end
+        return setmetatable(a, interop.array_metatable)
+    else
+        return array(a)
+    end
+end
+
 return {
     array = array,
-    arraysEqual = arraysEqual
+    arraysEqual = arraysEqual,
+    toArray = toArray,
 }
