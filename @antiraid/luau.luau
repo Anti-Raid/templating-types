@@ -22,7 +22,7 @@ export type Chunk = {
 
 --- Requires the ``luau:eval`` capability to use. Be careful as this allows
 --- for arbitrary code execution.
-local function load(token: Primitives.TemplateContext, code: string) 
+local function load(token: Primitives.TemplateContext, code: string): Chunk
     error("Implemented internally in AntiRaid runtime!")
 end
 
