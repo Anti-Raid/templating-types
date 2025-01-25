@@ -9,13 +9,7 @@ local Primitives = require("@antiraid-core/primitives")
 --- **Note that this function is case-insensitive and internally converts all strings to lowercase.**
 local function doesEventMatch(pat: string, event: Primitives.Event)
     local baseName = string.lower(event.base_name)
-<<<<<<< HEAD
     local name = string.lower(event.name):gsub("_", "")
-=======
-    local name = string.lower(event.name)
-    -- Remove any underscores from name
-    name = string.gsub(name, "_", "")
->>>>>>> 1d198c4 (fix)
     local pattern = string.lower(pat)
     
     return baseName == pattern or name == pattern or (baseName .. "." .. name) == pattern
