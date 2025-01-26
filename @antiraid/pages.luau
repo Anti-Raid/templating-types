@@ -28,9 +28,6 @@ export type ColumnSuggestion = {
 --- The type-specific data about a column
 export type ColumnType = {
     type: "Scalar" | "Array",
-    inner: "Uuid"
-} | {
-    type: "Scalar" | "Array",
     inner: "String",
     --- @field number The minimum length of the string
     min_length: number?,
@@ -41,17 +38,8 @@ export type ColumnType = {
     --- If empty, all values are allowed.
     allowed_values: {string},
     --- @field string The kind of string this is. This will be used to determine how the string is rendered client-side.
-    --- e.g. textarea, channel, user, role, kittycat-permission etc.
+    --- e.g. textarea, channel, user, role, kittycat-permission, uuid, interval, timestamp etc.
     kind: string
-} | {
-    type: "Scalar" | "Array",
-    inner: "Timestamp"
-} | {
-    type: "Scalar" | "Array",
-    inner: "TimestampTz"
-} | {
-    type: "Scalar" | "Array",
-    inner: "Interval"
 } | {
     type: "Scalar" | "Array",
     inner: "Integer"
