@@ -77,9 +77,9 @@ local function toArray<T>(a: T): T --[[ Converts a value to an array. If the val
         if getmetatable(a) == interop.array_metatable then
             return a
         end
-        return setmetatable(a, interop.array_metatable)
+        return setmetatable(a, interop.array_metatable) :: T
     else
-        return array(a)
+        return array(a) :: T
     end
 end
 
