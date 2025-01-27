@@ -61,6 +61,8 @@ export type ColumnType = {
     max_bytes: number?,
 }
 
+export type OperationType = "View" | "Create" | "Update" | "Delete"
+
 --- A column in a setting
 export type Column = {
     --- @field string The ID of the column
@@ -87,7 +89,7 @@ export type Column = {
     --- @field {string} The operations for which the field should be ignored (essentially, read only)
     ---
     --- Semantics are defined by the template.
-    ignored_for: {"View" | "Create" | "Update" | "Delete"}
+    ignored_for: {OperationType}
 }
 
 export type Setting = {
