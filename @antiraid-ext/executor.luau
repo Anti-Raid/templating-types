@@ -1,6 +1,7 @@
 local Primitives = require "@antiraid-core/primitives"
 local promise = require("@antiraid/promise")
 local discord = require "@antiraid/discord"
+local pages = require "@antiraid/pages"
 local kv = require "@antiraid/kv"
 local lockdowns = require "@antiraid/lockdowns"
 local stings = require "@antiraid/stings"
@@ -29,6 +30,7 @@ export type GlobalExecutor = {
     kv: kv.KvExecutor,
     lockdowns: lockdowns.LockdownExecutor,
     stings: stings.StingExecutor,
+    pages: pages.PageExecutor,
     userinfo: userinfo.UserInfoExecutor,
 } 
 
@@ -59,6 +61,10 @@ local function NewGlobalExecutor(token: Primitives.TemplateContext, scope: Execu
                 return exec
             elseif key == "stings" then
                 local exec = stings.new(token)
+                rawset(self, key, exec)
+                return exec
+            elseif key == "pages" then
+                local exec = pages.new(token)
                 rawset(self, key, exec)
                 return exec
             elseif key == "userinfo" then

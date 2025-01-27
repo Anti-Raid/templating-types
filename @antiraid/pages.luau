@@ -125,7 +125,7 @@ export type Page = {
     settings: {Setting}
 }
 
-export type PageExecutor = typeof(setmetatable({} :: {
+export type PageExecutor = {
     --- @function () -> Page
     --- Returns the current page.
     get: (self: PageExecutor) -> Promise.LuaPromise<Page?>,
@@ -135,9 +135,7 @@ export type PageExecutor = typeof(setmetatable({} :: {
     --- @function () -> Promise<void>
     --- Deletes the templates page. This will not delete the page itself, but will remove it from the server's list of custom pages.
     delete: (self: PageExecutor) -> Promise.LuaPromise<{}>,
-}, {} :: {
-    __tostring: (self: PageExecutor) -> string,
-}))
+}
 
 --- Creates a new PageExecutor
 local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): PageExecutor
