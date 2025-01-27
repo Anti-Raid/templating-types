@@ -115,10 +115,8 @@ export type Setting = {
 }
 
 export type Page = {
-    --- @field string The ID of the page.
-    id: string,
-    --- @field string The name of the page.
-    name: string,
+    --- @field string The title of the page.
+    title: string,
     --- @field string The description of the page.
     description: string,
     --- @field {Setting} The settings of the page.
