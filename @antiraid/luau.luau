@@ -26,6 +26,13 @@ local function load(token: Primitives.TemplateContext, code: string): Chunk
     error("Implemented internally in AntiRaid runtime!")
 end
 
+--- Formats a set of values to a string
+local function format(...: any): string
+    error("Implemented internally in AntiRaid runtime!")
+end
+
+
 return {
     load = load,
+    format = format,
 }
