@@ -37,11 +37,11 @@ export type EditFollowupMessageRequest = Request<objects.Partial<objects.Message
 
 -- https://discord.com/developers/docs/resources/auto-moderation#create-auto-moderation-rule
 export type CreateAutoModerationRuleRequest = Request<{
-	name: string, -- the rule name
+	name: string?, -- the rule name
 	event_type: objects.AutomoderationRuleEventType, -- the event type
-	trigger_type: objects.AutomoderationRuleTriggerType, -- the trigger type
+	trigger_type: objects.AutomoderationRuleTriggerType?, -- the trigger type
 	trigger_metadata: objects.AutomoderationRuleTriggerMetadataObject?, -- the trigger metadata
-	actions: { objects.AutomoderationActionObject }, -- the actions which will execute when the rule is triggered
+	actions: { objects.AutomoderationActionObject }?, -- the actions which will execute when the rule is triggered
 	enabled: boolean?, -- whether the rule is enabled (False by default)
 	exempt_roles: { objects.Snowflake }?, -- the role ids that should not be affected by the rule (Maximum of 20)
 	exempt_channels: { objects.Snowflake }?, -- the channel ids that should not be affected by the rule (Maximum of 50)
@@ -49,10 +49,10 @@ export type CreateAutoModerationRuleRequest = Request<{
 
 -- https://discord.com/developers/docs/resources/auto-moderation#modify-auto-moderation-rule
 export type ModifyAutoModerationRuleRequest = Request<{
-	name: string, -- the rule name
+	name: string?, -- the rule name
 	event_type: objects.AutomoderationRuleEventType, -- the event type
 	trigger_metadata: objects.AutomoderationRuleTriggerMetadataObject?, -- the trigger metadata
-	actions: { objects.AutomoderationActionObject }, -- the actions which will execute when the rule is triggered
+	actions: { objects.AutomoderationActionObject }?, -- the actions which will execute when the rule is triggered
 	enabled: boolean?, -- whether the rule is enabled (False by default)
 	exempt_roles: { objects.Snowflake }?, -- the role ids that should not be affected by the rule (Maximum of 20)
 	exempt_channels: { objects.Snowflake }?, -- the channel ids that should not be affected by the rule (Maximum of 50)

@@ -3,54 +3,52 @@ local discord = require "@discord-types/apiTypes"
 local discordRest = require "@discord-types/restTypes"
 local lazy = require "@antiraid/lazy"
 local promise = require "@antiraid/promise"
+local typesext = require "@antiraid/typesext"
 local ExecutorScope = require "@antiraid-core/executorscope"
 
---- @class GetAuditLogOptions
---- @field action_type discord.AuditLogEventType? The action type to filter by
---- @field user_id discord.Snowflake? The user ID to filter by
---- @field before discord.Snowflake? The audit log entry ID to filter before
---- @field limit number? The number of entries to return
 --- Options for getting audit logs in Discord
 export type GetAuditLogOptions = {
     --- The action type to filter by
     action_type: discord.AuditLogEventType?,
+    --- The user ID to filter by
     user_id: discord.Snowflake?,
+    --- The audit log entry ID to filter
     before: discord.Snowflake?,
+    --- The number of entries to return
     limit: number?
 }
 
---[[
-#[derive(serde::Serialize, Default, serde::Deserialize)]
-pub struct EditChannelOptions {
-    pub channel_id: serenity::all::ChannelId,
-    pub reason: String,
-    pub data: EditChannel,
+--- Options for getting an auto moderation rule in Discord
+export type GetAutoModerationRuleOptions = {
+    --- The rule ID
+    rule_id: discord.Snowflake
 }
 
-#[derive(serde::Serialize, Default, serde::Deserialize)]
-pub struct DeleteChannelOptions {
-    pub channel_id: serenity::all::ChannelId,
-    pub reason: String,
+--- Options for creating an auto moderation rule in Discord
+export type CreateAutoModerationRuleOptions = {
+    --- The reason for creating the rule
+    reason: string,
+    --- The data to create the rule with
+    data: discordRest.CreateAutoModerationRuleRequest
 }
 
-#[derive(serde::Serialize, Default, serde::Deserialize)]
-pub struct CreateMessageOptions {
-    pub channel_id: serenity::all::ChannelId, // Channel *must* be in the same guild
-    pub data: CreateMessage,
+--- Options for editing an auto moderation rule in Discord
+export type EditAutoModerationRuleOptions = {
+    --- The rule ID
+    rule_id: discord.Snowflake,
+    --- The reason for editing the rule
+    reason: string,
+    --- The data to edit the rule with
+    data: discordRest.ModifyAutoModerationRuleRequest
 }
 
-#[derive(serde::Serialize, Default, serde::Deserialize)]
-pub struct CreateCommandOptions {
-    pub data: CreateCommand,
+--- Options for deleting an auto moderation rule in Discord
+export type DeleteAutoModerationRuleOptions = {
+    --- The rule ID
+    rule_id: discord.Snowflake,
+    --- The reason for deleting the rule
+    reason: string
 }
-
-#[derive(serde::Serialize, Default, serde::Deserialize)]
-pub struct CreateInteractionResponseOptions {
-    pub interaction_id: serenity::all::InteractionId,
-    pub interaction_token: String,
-    pub data: CreateInteractionResponse,
-}
-]]--
 
 --- Options for getting a channel in Discord
 export type GetChannelOptions = {
@@ -74,6 +72,22 @@ export type DeleteChannelOptions = {
     channel_id: discord.Snowflake,
     --- The reason for the deletion
     reason: string
+}
+
+--- Options for editting channel permissions
+export type EditChannelPermissionsOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The target ID to edit permissions of
+    target_id: discord.Snowflake,
+    --- The allow permissions
+    allow: typesext.MultiOption<string>,
+    --- The deny permissions
+    deny: typesext.MultiOption<string>,
+    --- The type of the target
+    kind: discord.OverwriteObjectType,
+    --- The reason for the edit
+    reason: string,
 }
 
 --- Options for sending a message to a channel in Discord
@@ -140,16 +154,33 @@ type LazyMessagesObject = lazy.Lazy<{discord.MessageObject}>
 --- Lazy<discord.ApplicationCommandObject>
 type LazyApplicationCommandObject = lazy.Lazy<discord.ApplicationCommandObject>
 
+--- Lazy<{discord.AutomoderationRuleObject}>
+type LazyAutomoderationRuleObjectList = lazy.Lazy<{discord.AutomoderationRuleObject}>
+--- Lazy<discord.AutomoderationRuleObject>
+type LazyAutomoderationRuleObject = lazy.Lazy<discord.AutomoderationRuleObject>
+
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
     --- Gets the audit logs
     get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> promise.LuaPromise<LazyAuditLogObject>,
+    --- Lists the auto moderation rules available
+    list_auto_moderation_rules: (self: DiscordExecutor) -> promise.LuaPromise<LazyAutomoderationRuleObjectList>,
+    --- Gets an auto moderation rule by ID
+    get_auto_moderation_rule: (self: DiscordExecutor, data: GetAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    --- Creates an auto moderation rule
+    create_auto_moderation_rule: (self: DiscordExecutor, data: CreateAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    --- Edits an auto moderation rule
+    edit_auto_moderation_rule: (self: DiscordExecutor, data: EditAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    --- Deletes an auto moderation rule
+    delete_auto_moderation_rule: (self: DiscordExecutor, data: DeleteAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
     --- Gets a channel
     get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> promise.LuaPromise<LazyChannelObject>, 
     --- Edits a channel
     edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Deletes a channel
     delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
+    --- Edits channel permissions for a target
+    edit_channel_permissions: (self: DiscordExecutor, data: EditChannelPermissionsOptions) -> promise.LuaPromise<nil>,
     --- Gets messages from a channel
     get_messages: (self: DiscordExecutor, data: GetMessagesOptions) -> promise.LuaPromise<LazyMessagesObject>,
     --- Gets a message
