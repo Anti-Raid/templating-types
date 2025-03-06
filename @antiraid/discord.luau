@@ -202,6 +202,9 @@ type LazyAutomoderationRuleObject = lazy.Lazy<discord.AutomoderationRuleObject>
 --- Lazy<{discord.GuildBanObject}>
 type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
 
+--- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
+type LazyRolesMap = lazy.Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
+
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
     --- Gets the audit logs
@@ -232,6 +235,8 @@ export type DiscordExecutor = {
     remove_guild_member: (self: DiscordExecutor, data: RemoveGuildMemberOptions) -> promise.LuaPromise<nil>,
     --- Gets guild bans
     get_guild_bans: (self: DiscordExecutor, data: GetGuildBansOptions) -> promise.LuaPromise<LazyBanObjectList>,
+    --- Returns the guild roles of a guild
+    get_guild_roles: (self: DiscordExecutor, guild_id: discord.Snowflake) -> promise.LuaPromise<LazyRolesMap>,
     --- Gets messages from a channel
     get_messages: (self: DiscordExecutor, data: GetMessagesOptions) -> promise.LuaPromise<LazyMessagesObject>,
     --- Gets a message
