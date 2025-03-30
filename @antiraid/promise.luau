@@ -1,7 +1,7 @@
 --- Opaque promise type returned by antiraid
 export type LuaPromise<T> = {
     --- Note: this will always actually be nil but is required to enforce nominal typing properly
-    __phantom_LuaPromiseT: T,
+    read __phantom: T,
 }
 
 --- Yields the coroutine and resumes it returning the end value of the promise when it resolves

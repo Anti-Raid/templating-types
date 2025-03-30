@@ -4,18 +4,21 @@ local ExecutorScope = require "@antiraid-core/executorscope"
 
 --- KvRecord represents a key-value record with metadata.
 ---@class KvRecord
----@field key string The key of the record.
----@field value any The value of the record.
----@field exists boolean Whether the record exists.
----@field created_at string The timestamp when the record was created.
----@field last_updated_at string The timestamp when the record was last updated.
 export type KvRecord = {
+    --- The key of the record.
     key: string,
+    --- The value of the record. This can be any type, depending on what was stored.
     value: any,
+    --- Indicates whether the record exists in the key-value store.
     exists: boolean,
+    --- The timestamp when the record was created, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
     created_at: string,
+    --- The timestamp when the record was last updated, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
     last_updated_at: string,
 }
+
+--- A list of KvRecords
+export type KvRecordList = {KvRecord}
 
 --- KvExecutor allows templates to get, store and find persistent data within a server.
 ---@class KvExecutor
@@ -30,7 +33,7 @@ export type KvExecutor = {
     --- Finds records in the key-value store.
     --- @param query string The key to search for. % matches zero or more characters; _ matches a single character. To search anywhere in a string, surround {KEY} with %, e.g. %{KEY}%
     --- @return {KvRecord} The records.
-    find: (self: KvExecutor, query: string) -> Promise.LuaPromise<{KvRecord}>,
+    find: (self: KvExecutor, query: string) -> Promise.LuaPromise<KvRecordList>,
     --- Gets a value from the key-value store.
     --- @param key string The key of the record.
     --- @return any The value of the record.

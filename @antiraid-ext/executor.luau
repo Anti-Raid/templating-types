@@ -48,7 +48,7 @@ local function NewGlobalExecutor(token: Primitives.TemplateContext, scope: Execu
             end
 
             if key == "discord" then
-                local exec = discord.new(token)
+                local exec = discord.new(token, scope)
                 rawset(self, key, exec)
                 return exec
             elseif key == "kv" then
@@ -56,19 +56,19 @@ local function NewGlobalExecutor(token: Primitives.TemplateContext, scope: Execu
                 rawset(self, key, exec)
                 return exec
             elseif key == "lockdowns" then
-                local exec = lockdowns.new(token)
+                local exec = lockdowns.new(token, scope)
                 rawset(self, key, exec)
                 return exec
             elseif key == "stings" then
-                local exec = stings.new(token)
+                local exec = stings.new(token, scope)
                 rawset(self, key, exec)
                 return exec
             elseif key == "pages" then
-                local exec = pages.new(token)
+                local exec = pages.new(token, scope)
                 rawset(self, key, exec)
                 return exec
             elseif key == "userinfo" then
-                local exec = userinfo.new(token)
+                local exec = userinfo.new(token, scope)
                 rawset(self, key, exec)
                 return exec
             else
