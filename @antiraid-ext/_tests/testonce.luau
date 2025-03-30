@@ -46,6 +46,8 @@ task.delay(0.1, function()
     once.onceLocal("my_unique_id2", function()
         -- This function will only run once for the template
         count2 = (count2 :: number) + 1
+        task.wait(0.1) -- Simulate some work to show yielding
+        error("This code should never even get here as the first once.onceLocal below should prevent this function from ever executing.")
         return 0
     end)
 end)
@@ -53,6 +55,7 @@ end)
 once.onceLocal("my_unique_id2", function()
     -- This function will only run once for the template
     count2 = (count2 :: number) + 1
+    task.wait(1) -- Simulate some work to show yielding
     return 0
 end)
 
@@ -101,6 +104,8 @@ task.delay(0.1, function()
     once.once(ge, "my_unique_id5", function()
         -- This function will only run once for the template
         count5 = (count5 :: number) + 1
+        task.wait(1) -- Simulate some work to show yielding
+        error("The code should never even get here as the first once.once below should prevent this function from ever executing.")
         return 0
     end)
 end)
@@ -108,6 +113,7 @@ end)
 once.once(ge, "my_unique_id5", function()
     -- This function will only run once for the template
     count5 = (count5 :: number) + 1
+    task.wait(1)
     return 0
 end)
 
