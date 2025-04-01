@@ -27,7 +27,7 @@ export type function MakePartial(input: any)
 
     for key, value in input:properties() do
         local read = types.unionof(value.read, types.singleton(nil))
-        local write = value.write and types.unionof(value.write, types.singleton(nil)) or nil
+        local write = (value.write and types.unionof(value.write :: any, types.singleton(nil)) or nil) :: any
         input:setreadproperty(key, read)
         if value.write then input:setwriteproperty(key, if(read and write) and (write == read) then read else write) end
     end
@@ -1176,12 +1176,12 @@ export type MessageObject = {
 
 -- https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-resolved-data-structure
 export type ResolvedDataStructure = {
-	users: { UserObject }?, -- the ids and User objects
-	members: { GuildMemberObject }?, -- the ids and partial Member objects
-	roles: { GuildRoleObject }?, -- the ids and Role objects
-	channels: { ChannelObject }?, -- the ids and partial Channel objects
-	messages: { MessageObject }?, -- the ids and partial Message objects
-	attachments: { AttachmentObject }?, -- the ids and attachment objects
+	users: { [Snowflake]: UserObject }?, -- the ids and User objects
+	members: { [Snowflake]: GuildMemberObject }?, -- the ids and partial Member objects
+	roles: { [Snowflake]: GuildRoleObject }?, -- the ids and Role objects
+	channels: { [Snowflake]: ChannelObject }?, -- the ids and partial Channel objects
+	messages: { [Snowflake]: MessageObject }?, -- the ids and partial Message objects
+	attachments: { [Snowflake]: AttachmentObject }?, -- the ids and attachment objects
 }
 
 -- https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-application-command-interaction-data-option-structure]

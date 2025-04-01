@@ -37,11 +37,11 @@ export type EditFollowupMessageRequest = Request<objects.Partial<objects.Message
 
 -- https://discord.com/developers/docs/resources/auto-moderation#create-auto-moderation-rule
 export type CreateAutoModerationRuleRequest = Request<{
-	name: string?, -- the rule name
+	name: string, -- the rule name
 	event_type: objects.AutomoderationRuleEventType, -- the event type
-	trigger_type: objects.AutomoderationRuleTriggerType?, -- the trigger type
+	trigger_type: objects.AutomoderationRuleTriggerType, -- the trigger type
 	trigger_metadata: objects.AutomoderationRuleTriggerMetadataObject?, -- the trigger metadata
-	actions: { objects.AutomoderationActionObject }?, -- the actions which will execute when the rule is triggered
+	actions: { objects.AutomoderationActionObject }, -- the actions which will execute when the rule is triggered
 	enabled: boolean?, -- whether the rule is enabled (False by default)
 	exempt_roles: { objects.Snowflake }?, -- the role ids that should not be affected by the rule (Maximum of 20)
 	exempt_channels: { objects.Snowflake }?, -- the channel ids that should not be affected by the rule (Maximum of 50)
@@ -49,10 +49,10 @@ export type CreateAutoModerationRuleRequest = Request<{
 
 -- https://discord.com/developers/docs/resources/auto-moderation#modify-auto-moderation-rule
 export type ModifyAutoModerationRuleRequest = Request<{
-	name: string?, -- the rule name
+	name: string, -- the rule name
 	event_type: objects.AutomoderationRuleEventType, -- the event type
 	trigger_metadata: objects.AutomoderationRuleTriggerMetadataObject?, -- the trigger metadata
-	actions: { objects.AutomoderationActionObject }?, -- the actions which will execute when the rule is triggered
+	actions: { objects.AutomoderationActionObject }, -- the actions which will execute when the rule is triggered
 	enabled: boolean?, -- whether the rule is enabled (False by default)
 	exempt_roles: { objects.Snowflake }?, -- the role ids that should not be affected by the rule (Maximum of 20)
 	exempt_channels: { objects.Snowflake }?, -- the channel ids that should not be affected by the rule (Maximum of 50)
@@ -181,7 +181,7 @@ export type StartThreadInForumOrMediaChannelRequest = Request<{
 	rate_limit_per_user: number?, -- amount of seconds a user has to wait before sending another message (0-21600)
 	--files: { },
 	-- payload_json: string,
-	applied_tags: { objects.Snowflake }, -- the IDs of the set of tags that have been applied to a thread in a GUILD_FORUM or a GUILD_MEDIA channel
+	applied_tags: { objects.Snowflake }?, -- the IDs of the set of tags that have been applied to a thread in a GUILD_FORUM or a GUILD_MEDIA channel
 	message: objects.ForumAndMediaThreadMessageObject?, -- contents of the first message in the forum/media thread
 }>
 
@@ -208,8 +208,8 @@ export type CreateGuildRequest = Request<{
 	explicit_content_filter: objects.ExplicitContentFilterLevel?, -- explicit content filter level
 	roles: { objects.GuildRoleObject }?, -- new guild roles
 	channels: { objects.ChannelObject }?, -- new guild's channels
-	afk_channel_id: objects.Snowflake, -- id for afk channel
-	afk_timeout: number, -- afk timeout in seconds, can be set to: 60, 300, 900, 1800, 3600
+	afk_channel_id: objects.Snowflake?, -- id for afk channel
+	afk_timeout: number?, -- afk timeout in seconds, can be set to: 60, 300, 900, 1800, 3600
 	system_channel_id: objects.Snowflake?, -- the id of the channel where guild notices such as welcome messages and boost events are posted
 	system_channel_flags: objects.SystemChannelFlags?, -- system channel flags
 }>
@@ -265,12 +265,16 @@ export type CreateGuildChannelRequest = Request<
 >
 
 -- https://discord.com/developers/docs/resources/guild#modify-guild-channel-positions
-export type ModifyGuildChannelPositionsRequest = Request<{
-	id: objects.Snowflake, -- channel id
-	position: number?, -- sorting position of the channel (channels with the same position are sorted by id)
-	lock_permissions: boolean?, -- syncs the permission overwrites with the new parent, if moving to a new category
-	parent_id: objects.Snowflake?, -- the new parent ID for the channel that is moved
-}>
+export type ModifyGuildChannelPositionsRequest = Request<
+	{
+		{
+			id: objects.Snowflake, -- channel id
+			position: number?, -- sorting position of the channel (channels with the same position are sorted by id)
+			lock_permissions: boolean?, -- syncs the permission overwrites with the new parent, if moving to a new category
+			parent_id: objects.Snowflake?, -- the new parent ID for the channel that is moved
+		}
+	}
+>
 
 -- https://discord.com/developers/docs/resources/guild#add-guild-member
 export type AddGuildMemberRequest = Request<{

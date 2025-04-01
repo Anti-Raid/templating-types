@@ -1,6 +1,8 @@
 -- From https://github.com/DiscordLuau/discord-luau/blob/refactor/monorepository-origin/packages/api-types/src/gateway/types.luau
 --
 -- Patches made: Make Payload<Data> = Data as antiraid does not expose raw gateway payloads
+-- Commit: 0ed7dec744d6621574bed8ebd25e26aab2bfcaf0
+
 --[[
 	Mapping out all discord recieve/send payloads that can be consumed by the Discord v10 API.
 ]]
@@ -8,7 +10,12 @@
 local objects = require("./apiTypes")
 
 -- [[ Base ]] --
-export type Payload<DATA> = DATA
+export type Payload<DATA> = {
+	op: number,
+	d: DATA,
+	s: number?,
+	t: string?,
+}
 
 -- [[ Send Events - https://discord.com/developers/docs/topics/gateway-events#send-events ]] --
 
