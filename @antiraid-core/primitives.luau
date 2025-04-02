@@ -1,3 +1,4 @@
+assert(require)
 local discord = require("@discord-types/apiTypes")
 
 -- AntiRaid primitives, see https://docs.antiraid.xyz/user/templating/2-plugins#primitives
