@@ -25,7 +25,7 @@ Option.Interface = {}
 	Set the Type of option that will be built.
 ]]
 function Option.Prototype.setType(self: Option, type: interactionTypes.ApplicationCommandOptionType): Option
-	self.type = interactionTypes.ApplicationCommandOptionType[type] or error("Invalid type")
+	self.type = type
 
 	return self
 end
@@ -95,7 +95,7 @@ end
 ]]
 function Option.Prototype.setRequired(self: Option, isRequired: boolean): Option
 	assert(
-		self.type == "SubCommand" or self.type == "SubCommandGroup",
+		self.type == interactionTypes.ApplicationCommandOptionType["SubCommand"] or self.type == interactionTypes.ApplicationCommandOptionType["SubCommandGroup"],
 		`Required cannot be set on SubCommands, or SubCommandGroups`
 	)
 
@@ -209,7 +209,7 @@ function Option.Prototype.build(self: Option): JSON
 	assert(self.description, `Missing description for option: {self.name}`)
  
 	return {
-		type = self.type,
+		type = interactionTypes.ApplicationCommandOptionType[self.type] or error("Missing type for option"),
 		channel_types = array(self.channelTypes),
 		name = self.name,
 		name_localizations = self.nameLocalizations,
