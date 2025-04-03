@@ -144,6 +144,12 @@ export type CreateCommandOptions = {
     data: discordRest.CreateGuildApplicationCommandRequest
 }
 
+--- Options for creating multiple command in Discord
+export type CreateCommandsOptions = {
+    --- The data to create the command with
+    data: {discordRest.CreateGuildApplicationCommandRequest}
+}
+
 --- Options for creating an interaction response in Discord
 export type CreateInteractionResponseOptions = {
     --- The interaction ID
@@ -193,7 +199,8 @@ type LazyMessageObject = lazy.Lazy<discord.MessageObject>
 type LazyMessagesObject = lazy.Lazy<{discord.MessageObject}>
 --- Lazy<discord.ApplicationCommandObject>
 type LazyApplicationCommandObject = lazy.Lazy<discord.ApplicationCommandObject>
-
+--- Lazy<{discord.ApplicationCommandObject}>
+type LazyApplicationCommandsObject = lazy.Lazy<{discord.ApplicationCommandObject}>
 --- Lazy<{discord.AutomoderationRuleObject}>
 type LazyAutomoderationRuleObjectList = lazy.Lazy<{discord.AutomoderationRuleObject}>
 --- Lazy<discord.AutomoderationRuleObject>
@@ -253,6 +260,8 @@ export type DiscordExecutor = {
     get_guild_commands: (self: DiscordExecutor) -> promise.LuaPromise<LazyApplicationCommandObject>,
     --- Creates a guild command
     create_guild_command: (self: DiscordExecutor, data: CreateCommandOptions) -> promise.LuaPromise<LazyApplicationCommandObject>,
+    --- Creates multiple guild commands
+    create_guild_commands: (self: DiscordExecutor, data: CreateCommandsOptions) -> promise.LuaPromise<LazyApplicationCommandsObject>,
 }
  
 local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): DiscordExecutor
