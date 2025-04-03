@@ -25,7 +25,7 @@ Option.Interface = {}
 	Set the Type of option that will be built.
 ]]
 function Option.Prototype.setType(self: Option, type: interactionTypes.ApplicationCommandOptionType): Option
-	self.type = type
+	self.type = interactionTypes.ApplicationCommandOptionType[type] or error("Invalid type")
 
 	return self
 end
