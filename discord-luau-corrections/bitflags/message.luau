@@ -39,6 +39,15 @@ function MessageBitflag.Prototype.suppressEmbeds(self: MessageBitflag)
 end
 
 --[[
+    set the suppress embeds bitflag
+]]
+function MessageBitflag.Prototype.setSuppressEmbeds(self: MessageBitflag)
+    local targetBit = bit.lshift(1, 2)
+
+    self.flag = bit.bor(self.flag, targetBit)
+end
+
+--[[
 	the source message for this crosspost has been deleted (via Channel Following)
 ]]
 function MessageBitflag.Prototype.sourceMessageDeleted(self: MessageBitflag)
@@ -75,12 +84,30 @@ function MessageBitflag.Prototype.ephemeral(self: MessageBitflag)
 end
 
 --[[
+set the ephemeral bitflag
+]]
+function MessageBitflag.Prototype.setEphemeral(self: MessageBitflag)
+    local targetBit = bit.lshift(1, 6)
+
+    self.flag = bit.bor(self.flag, targetBit)
+end
+
+--[[
 	this message is an Interaction Response and the bot is "thinking"
 ]]
 function MessageBitflag.Prototype.loading(self: MessageBitflag)
 	local targetBit = bit.lshift(1, 7)
 
 	return bit.band(self.flag, targetBit) == targetBit
+end
+
+--[[
+set the loading bitflag
+]]
+function MessageBitflag.Prototype.setLoading(self: MessageBitflag)
+    local targetBit = bit.lshift(1, 7)
+
+    self.flag = bit.bor(self.flag, targetBit)
 end
 
 --[[
@@ -102,12 +129,30 @@ function MessageBitflag.Prototype.suppressNotifications(self: MessageBitflag)
 end
 
 --[[
+set the suppress notifications bitflag
+]]
+function MessageBitflag.Prototype.setSuppressNotifications(self: MessageBitflag)
+    local targetBit = bit.lshift(1, 12)
+
+    self.flag = bit.bor(self.flag, targetBit)
+end
+
+--[[
 	this message is a voice message
 ]]
-function MessageBitflag.Prototype.isVouceMessage(self: MessageBitflag)
+function MessageBitflag.Prototype.isVoiceMessage(self: MessageBitflag)
 	local targetBit = bit.lshift(1, 13)
 
 	return bit.band(self.flag, targetBit) == targetBit
+end
+
+--[[
+set the voice message bitflag
+]]
+function MessageBitflag.Prototype.setVoiceMessage(self: MessageBitflag)
+    local targetBit = bit.lshift(1, 13)
+
+    self.flag = bit.bor(self.flag, targetBit)
 end
 
 function MessageBitflag.Interface.new(flag: number): MessageBitflag
