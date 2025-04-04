@@ -50,7 +50,7 @@ function Bit.shift(value: number, disposition: number): number
 	if value > MAXIMUM_32BIT_VALUE then
 		return Bit64.shift(value, disposition)
 	else
-		if disposition > 0 then
+		if disposition < 0 then
 			return Bit32.rshift(value, disposition)
 		else
 			return Bit32.lshift(value, disposition)
