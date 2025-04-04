@@ -41,6 +41,10 @@ function Permission.from_string(perm_str)
     return Permission.new(namespace :: string, perm :: string, negator)
 end
 
+function Permission.from_tab(perm: Permission)
+    return Permission.new(perm.namespace, perm.perm, perm.negator)
+end
+
 function Permission.__tostring(self: Permission)
     return (self.negator and "~" or "") .. self.namespace .. "." .. self.perm
 end
