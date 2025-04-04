@@ -1,3 +1,5 @@
+local typesext = require "@antiraid/typesext"
+
 export type TimeDelta = typeof(setmetatable({} :: {
     --- @field nanos: The number of nanoseconds in the time delta.
     nanos: number,
@@ -47,7 +49,13 @@ export type TimeZone = typeof(setmetatable({} :: {
     timeTzToUtc: (self: TimeZone, hours: number, minutes: number, secs: number) -> DateTime,
     --- @function () -> DateTime
     --- Translates the current timestamp to a datetime in the said specific timezone
-    now: (self: TimeZone) -> DateTime
+    now: (self: TimeZone) -> DateTime,
+    --- Converts a unix timestamp to a datetime in the said specific timezone
+    fromTime: (self: TimeZone, timestamp: typesext.I64Convertibles) -> DateTime,
+    --- Converts a unix timestamp in milliseconds to a datetime in the said specific timezone
+    fromTimeMillis: (self: TimeZone, timestamp: typesext.I64Convertibles) -> DateTime,
+    --- Converts a unix timestamp in microseconds to a datetime in the said specific timezone
+    fromTimeMicros: (self: TimeZone, timestamp: typesext.I64Convertibles) -> DateTime,
 }, {} :: {
     __tostring: (TimeZone) -> string,
     __eq: (TimeZone, TimeZone) -> boolean
@@ -130,7 +138,7 @@ local UTC: TimeZone = {} :: TimeZone;
 --- @param weeks: number (The number of weeks to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of weeks.
-local function timedelta_weeks(weeks: number): TimeDelta
+local function timedelta_weeks(weeks: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -138,7 +146,7 @@ end
 --- @param days: number (The number of days to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of days.
-local function timedelta_days(days: number): TimeDelta
+local function timedelta_days(days: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -146,7 +154,7 @@ end
 --- @param hours: number (The number of hours to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of hours.
-local function timedelta_hours(hours: number): TimeDelta
+local function timedelta_hours(hours: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -154,7 +162,7 @@ end
 --- @param minutes: number (The number of minutes to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of minutes.
-local function timedelta_minutes(minutes: number): TimeDelta
+local function timedelta_minutes(minutes: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -162,7 +170,7 @@ end
 --- @param seconds: number (The number of seconds to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of seconds.
-local function timedelta_seconds(seconds: number): TimeDelta
+local function timedelta_seconds(seconds: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -170,7 +178,7 @@ end
 --- @param millis: number (The number of milliseconds to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of milliseconds.
-local function timedelta_millis(millis: number): TimeDelta
+local function timedelta_millis(millis: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -178,7 +186,7 @@ end
 --- @param micros: number (The number of microseconds to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of microseconds.
-local function timedelta_micros(micros: number): TimeDelta
+local function timedelta_micros(micros: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -186,7 +194,7 @@ end
 --- @param nanos: number (The number of nanoseconds to create the TimeDelta object with.)
 --- @return TimeDelta
 --- Creates a new TimeDelta object with the specified number of nanoseconds.
-local function timedelta_nanos(nanos: number): TimeDelta
+local function timedelta_nanos(nanos: typesext.I64Convertibles): TimeDelta
     error("Implemented internally in AntiRaid runtime!")
 end
  

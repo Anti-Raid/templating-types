@@ -9,7 +9,7 @@
 
 local permissionTypes = require("@discord-types/permission")
 
-local bit = require("@discord-types/vendor/bit/init")
+local typesext = require("@antiraid/typesext")
 
 local Permission = {}
 
@@ -19,12 +19,12 @@ Permission.Interface = {}
 --[[
 	set the bitflag for this builder.
 ]]
-function Permission.Prototype.setPermissionBitflag(self: Permission, bitflag: string | number): Permission
-	local numberRepresentation = tonumber(bitflag)
+function Permission.Prototype.setPermissionBitflag(self: Permission, bitflag: typesext.U64Convertibles): Permission
+	local ok, numberRepresentation = pcall(typesext.U64, bitflag)
 
-	assert(numberRepresentation ~= nil, `Bitflag must be a number or a string representation of a number.`)
+	assert(ok, `Bitflag must be a number or a string representation of a number.`)
 
-	self.bitflag = numberRepresentation
+	self.bitflag = numberRepresentation :: typesext.U64
 
 	return self
 end
@@ -54,11 +54,11 @@ function Permission.Prototype.build(self: Permission): JSON
 	local bitflag = self.bitflag
 
 	for _, permission in self.addedPermissions do
-		bitflag = bit.bor(bitflag, permissionTypes[permission])
+		bitflag = typesext.bitu64.bor(bitflag, permissionTypes[permission])
 	end
 
 	for _, permission in self.removedPermissions do
-		bitflag = bit.band(bitflag, bit.bnot(permissionTypes[permission]))
+		bitflag = typesext.bitu64.band(bitflag, typesext.bitu64.bnot(permissionTypes[permission]))
 	end
 
 	return tostring(bitflag)
@@ -100,7 +100,7 @@ function Permission.Interface.fromPermissions(permissions: { permissionTypes.Per
 	local bitflag = 0
 
 	for _, permission in permissions do
-		bitflag = bit.bor(bitflag, permissionTypes[permission])
+		bitflag = typesext.bitu64.bor(bitflag, permissionTypes[permission])
 	end
 
 	return Permission.Interface.new({
@@ -109,7 +109,7 @@ function Permission.Interface.fromPermissions(permissions: { permissionTypes.Per
 end
 
 export type Permission = typeof(Permission.Prototype) & {
-	bitflag: number,
+	bitflag: typesext.U64,
 	addedPermissions: { permissionTypes.Permissions },
 	removedPermissions: { permissionTypes.Permissions },
 }

@@ -1,6 +1,8 @@
 local reflect = require("@discord-types/utils/table/reflect")
 
-local bit = require("@antiraid/typesext").bitu64
+local typesext = require("@antiraid/typesext")
+local bit = typesext.bitu64
+local fromBf = require("@discord-types/utils/frombf")
 
 local Permissions = table.freeze(reflect({
 	CreateInstantInvite = bit.lshift(1, 0),
@@ -103,6 +105,12 @@ export type Permissions =
 	| "SendPolls"
 	| "UseExternalApps"
 
+local function fromBitflag(bitflag: typesext.U64Convertibles): {Permissions} 
+	return fromBf(bitflag, Permissions :: any) :: any
+end
+
+
 return {
 	Permissions = Permissions,
+	fromBitFlag = fromBitflag,
 }

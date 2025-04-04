@@ -29,6 +29,8 @@ export type U64 = typeof(setmetatable({} :: {
     __type: "U64",
 }))
 
+export type I64Convertibles = U64 | I64 | string | number
+
 export type I64 = typeof(setmetatable({} :: {
     to_ne_bytes: (self: I64) -> { number },
     from_ne_bytes: (self: I64, bytes: { number }) -> I64,
@@ -79,7 +81,7 @@ export type I64 = typeof(setmetatable({} :: {
 ]]
 export type BitU64 = {
     band: (...U64Convertibles) -> U64,
-    bnor: (U64Convertibles) -> U64,
+    bnot: (U64Convertibles) -> U64,
     bor: (...U64Convertibles) -> U64,
     bxor: (...U64Convertibles) -> U64,
     btest: (...U64Convertibles) -> boolean,
