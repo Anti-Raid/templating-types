@@ -1,10 +1,10 @@
-export type null = {
-    ___placeholder: number
-}
+export type null = typeof(setmetatable({} :: {
+    read __phantom: number
+}, {} :: {
+    __eq: (self: any, other: any) -> boolean,
+}))
 
-local null: null = {
-    ___placeholder = 1
-}
+local null: null = {} :: null
 
 return {
     null = null,
