@@ -1,6 +1,8 @@
 --- A multi option is either T (Some(Some(T)), a empty table (Some(None)), or nil (None)
 export type MultiOption<T> = T | {} | nil
 
+export type U64Convertibles = U64 | string | number
+
 --- A U64 is a 64 bit unsigned integer. A U64 can be implicitly created from a number or a string
 ---
 --- Note: A U64
@@ -13,16 +15,16 @@ export type U64 = typeof(setmetatable({} :: {
     from_be_bytes: (self: U64, bytes: { number }) -> U64,
     to_i64: (self: U64) -> I64,
 }, {} :: {
-    __add: (self: U64, other: U64 | string | number) -> U64,
-    __sub: (self: U64, other: U64 | string | number) -> U64,
-    __mul: (self: U64, other: U64 | string | number) -> U64,
-    __div: (self: U64, other: U64 | string | number) -> U64, -- This is the same as IDiv right now
+    __add: (self: U64, other: U64Convertibles) -> U64,
+    __sub: (self: U64, other: U64Convertibles) -> U64,
+    __mul: (self: U64, other: U64Convertibles) -> U64,
+    __div: (self: U64, other: U64Convertibles) -> U64, -- This is the same as IDiv right now
     __mod: (self: U64, other: number) -> U64,
-    __pow: (self: U64, other: U64 | string | number) -> U64,
-    __idiv: (self: U64, other: U64 | string | number) -> U64, -- This is the same as Div right now
-    __eq: (self: U64, other: U64 | string | number) -> boolean,
-    __lt: (self: U64, other: U64 | string | number) -> boolean,
-    __le: (self: U64, other: U64 | string | number) -> boolean,
+    __pow: (self: U64, other: U64Convertibles) -> U64,
+    __idiv: (self: U64, other: U64Convertibles) -> U64, -- This is the same as Div right now
+    __eq: (self: U64, other: U64Convertibles) -> boolean,
+    __lt: (self: U64, other: U64Convertibles) -> boolean,
+    __le: (self: U64, other: U64Convertibles) -> boolean,
     __tostring: (self: U64) -> string,
     __type: "U64",
 }))
@@ -76,25 +78,25 @@ export type I64 = typeof(setmetatable({} :: {
 /// - arshift
 ]]
 export type BitU64 = {
-    band: (...U64) -> U64,
-    bnor: (U64) -> U64,
-    bor: (...U64) -> U64,
-    bxor: (...U64) -> U64,
-    btest: (...U64) -> boolean,
+    band: (...U64Convertibles) -> U64,
+    bnor: (U64Convertibles) -> U64,
+    bor: (...U64Convertibles) -> U64,
+    bxor: (...U64Convertibles) -> U64,
+    btest: (...U64Convertibles) -> boolean,
 
     --- Untested and might not work yet. f must be less than 64
-    extract: (n: U64, f: number, w: number?) -> U64, 
-    lrotate: (n: U64, i: number) -> U64,
-    lshift: (n: U64, i: number) -> U64,
+    extract: (n: U64Convertibles, f: number, w: number?) -> U64, 
+    lrotate: (n: U64Convertibles, i: number) -> U64,
+    lshift: (n: U64Convertibles, i: number) -> U64,
 
     --- Untested and might not work yet. f must be less than 64
-    replace: (n: U64, r: number, f: number, w: number?) -> U64,
+    replace: (n: U64Convertibles, r: number, f: number, w: number?) -> U64,
 
-    rrotate: (n: U64, i: number) -> U64,
-    rshift: (n: U64, i: number) -> U64,
-    countlz: (n: U64) -> number,
-    countrz: (n: U64) -> number,
-    byteswap: (n: U64) -> U64,
+    rrotate: (n: U64Convertibles, i: number) -> U64,
+    rshift: (n: U64Convertibles, i: number) -> U64,
+    countlz: (n: U64Convertibles) -> number,
+    countrz: (n: U64Convertibles) -> number,
+    byteswap: (n: U64Convertibles) -> U64,
 }
 
 local bitu64 = {} :: BitU64
@@ -102,7 +104,7 @@ local bitu64 = {} :: BitU64
 --- Creates a U64 from a number or string
 ---
 --- If nil is passed, 0 is used as default
-local function U64(value: U64 | string | number | nil): U64
+local function U64(value: U64Convertibles | nil): U64
     error("Implemented internally in AntiRaid runtime!")
 end
 

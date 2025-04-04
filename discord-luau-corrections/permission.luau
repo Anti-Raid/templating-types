@@ -1,6 +1,6 @@
 local reflect = require("@discord-types/utils/table/reflect")
 
-local bit = require("@discord-types/vendor/bit/init")
+local bit = require("@antiraid/typesext").bitu64
 
 local Permissions = table.freeze(reflect({
 	CreateInstantInvite = bit.lshift(1, 0),
