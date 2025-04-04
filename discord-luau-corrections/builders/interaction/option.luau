@@ -207,7 +207,7 @@ end
 function Option.Prototype.build(self: Option): JSON
 	assert(self.name, `Missing name for option: {self.name}`)
 	assert(self.description, `Missing description for option: {self.name}`)
- 
+
 	return {
 		type = interactionTypes.ApplicationCommandOptionType[self.type] or error("Missing type for option"),
 		channel_types = array(self.channelTypes),
