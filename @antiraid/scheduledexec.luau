@@ -34,9 +34,7 @@ export type CreateScheduledExecution = {
 --- All scheduled executions have an ID and data associated with them for use by the caller.
 export type ScheduledExecExecutor = {
     --- Lists all scheduled executions. If ``id`` is provided, then all scheduled executions
-    --- with that ID will be returned. Note that only the soonest scheduled execution with a 
-    --- given ID will actually be run however it is guaranteed that all will be stored and hence
-    --- returned by this function.
+    --- with that ID will be returned. See ``create`` for more information on same ID caveats.
     list: (self: ScheduledExecExecutor, id: string?) -> Promise.LuaPromise<ScheduledExecutionList>,
 
     --- Creates a new scheduled execution
@@ -44,7 +42,7 @@ export type ScheduledExecExecutor = {
     --- Note that scheduled executions are not guaranteed to be run at the exact time specified and
     --- may be slightly late. 
     ---
-    --- Note that reusing the same ID will store both scheduled executions and will dispatch an 
+    --- Note that reusing the same ID may store both scheduled executions and will dispatch an 
     --- set of created scheduled executions with the same ID. While the number of elements in this set is 
     --- undefined, the set is guaranteed to not be the empty/null set
     ---
