@@ -111,6 +111,8 @@ export type TemplateContext = {
     --- The owner guild ID of the template, if any. For shop templates, this will be the guild ID of the guild which owns the template on the shop
     --- For guild-owned templates, this will be the guild ID of the guild which owns the template [the same as guild_id]
     read owner_guild_id: string,
+    --- The name of the template itself
+    read template_name: string,
     --- The capabilities the template has access to.   
     read allowed_caps: {string},
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
@@ -136,4 +138,10 @@ export type Scheduler = {
     read removeDeferred: (th: thread) -> u64,
 }
 
-return {}
+local function scheduler(): Scheduler
+    return (_G["scheduler"] :: Scheduler) or error("Scheduler not found")
+end
+
+return {
+    scheduler = scheduler,
+}

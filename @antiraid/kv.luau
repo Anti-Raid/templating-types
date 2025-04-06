@@ -30,29 +30,48 @@ export type KvExecutor = {
     --- The scope of the executor.
     read scope: ExecutorScope.ExecutorScope,
 
-    --- Finds records in the key-value store.
+    --- Returns a list of all key-value scopes/
+    --- This is only guaranteed to return scopes that actually have at least one key inside it.
+    ---
+    --- Needs the `kv.meta:list_scopes` capability to use
+    list_scopes: (self: KvExecutor) -> {string},
+
+    --- Finds matching records in this key-value scope.
     --- @param query string The key to search for. % matches zero or more characters; _ matches a single character. To search anywhere in a string, surround {KEY} with %, e.g. %{KEY}%
     --- @return {KvRecord} The records.
     find: (self: KvExecutor, query: string) -> Promise.LuaPromise<KvRecordList>,
-    --- Gets a value from the key-value store.
+    --- Gets a value from this key-value scope.
     --- @param key string The key of the record.
     --- @return any The value of the record.
     get: (self: KvExecutor, key: string) -> Promise.LuaPromise<any>,
-    --- Gets a record from the key-value store.
+    --- Gets a record from this key-value scope.
     --- @param key string The key of the record.
     --- @return KvRecord The record.
     getrecord: (self: KvExecutor, key: string) -> Promise.LuaPromise<KvRecord>,
+    --- Returns all keys present in this key-value scope.
+    ---
+    --- This needs the ``kv.meta:{SCOPE}:keys`` capability where `{SCOPE}` is the name of the scope
+    --- being accessed
+    keys: (self: KvExecutor) -> Promise.LuaPromise<KvRecordList>,
     --- Sets a record in the key-value store.
     --- @param key string The key of the record.
     --- @param value any The value of the record.
     --- @return KvRecord The record.
     set: (self: KvExecutor, key: string, value: any) -> Promise.LuaPromise<KvRecord>,
-    --- Deletes a record from the key-value store.
+    --- Deletes a record from this key-value scope
     --- @param key string The key of the record.
     delete: (self: KvExecutor, key: string) -> Promise.LuaPromise<nil>,
 }
 
-local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): KvExecutor
+--- Creates a new key-value executor with the desired executor scope and the desired kv scope
+---
+--- KV scopes allow for fast access to getting/setting/listing keys within a scope without needing expensive and potentially
+--- heavily internally ratelimited operations like find() etc. as well as allowing for isolated
+--- get/sets (as operations within one scope do not affect other scopes)
+---
+--- Note that the all keys are scoped. The default scope with the name `unscoped` is used when an explicit named
+--- scope is not provided
+local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?, kv_scope: string?): KvExecutor
     error("Implemented internally in AntiRaid runtime!")
 end
 

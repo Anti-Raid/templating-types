@@ -1,4 +1,4 @@
---- The scope of the kv executor. 
+--- The scope of the executor. 
 --- `this_guild` means the executor is scoped to the current guild.
 --- `owner_guild` means the executor is scoped to the guild that owns the template on the template shop (for non shop templates, this is equivalent to `this_guild`).
 ---@enum ExecutorScope

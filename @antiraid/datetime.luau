@@ -33,6 +33,8 @@ export type TimeDelta = typeof(setmetatable({} :: {
 --- @within TimeZone
 --- A timezone object.
 export type TimeZone = typeof(setmetatable({} :: {
+    --- Parses a datetime string and returns a DateTime object.
+    fromString: (self: TimeZone, datetime: string) -> DateTime,
     --- @function (year: number, month: number, day: number, hour: number, minute: number, second: number, all: boolean?) -> DateTime
     --- Translates a timestamp in UTC time to a datetime in the said specific timezone. If `all` is set to true, then multiple times
     --- may be returned in the case of ambiguous times, otherwise the first time is returned.
