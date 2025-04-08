@@ -189,10 +189,22 @@ export type GetMessageOptions = {
     message_id: discord.Snowflake
 }
 
+--- Options for creating a guild ban in Discord
+export type CreateGuildBanOptions = {
+    --- The user ID to ban
+    user_id: discord.Snowflake,
+    --- The reason for the ban
+    reason: string,
+    --- The number of seconds to delete messages from
+    delete_message_seconds: number?
+}
+
 --- Lazy<discord.AuditLogObject>
 type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
 --- Lazy<discord.ChannelObject>
 type LazyChannelObject = lazy.Lazy<discord.ChannelObject>
+--- Lazy<{discord.ChannelObject}>
+type LazyChannelsObject = lazy.Lazy<{discord.ChannelObject}>
 --- Lazy<discord.MessageObject> 
 type LazyMessageObject = lazy.Lazy<discord.MessageObject>
 --- Lazy<{discord.MessageObject}>
@@ -206,6 +218,8 @@ type LazyAutomoderationRuleObjectList = lazy.Lazy<{discord.AutomoderationRuleObj
 --- Lazy<discord.AutomoderationRuleObject>
 type LazyAutomoderationRuleObject = lazy.Lazy<discord.AutomoderationRuleObject>
 
+--- Lazy<discord.GuildBanObject?>
+type LazyBanOptionalObject = lazy.Lazy<discord.BanObject?>
 --- Lazy<{discord.GuildBanObject}>
 type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
 
@@ -234,14 +248,32 @@ export type DiscordExecutor = {
     delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Edits channel permissions for a target
     edit_channel_permissions: (self: DiscordExecutor, data: EditChannelPermissionsOptions) -> promise.LuaPromise<nil>,
+    
+    -- Guild
+    
+    --- Gets the guild
+    get_guild: (self: DiscordExecutor) -> promise.LuaPromise<discord.GuildObject>,
+    --- Gets the guilds preview
+    get_guild_preview: (self: DiscordExecutor) -> promise.LuaPromise<discord.GuildPreviewObject>,
+    --- Gets the guild channels
+    get_guild_channels: (self: DiscordExecutor) -> promise.LuaPromise<LazyChannelsObject>,
+    --- Creates a guild channel
+    create_guild_channel: (self: DiscordExecutor, data: discordRest.CreateGuildChannelRequest) -> promise.LuaPromise<LazyChannelObject>,
+    --- Modify guild channel permissions
+    modify_guild_channel_positions: (self: DiscordExecutor, data: {discordRest.ModifyGuildChannelPositionsRequest}) -> promise.LuaPromise<nil>,
+
     --- Adds a role to a member
     add_guild_member_role: (self: DiscordExecutor, data: AddGuildMemberRoleOptions) -> promise.LuaPromise<nil>,
     --- Removes a role from a member
     remove_guild_member_role: (self: DiscordExecutor, data: RemoveGuildMemberRoleOptions) -> promise.LuaPromise<nil>,
     -- Removes a member from a guild
     remove_guild_member: (self: DiscordExecutor, data: RemoveGuildMemberOptions) -> promise.LuaPromise<nil>,
+    --- Gets a guild ban for a user or nil if it does not exist
+    get_guild_ban: (self: DiscordExecutor, user_id: discord.Snowflake) -> promise.LuaPromise<LazyBanOptionalObject>,
     --- Gets guild bans
     get_guild_bans: (self: DiscordExecutor, data: GetGuildBansOptions) -> promise.LuaPromise<LazyBanObjectList>,
+    --- Creates a guild ban
+    create_guild_ban: (self: DiscordExecutor, data: CreateGuildBanOptions) -> promise.LuaPromise<nil>,
     --- Returns the guild roles of a guild
     get_guild_roles: (self: DiscordExecutor, guild_id: discord.Snowflake) -> promise.LuaPromise<LazyRolesMap>,
     --- Gets messages from a channel
