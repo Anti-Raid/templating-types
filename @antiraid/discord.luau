@@ -90,6 +90,14 @@ export type EditChannelPermissionsOptions = {
     reason: string,
 }
 
+--- Options for editing a channel in Discord
+export type CreateChannelOptions = {
+    --- The reason for the create
+    reason: string,
+    --- The data to edit the channel with
+    data: discordRest.CreateGuildChannelRequest
+}
+
 --- Options for adding a role to a member
 export type AddGuildMemberRoleOptions = {
     --- The member ID
@@ -199,6 +207,34 @@ export type CreateGuildBanOptions = {
     delete_message_seconds: number?
 }
 
+--[[
+pub struct GetGuildMembersOptions {
+    pub limit: Option<serenity::nonmax::NonMaxU16>,
+    pub after: Option<serenity::all::UserId>,
+}]]
+export type GetGuildMembersOptions = {
+    --- The limit of members to get
+    limit: number?,
+    --- The user ID to get members after
+    after: discord.Snowflake?
+}
+
+export type SearchGuildMembersOptions = {
+    --- The query to search for
+    query: string,
+    --- The limit of members to get
+    limit: number?,
+}
+
+export type ModifyGuildMemberOptions = {
+    --- The user ID to modify
+    user_id: discord.Snowflake,
+    --- The reason for the modification
+    reason: string,
+    --- The data to modify the member with
+    data: discordRest.ModifyGuildMemberRequest
+}
+
 --- Lazy<discord.AuditLogObject>
 type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
 --- Lazy<discord.ChannelObject>
@@ -225,6 +261,16 @@ type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
 
 --- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
 type LazyRolesMap = lazy.Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
+--- Lazy<discordRest.ListActiveGuildThreadsResponse>
+type LazyActiveGuildThreadsResponse = lazy.Lazy<discordRest.ListActiveGuildThreadsResponse>
+--- Lazy<discord.GuildObject>
+type LazyGuildObject = lazy.Lazy<discord.GuildObject>
+--- Lazy<discord.GuildPreviewObject>
+type LazyGuildPreviewObject = lazy.Lazy<discord.GuildPreviewObject>
+--- Lazy<discord.GuildMemberObject>
+type LazyGuildMemberObject = lazy.Lazy<discord.GuildMemberObject>
+--- Lazy<{discord.GuildMemberObject}>
+type LazyGuildMembersObject = lazy.Lazy<{discord.GuildMemberObject}>
 
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
@@ -252,15 +298,25 @@ export type DiscordExecutor = {
     -- Guild
     
     --- Gets the guild
-    get_guild: (self: DiscordExecutor) -> promise.LuaPromise<discord.GuildObject>,
+    get_guild: (self: DiscordExecutor) -> promise.LuaPromise<LazyGuildObject>,
     --- Gets the guilds preview
-    get_guild_preview: (self: DiscordExecutor) -> promise.LuaPromise<discord.GuildPreviewObject>,
+    get_guild_preview: (self: DiscordExecutor) -> promise.LuaPromise<LazyGuildPreviewObject>,
     --- Gets the guild channels
     get_guild_channels: (self: DiscordExecutor) -> promise.LuaPromise<LazyChannelsObject>,
     --- Creates a guild channel
-    create_guild_channel: (self: DiscordExecutor, data: discordRest.CreateGuildChannelRequest) -> promise.LuaPromise<LazyChannelObject>,
+    create_guild_channel: (self: DiscordExecutor, data: CreateChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Modify guild channel permissions
     modify_guild_channel_positions: (self: DiscordExecutor, data: {discordRest.ModifyGuildChannelPositionsRequest}) -> promise.LuaPromise<nil>,
+    --- List active guild threads
+    list_active_guild_threads: (self: DiscordExecutor) -> promise.LuaPromise<LazyActiveGuildThreadsResponse>,
+    --- Gets a guild member by ID
+    get_guild_member: (self: DiscordExecutor, user_id: string) -> promise.LuaPromise<LazyGuildMemberObject>,
+    --- List all guild members
+    list_guild_members: (self: DiscordExecutor, data: GetGuildMembersOptions) -> promise.LuaPromise<LazyGuildMembersObject>,
+    --- Search guild members
+    search_guild_members: (self: DiscordExecutor, data: SearchGuildMembersOptions) -> promise.LuaPromise<LazyGuildMembersObject>,
+    --- Modify guild member (this includes timing out a member using `communication_disabled_until`)
+    modify_guild_member: (self: DiscordExecutor, data: ModifyGuildMemberOptions) -> promise.LuaPromise<LazyGuildMemberObject>,
 
     --- Adds a role to a member
     add_guild_member_role: (self: DiscordExecutor, data: AddGuildMemberRoleOptions) -> promise.LuaPromise<nil>,
