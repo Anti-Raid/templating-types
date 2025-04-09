@@ -207,11 +207,15 @@ export type CreateGuildBanOptions = {
     delete_message_seconds: number?
 }
 
---[[
-pub struct GetGuildMembersOptions {
-    pub limit: Option<serenity::nonmax::NonMaxU16>,
-    pub after: Option<serenity::all::UserId>,
-}]]
+--- Options for removing a guild ban in Discord
+export type RemoveGuildBanOptions = {
+    --- The user ID to unban
+    user_id: discord.Snowflake,
+    --- The reason for the unban
+    reason: string
+}
+
+--- Options for getting guild members
 export type GetGuildMembersOptions = {
     --- The limit of members to get
     limit: number?,
@@ -219,6 +223,7 @@ export type GetGuildMembersOptions = {
     after: discord.Snowflake?
 }
 
+--- Options for searching guild members
 export type SearchGuildMembersOptions = {
     --- The query to search for
     query: string,
@@ -226,6 +231,7 @@ export type SearchGuildMembersOptions = {
     limit: number?,
 }
 
+--- Options for modifying a guild member
 export type ModifyGuildMemberOptions = {
     --- The user ID to modify
     user_id: discord.Snowflake,
@@ -233,6 +239,57 @@ export type ModifyGuildMemberOptions = {
     reason: string,
     --- The data to modify the member with
     data: discordRest.ModifyGuildMemberRequest
+}
+
+--- Options for modifying a guild
+export type ModifyGuildOptions = {
+    data: discordRest.ModifyGuildRequest,
+    reason: string
+}
+
+--- Options for checking if a user has the needed Discord permissions to perform an action
+export type AntiRaidCheckPermissionsOptions = {
+    --- The user ID to check permissions for
+    user_id: discord.Snowflake,
+    --- The needed permissions
+    needed_permissions: typesext.MultiOption<string>
+}
+
+--- Options for checking if a user has the needed Discord permissions to perform an action 
+--- and is above the target user in terms of hierarchy
+export type AntiRaidCheckPermissionsAndHierarchyOptions = {
+    --- The user ID to check permissions for
+    user_id: discord.Snowflake,
+    --- The target ID to check permissions for
+    target_id: discord.Snowflake,
+    --- The needed permissions
+    needed_permissions: typesext.MultiOption<string>
+}
+
+--- Extra/additional success response for checking if a user has the needed Discord permissions to perform an action
+export type AntiRaidCheckPermissionsResponse = {
+    --- The partial guild
+    partial_guild: discord.Partial<discord.GuildObject>,
+    --- The member
+    member: discord.GuildMemberObject,
+    --- The permissions
+    permissions: typesext.MultiOption<string>
+}
+
+--- Options for creating a guild role
+export type CreateGuildRoleOptions = {
+    --- The reason for the creation
+    reason: string,
+    --- The data to create the role with
+    data: discordRest.CreateGuildRoleRequest
+}
+
+--- Options for modifying a guild role position
+export type ModifyRolePositionOptions = {
+    --- The data to modify the role position with
+    data: {discordRest.ModifyGuildRolePositionsRequest},
+    --- The reason for the modification
+    reason: string
 }
 
 --- Lazy<discord.AuditLogObject>
@@ -259,8 +316,10 @@ type LazyBanOptionalObject = lazy.Lazy<discord.BanObject?>
 --- Lazy<{discord.GuildBanObject}>
 type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
 
+--- Lazy<discord.GuildRoleObject>
+type LazyRoleObject = lazy.Lazy<discord.GuildRoleObject>
 --- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
-type LazyRolesMap = lazy.Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
+type LazyRolesObject = lazy.Lazy<{discord.GuildRoleObject}>
 --- Lazy<discordRest.ListActiveGuildThreadsResponse>
 type LazyActiveGuildThreadsResponse = lazy.Lazy<discordRest.ListActiveGuildThreadsResponse>
 --- Lazy<discord.GuildObject>
@@ -274,6 +333,17 @@ type LazyGuildMembersObject = lazy.Lazy<{discord.GuildMemberObject}>
 
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
+    -- Antiraid helpers
+
+    -- Checks an audit log reason for validity, errors out if invalid
+    antiraid_check_reason: (self: DiscordExecutor, reason: string) -> nil,
+    -- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server
+    antiraid_check_permissions: (self: DiscordExecutor, data: AntiRaidCheckPermissionsOptions) -> promise.LuaPromise<AntiRaidCheckPermissionsResponse>,
+    -- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server and is above the target user with an ID of `data.target_id` in terms of hierarchy
+    antiraid_check_permissions_and_hierarchy: (self: DiscordExecutor, data: AntiRaidCheckPermissionsAndHierarchyOptions) -> promise.LuaPromise<AntiRaidCheckPermissionsResponse>,
+
+    -- Discord API
+
     --- Gets the audit logs
     get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> promise.LuaPromise<LazyAuditLogObject>,
     --- Lists the auto moderation rules available
@@ -301,11 +371,13 @@ export type DiscordExecutor = {
     get_guild: (self: DiscordExecutor) -> promise.LuaPromise<LazyGuildObject>,
     --- Gets the guilds preview
     get_guild_preview: (self: DiscordExecutor) -> promise.LuaPromise<LazyGuildPreviewObject>,
+    --- Edits the guild
+    modify_guild: (self: DiscordExecutor, data: ModifyGuildOptions) -> promise.LuaPromise<LazyGuildObject>,
     --- Gets the guild channels
     get_guild_channels: (self: DiscordExecutor) -> promise.LuaPromise<LazyChannelsObject>,
     --- Creates a guild channel
     create_guild_channel: (self: DiscordExecutor, data: CreateChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
-    --- Modify guild channel permissions
+    --- Modify guild channel positions. Only channels to be modified are required to be passed in `data`.
     modify_guild_channel_positions: (self: DiscordExecutor, data: {discordRest.ModifyGuildChannelPositionsRequest}) -> promise.LuaPromise<nil>,
     --- List active guild threads
     list_active_guild_threads: (self: DiscordExecutor) -> promise.LuaPromise<LazyActiveGuildThreadsResponse>,
@@ -317,27 +389,40 @@ export type DiscordExecutor = {
     search_guild_members: (self: DiscordExecutor, data: SearchGuildMembersOptions) -> promise.LuaPromise<LazyGuildMembersObject>,
     --- Modify guild member (this includes timing out a member using `communication_disabled_until`)
     modify_guild_member: (self: DiscordExecutor, data: ModifyGuildMemberOptions) -> promise.LuaPromise<LazyGuildMemberObject>,
-
     --- Adds a role to a member
     add_guild_member_role: (self: DiscordExecutor, data: AddGuildMemberRoleOptions) -> promise.LuaPromise<nil>,
     --- Removes a role from a member
     remove_guild_member_role: (self: DiscordExecutor, data: RemoveGuildMemberRoleOptions) -> promise.LuaPromise<nil>,
     -- Removes a member from a guild
     remove_guild_member: (self: DiscordExecutor, data: RemoveGuildMemberOptions) -> promise.LuaPromise<nil>,
-    --- Gets a guild ban for a user or nil if it does not exist
-    get_guild_ban: (self: DiscordExecutor, user_id: discord.Snowflake) -> promise.LuaPromise<LazyBanOptionalObject>,
     --- Gets guild bans
     get_guild_bans: (self: DiscordExecutor, data: GetGuildBansOptions) -> promise.LuaPromise<LazyBanObjectList>,
+    --- Gets a guild ban for a user or nil if it does not exist
+    get_guild_ban: (self: DiscordExecutor, user_id: discord.Snowflake) -> promise.LuaPromise<LazyBanOptionalObject>,
     --- Creates a guild ban
     create_guild_ban: (self: DiscordExecutor, data: CreateGuildBanOptions) -> promise.LuaPromise<nil>,
+    --- Removes a guild ban
+    remove_guild_ban: (self: DiscordExecutor, data: RemoveGuildBanOptions) -> promise.LuaPromise<nil>,
     --- Returns the guild roles of a guild
-    get_guild_roles: (self: DiscordExecutor, guild_id: discord.Snowflake) -> promise.LuaPromise<LazyRolesMap>,
+    get_guild_roles: (self: DiscordExecutor, guild_id: discord.Snowflake) -> promise.LuaPromise<LazyRolesObject>,
+    --- Returns a guild role by ID
+    get_guild_role: (self: DiscordExecutor, role_id: discord.Snowflake) -> promise.LuaPromise<LazyRoleObject>,
+    --- Creates a guild role
+    create_guild_role: (self: DiscordExecutor, data: CreateGuildRoleOptions) -> promise.LuaPromise<LazyRoleObject>,
+    --- Modify guild role positions
+    modify_guild_role_positions: (self: DiscordExecutor, data: ModifyRolePositionOptions) -> promise.LuaPromise<LazyRolesObject>,
+
+    -- Messages
+
     --- Gets messages from a channel
-    get_messages: (self: DiscordExecutor, data: GetMessagesOptions) -> promise.LuaPromise<LazyMessagesObject>,
+    get_channel_messages: (self: DiscordExecutor, data: GetMessagesOptions) -> promise.LuaPromise<LazyMessagesObject>,
     --- Gets a message
-    get_message: (self: DiscordExecutor, data: GetMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    get_channel_message: (self: DiscordExecutor, data: GetMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
     --- Creates a message
     create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    
+    -- Uncategorized (for now)
+    
     --- Creates an interaction response
     create_interaction_response: (self: DiscordExecutor, data: CreateInteractionResponseOptions) -> promise.LuaPromise<nil>,
     --- Creates a followup interaction response
