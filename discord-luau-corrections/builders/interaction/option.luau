@@ -95,7 +95,7 @@ end
 ]]
 function Option.Prototype.setRequired(self: Option, isRequired: boolean): Option
 	assert(
-		self.type == interactionTypes.ApplicationCommandOptionType["SubCommand"] or self.type == interactionTypes.ApplicationCommandOptionType["SubCommandGroup"],
+		self.type ~= interactionTypes.ApplicationCommandOptionType["SubCommand"] and self.type ~= interactionTypes.ApplicationCommandOptionType["SubCommandGroup"],
 		`Required cannot be set on SubCommands, or SubCommandGroups`
 	)
 
