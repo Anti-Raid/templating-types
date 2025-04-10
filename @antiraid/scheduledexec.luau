@@ -48,10 +48,10 @@ export type ScheduledExecExecutor = {
     ---
     --- The ordering in which scheduled executions are triggered about a small time period is undefined.
     --- It is recommended to use the ``task`` library for small time periods.
-    create: (self: ScheduledExecExecutor, data: CreateScheduledExecution) -> Promise.LuaPromise<nil>,
+    add: (self: ScheduledExecExecutor, data: CreateScheduledExecution) -> Promise.LuaPromise<nil>,
 
     --- Deletes all scheduled execution with a given ID
-    delete: (self: ScheduledExecExecutor, id: string) -> Promise.LuaPromise<nil>,
+    remove: (self: ScheduledExecExecutor, id: string) -> Promise.LuaPromise<nil>,
 }
 
 local function new(token: Primitives.TemplateContext): ScheduledExecExecutor
