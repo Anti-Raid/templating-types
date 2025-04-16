@@ -252,7 +252,7 @@ export type AntiRaidCheckPermissionsOptions = {
     --- The user ID to check permissions for
     user_id: discord.Snowflake,
     --- The needed permissions
-    needed_permissions: typesext.MultiOption<string>
+    needed_permissions: string
 }
 
 --- Options for checking if a user has the needed Discord permissions to perform an action 
@@ -263,7 +263,7 @@ export type AntiRaidCheckPermissionsAndHierarchyOptions = {
     --- The target ID to check permissions for
     target_id: discord.Snowflake,
     --- The needed permissions
-    needed_permissions: typesext.MultiOption<string>
+    needed_permissions: string
 }
 
 --- Extra/additional success response for checking if a user has the needed Discord permissions to perform an action
@@ -273,7 +273,27 @@ export type AntiRaidCheckPermissionsResponse = {
     --- The member
     member: discord.GuildMemberObject,
     --- The permissions
-    permissions: typesext.MultiOption<string>
+    permissions: string
+}
+
+export type AntiRaidCheckChannelPermissionsOptions = {
+    --- The user ID to check permissions for
+    user_id: discord.Snowflake,
+    --- The channel ID to check permissions for
+    channel_id: discord.Snowflake,
+    --- The needed permissions
+    needed_permissions: string
+}
+
+export type AntiRaidCheckChannelPermissionsResponse = {
+    --- The partial guild
+    partial_guild: discord.Partial<discord.GuildObject>,
+    --- The channel
+    channel: discord.ChannelObject,
+    --- The member
+    member: discord.GuildMemberObject,
+    --- The permissions
+    permissions: string
 }
 
 --- Options for creating a guild role
@@ -289,6 +309,57 @@ export type ModifyRolePositionOptions = {
     --- The data to modify the role position with
     data: {discordRest.ModifyGuildRolePositionsRequest},
     --- The reason for the modification
+    reason: string
+}
+
+export type CreateChannelInviteOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The data to create the invite with
+    data: discordRest.CreateChannelInviteRequest,
+    --- The reason for the creation
+    reason: string
+}
+
+export type DeleteChannelPermissionOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The overwrite ID
+    overwrite_id: discord.Snowflake,
+    --- The reason for the deletion
+    reason: string
+}
+
+--[[
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct GetInviteOptions {
+    pub code: String,
+    pub with_counts: Option<bool>, // default to false
+    pub with_expiration: Option<bool>, // default to false
+    pub guild_scheduled_event_id: Option<serenity::all::ScheduledEventId>,    
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct DeleteInviteOptions {
+    pub code: String,
+    pub reason: String,
+}
+]]
+export type GetInviteOptions = {
+    --- The invite code
+    code: string,
+    --- Whether to include counts
+    with_counts: boolean?,
+    --- Whether to include expiration
+    with_expiration: boolean?,
+    --- The guild scheduled event ID
+    guild_scheduled_event_id: discord.Snowflake?
+}
+
+export type DeleteInviteOptions = {
+    --- The invite code
+    code: string,
+    --- The reason for the deletion
     reason: string
 }
 
@@ -330,6 +401,10 @@ type LazyGuildPreviewObject = lazy.Lazy<discord.GuildPreviewObject>
 type LazyGuildMemberObject = lazy.Lazy<discord.GuildMemberObject>
 --- Lazy<{discord.GuildMemberObject}>
 type LazyGuildMembersObject = lazy.Lazy<{discord.GuildMemberObject}>
+--- Lazy<{discord.InviteObject}>
+type LazyInviteObjectList = lazy.Lazy<{discord.InviteObject}>
+--- Lazy<discord.InviteObject>
+type LazyInviteObject = lazy.Lazy<discord.InviteObject>
 
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
@@ -341,11 +416,18 @@ export type DiscordExecutor = {
     antiraid_check_permissions: (self: DiscordExecutor, data: AntiRaidCheckPermissionsOptions) -> promise.LuaPromise<AntiRaidCheckPermissionsResponse>,
     -- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server and is above the target user with an ID of `data.target_id` in terms of hierarchy
     antiraid_check_permissions_and_hierarchy: (self: DiscordExecutor, data: AntiRaidCheckPermissionsAndHierarchyOptions) -> promise.LuaPromise<AntiRaidCheckPermissionsResponse>,
+    --- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the channel `data.channel_id`
+    antiraid_check_channel_permissions: (self: DiscordExecutor, data: AntiRaidCheckChannelPermissionsOptions) -> promise.LuaPromise<AntiRaidCheckChannelPermissionsResponse>,
 
     -- Discord API
 
+    --- Audit Logs
+
     --- Gets the audit logs
     get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> promise.LuaPromise<LazyAuditLogObject>,
+
+    --- Auto Moderation
+
     --- Lists the auto moderation rules available
     list_auto_moderation_rules: (self: DiscordExecutor) -> promise.LuaPromise<LazyAutomoderationRuleObjectList>,
     --- Gets an auto moderation rule by ID
@@ -356,6 +438,9 @@ export type DiscordExecutor = {
     edit_auto_moderation_rule: (self: DiscordExecutor, data: EditAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
     --- Deletes an auto moderation rule
     delete_auto_moderation_rule: (self: DiscordExecutor, data: DeleteAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    
+    --- Channel
+    
     --- Gets a channel
     get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> promise.LuaPromise<LazyChannelObject>, 
     --- Edits a channel
@@ -364,7 +449,13 @@ export type DiscordExecutor = {
     delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
     --- Edits channel permissions for a target
     edit_channel_permissions: (self: DiscordExecutor, data: EditChannelPermissionsOptions) -> promise.LuaPromise<nil>,
-    
+    --- Gets all invites a channel has
+    get_channel_invites: (self: DiscordExecutor) -> promise.LuaPromise<LazyInviteObjectList>,
+    --- Creates a channel invite
+    create_channel_invite: (self: DiscordExecutor, data: CreateChannelInviteOptions) -> promise.LuaPromise<LazyInviteObject>,
+    --- Deletes a channel permission
+    delete_channel_permission: (self: DiscordExecutor, data: DeleteChannelPermissionOptions) -> promise.LuaPromise<nil>,
+
     -- Guild
     
     --- Gets the guild
@@ -411,6 +502,13 @@ export type DiscordExecutor = {
     create_guild_role: (self: DiscordExecutor, data: CreateGuildRoleOptions) -> promise.LuaPromise<LazyRoleObject>,
     --- Modify guild role positions
     modify_guild_role_positions: (self: DiscordExecutor, data: ModifyRolePositionOptions) -> promise.LuaPromise<LazyRolesObject>,
+
+    -- Invites
+
+    --- Gets an invite by code
+    get_invite: (self: DiscordExecutor, data: GetInviteOptions) -> promise.LuaPromise<LazyInviteObject>,
+    --- Deletes an invite by code
+    delete_invite: (self: DiscordExecutor, data: DeleteInviteOptions) -> promise.LuaPromise<LazyInviteObject>,
 
     -- Messages
 
