@@ -117,8 +117,21 @@ local function I64(value: I64 | string | number | nil): I64
     error("Implemented internally in AntiRaid runtime!")
 end
 
+--- Generates a random string of length `length`
+local function randstring(length: number): string
+    --- A crypto-secure one is implemented in the AntiRaid runtime
+    local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local result = ""
+    for i = 1, length do
+        local index = math.random(1, #chars)
+        result = result .. string.sub(chars, index, index)
+    end
+    return result
+end
+
 return {
     U64 = U64,
     I64 = I64,
     bitu64 = bitu64,
+    randstring = randstring,
 }
