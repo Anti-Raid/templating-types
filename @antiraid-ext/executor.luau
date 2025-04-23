@@ -5,6 +5,7 @@ local pages = require "@antiraid/pages"
 local kv = require "@antiraid/kv"
 local lockdowns = require "@antiraid/lockdowns"
 local userinfo = require "@antiraid/userinfo"
+local ds = require"@antiraid/datastores"
 local scheduledexec = require "@antiraid/scheduledexec"
 local ExecutorScope = require "@antiraid-core/executorscope"
 
@@ -33,6 +34,7 @@ export type GlobalExecutor = {
     userinfo: userinfo.UserInfoExecutor,
     scheduledexec: scheduledexec.ScheduledExecExecutor,
     token: Primitives.TemplateContext,
+    datastores: ds.DataStoreExecutor,
 } 
 
 --- Creates a new GlobalExecutor. For safety reasons, scope will only be set
@@ -70,6 +72,10 @@ local function NewGlobalExecutor(token: Primitives.TemplateContext, scope: Execu
                 return exec
             elseif key == "scheduledexec" then
                 local exec = scheduledexec.new(token)
+                rawset(self, key, exec)
+                return exec
+            elseif key == "datastores" then
+                local exec = ds.new(token, scope)
                 rawset(self, key, exec)
                 return exec
             elseif key == "token" then
