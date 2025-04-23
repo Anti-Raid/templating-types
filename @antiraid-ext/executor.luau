@@ -43,51 +43,53 @@ export type GlobalExecutor = {
 --- @param token Primitives.TemplateContext The token to use for the executors
 --- @param scope ExecutorScope.ExecutorScope The scope to use for the executors
 local function NewGlobalExecutor(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?, kv_scope: string?): GlobalExecutor
-    local ge = setmetatable({}, {
+    local executorData = {} -- Storage for the executors
+    local mt = {
+        __metatable = false,
         __index = function(self, key)
-            local potExec = rawget(self, key)
+            local potExec = rawget(executorData, key)
             if potExec ~= nil then
                 return potExec
             end
 
             if key == "discord" then
                 local exec = discord.new(token, scope)
-                rawset(self, key, exec)
+                rawset(executorData, key, exec)
                 return exec
             elseif key == "kv" then
                 local exec = kv.new(token, scope, kv_scope)
-                rawset(self, key, exec)
+                rawset(executorData, key, exec)
                 return exec
             elseif key == "lockdowns" then
                 local exec = lockdowns.new(token, scope)
-                rawset(self, key, exec)
+                rawset(executorData, key, exec)
                 return exec
             elseif key == "pages" then
                 local exec = pages.new(token, scope)
-                rawset(self, key, exec)
+                rawset(executorData, key, exec)
                 return exec
             elseif key == "userinfo" then
                 local exec = userinfo.new(token, scope)
-                rawset(self, key, exec)
+                rawset(executorData, key, exec)
                 return exec
             elseif key == "scheduledexec" then
                 local exec = scheduledexec.new(token)
-                rawset(self, key, exec)
+                rawset(executorData, key, exec)
                 return exec
             elseif key == "datastores" then
                 local exec = ds.new(token, scope)
-                rawset(self, key, exec)
+                rawset(executorData, key, exec)
                 return exec
             elseif key == "token" then
                 return token
             else
                 error("Unknown executor: " .. tostring(key))
             end
-         end,
-        __newindex = function()
-            error("GlobalExecutor is read-only")
         end
-    })
+    }
+
+    local ge = setmetatable({}, mt)
+    table.freeze(ge)
 
     return ge :: GlobalExecutor 
 end
