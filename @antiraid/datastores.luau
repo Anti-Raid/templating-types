@@ -29,10 +29,17 @@ export type StatsStore = DataStore & {
     }>
 }
 
+export type LinksStore = DataStore & {
+    links: () -> {
+        support_server: string
+    }
+}
+
 --- A datastore executor holds DataStore's 
 export type DataStoreExecutor = {
-    StatsStore: StatsStore?, -- May or may not be present
-    CopyDataStore: CopyDataStore?, -- May or may not be present
+    StatsStore: StatsStore?, -- AntiRaid bot only (CLI not supported)
+    CopyDataStore: CopyDataStore?, -- Should be present
+    LinksStore: LinksStore?, -- AntiRaid bot only (CLI not supported)
     [string]: DataStore?
 }
 
