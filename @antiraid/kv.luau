@@ -57,7 +57,7 @@ export type KvExecutor = {
     --- @param key string The key of the record.
     --- @param value any The value of the record.
     --- @return KvRecord The record.
-    set: (self: KvExecutor, key: string, value: any) -> Promise.LuaPromise<KvRecord>,
+    set: (self: KvExecutor, key: string, value: any) -> Promise.LuaPromise<nil>, -- TODO: Return the created record
     --- Deletes a record from this key-value scope
     --- @param key string The key of the record.
     delete: (self: KvExecutor, key: string) -> Promise.LuaPromise<nil>,
