@@ -109,8 +109,19 @@ local function fromBitflag(bitflag: typesext.U64Convertibles): {Permissions}
 	return fromBf(bitflag, Permissions :: any) :: any
 end
 
+local function toBitflag(permissions: {Permissions}): typesext.U64Convertibles
+	local bitflag = 0
+	for _, permission in permissions do
+		if not Permissions[permission] then
+			error("Invalid permission: " .. permission)
+		end
+		bitflag = bit.bor(bitflag, Permissions[permission] :: string)
+	end
+	return bitflag
+end
 
 return {
 	Permissions = Permissions,
 	fromBitFlag = fromBitflag,
+	toBitFlag = toBitflag,
 }
