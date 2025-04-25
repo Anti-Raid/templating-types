@@ -45,7 +45,6 @@ export type GlobalExecutor = {
 local function NewGlobalExecutor(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?, kv_scope: string?): GlobalExecutor
     local executorData = {} -- Storage for the executors
     local mt = {
-        __metatable = false,
         __index = function(self, key)
             local potExec = rawget(executorData, key)
             if potExec ~= nil then
@@ -90,6 +89,8 @@ local function NewGlobalExecutor(token: Primitives.TemplateContext, scope: Execu
 
     local ge = setmetatable({}, mt)
     table.freeze(ge)
+	
+    mt.__metatable = false
 
     return ge :: GlobalExecutor 
 end
