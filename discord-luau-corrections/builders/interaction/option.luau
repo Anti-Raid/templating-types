@@ -118,6 +118,17 @@ function Option.Prototype.addChoice(self: Option, choice: interactionChoice.JSON
 	return self
 end
 
+function Option.Prototype.option(self: Interaction, fn: (interactionOption.Option) -> interactionOption.JSON): Interaction
+	assert(
+		self.type == "SubCommand" or self.type == "SubCommandGroup",
+		`Options can only be added to SubCommands, or SubCommandGroups`
+	)
+
+	table.insert(self.options, fn(Option.new()))
+
+	return self
+end
+
 --[[
 	add an option to the option, will only work on SubCommand or SubCommandGroup options.
 ]]
