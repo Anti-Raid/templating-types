@@ -124,7 +124,7 @@ function Option.Prototype.option(self: Option, fn: (Option) -> JSON): Option
 		`Options can only be added to SubCommands, or SubCommandGroups`
 	)
 
-	table.insert(self.options, fn(Option.new()))
+	table.insert(self.options, fn(Option.Interface.new()))
 
 	return self
 end
