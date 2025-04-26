@@ -94,7 +94,7 @@ export type Lockdown = {
     --- The reason for the lockdown.
     reason: string,
     --- The type of the lockdown in its string form
-    type: string,
+    type: LockdownMode,
     --- The data internally stored for the lockdown.
     data: any,
     --- The timestamp when the lockdown was created.
