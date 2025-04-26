@@ -168,12 +168,46 @@ export type CreateInteractionResponseOptions = {
     data: discordRest.CreateInteractionRequest
 }
 
+--- Options for editting an interaction response in Discord
+export type EditInteractionResponseOptions = {
+    --- The interaction token
+    interaction_token: string,
+    --- The data to edit the interaction response with
+    data: discordRest.EditWebhookMessageRequest
+}
+
+--- Options for getting a followup message in Discord
+export type GetFollowupMessageOptions = {
+    --- The interaction token
+    interaction_token: string,
+    --- The message ID
+    message_id: discord.Snowflake
+}
+
 --- Options for creating a followup message in Discord
 export type CreateFollowupMessageOptions = {
     --- The interaction token
     interaction_token: string,
     --- The data to create the followup message with
     data: discordRest.CreateFollowupMessageRequest
+}
+
+--- Options for editting a followup message in Discord
+export type EditFollowupMessageOptions = {
+    --- The interaction token
+    interaction_token: string,
+    --- The message ID
+    message_id: discord.Snowflake,
+    --- The data to edit the followup message with
+    data: discordRest.EditWebhookMessageRequest
+}
+
+--- Options for deleting a followup message in Discord
+export type DeleteFollowupMessageOptions = {
+    --- The interaction token
+    interaction_token: string,
+    --- The message ID
+    message_id: discord.Snowflake
 }
 
 --- A message pagination object
@@ -519,14 +553,27 @@ export type DiscordExecutor = {
     --- Creates a message
     create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
     
-    -- Uncategorized (for now)
+    -- Interactions
     
     --- Creates an interaction response
     create_interaction_response: (self: DiscordExecutor, data: CreateInteractionResponseOptions) -> promise.LuaPromise<nil>,
-    --- Creates a followup interaction response
-    create_followup_message: (self: DiscordExecutor, data: CreateFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
     --- Gets the original interaction response
     get_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> promise.LuaPromise<LazyMessageObject>,
+    --- Edits the original interaction response
+    edit_original_interaction_response: (self: DiscordExecutor, data: EditInteractionResponseOptions) -> promise.LuaPromise<LazyMessageObject>,
+    --- Deletes the original interaction response
+    delete_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> promise.LuaPromise<nil>,
+    --- Gets a followup interaction response
+    get_followup_message: (self: DiscordExecutor, data: GetFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    --- Creates a followup interaction response
+    create_followup_message: (self: DiscordExecutor, data: CreateFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    --- Edits a followup interaction response
+    edit_followup_message: (self: DiscordExecutor, data: EditFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    --- Deletes a followup interaction response
+    delete_followup_message: (self: DiscordExecutor, data: DeleteFollowupMessageOptions) -> promise.LuaPromise<nil>,
+
+    -- Uncategorized (for now)
+   
     --- Gets all guild commands currently registered
     get_guild_commands: (self: DiscordExecutor) -> promise.LuaPromise<LazyApplicationCommandObject>,
     --- Creates a guild command
