@@ -219,7 +219,7 @@ end
 
 --- Parses a/an application/slash command from an AntiRaid interaction create event into a parsed slash command object.
 local function parseApplicationCommand(interaction: discord.InteractionObject): ParsedApplicationCommand?
-    if interaction.type ~= InteractionType.ApplicationCommand then
+    if interaction.type ~= InteractionType.ApplicationCommand and interaction.type ~= InteractionType.ApplicationCommandAutocomplete then
         return nil
     end
 
