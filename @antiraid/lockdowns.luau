@@ -1,6 +1,7 @@
 local Promise = require("@antiraid/promise")
 local Primitives = require "@antiraid-core/primitives"
 local ExecutorScope = require "@antiraid-core/executorscope"
+local datetime = require "@antiraid/datetime"
 
 --[[
 impl LuaUserData for CreateLockdownMode {
@@ -98,7 +99,7 @@ export type Lockdown = {
     --- The data internally stored for the lockdown.
     data: any,
     --- The timestamp when the lockdown was created.
-    created_at: string,
+    created_at: datetime.DateTime,
 }
 
 export type GuildLockdownSettings = {
