@@ -1,6 +1,7 @@
 local Promise = require("@antiraid/promise")
 local Primitives = require "@antiraid-core/primitives"
 local ExecutorScope = require "@antiraid-core/executorscope"
+local khronosvalue = require "@antiraid-core/khronosvalue"
 
 --- KvRecord represents a key-value record with metadata.
 ---@class KvRecord
@@ -8,7 +9,7 @@ export type KvRecord = {
     --- The key of the record.
     key: string,
     --- The value of the record. This can be any type, depending on what was stored.
-    value: any,
+    value: khronosvalue.KhronosValue,
     --- Indicates whether the record exists in the key-value store.
     exists: boolean,
     --- The timestamp when the record was created, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
@@ -43,7 +44,7 @@ export type KvExecutor = {
     --- Gets a value from this key-value scope.
     --- @param key string The key of the record.
     --- @return any The value of the record.
-    get: (self: KvExecutor, key: string) -> Promise.LuaPromise<any>,
+    get: (self: KvExecutor, key: string) -> Promise.LuaPromise<khronosvalue.KhronosValue>,
     --- Gets a record from this key-value scope.
     --- @param key string The key of the record.
     --- @return KvRecord The record.
@@ -57,7 +58,7 @@ export type KvExecutor = {
     --- @param key string The key of the record.
     --- @param value any The value of the record.
     --- @return KvRecord The record.
-    set: (self: KvExecutor, key: string, value: any) -> Promise.LuaPromise<nil>, -- TODO: Return the created record
+    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue) -> Promise.LuaPromise<nil>, -- TODO: Return the created record
     --- Deletes a record from this key-value scope
     --- @param key string The key of the record.
     delete: (self: KvExecutor, key: string) -> Promise.LuaPromise<nil>,
