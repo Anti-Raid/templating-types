@@ -1,6 +1,7 @@
 --!strict
 
 local khronosvalue = require "@antiraid-core/khronosvalue"
+local datetime = require("@antiraid/datetime")
 local Promise = require("@antiraid/promise")
 local Primitives = require "@antiraid-core/primitives"
 local ExecutorScope = require "@antiraid-core/executorscope"
@@ -25,7 +26,8 @@ export type StatsStore = DataStore & {
     stats: () -> Promise.LuaPromise<{
         total_cached_guilds: number,
         total_guilds: number,
-        total_users: number
+        total_users: number,
+        uptime: datetime.DateTime,
     }>
 }
 
