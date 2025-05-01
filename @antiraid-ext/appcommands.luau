@@ -262,7 +262,78 @@ local function parseApplicationCommand(interaction: discord.InteractionObject): 
     } :: ParsedApplicationCommand
 end
 
+
+--- ParsedCommandDataArgument is the type of a parsed command data argument
+export type ParsedCommandDataArgument = {
+    name: string,
+    description: string,
+    type: "String" | "Integer" | "Boolean" | "User" | "Channel" | "Role" | "Number" | "Attachment",
+    required: boolean,
+    choices: {discord.ApplicationCommandOptionChoiceObject}?,
+    min_length: number?,
+    max_length: number?,
+}
+
+--- ParsedCommandData is the parsed ``discordRestTypes.CreateGuildApplicationCommandRequest``
+export type ParsedCommandData = {
+    name: string,
+    description: string?,
+    options: {ParsedCommandDataArgument},
+    subcommands: {ParsedCommandData},
+}
+
+export type AppCommandDataLike = {
+    name: string,
+    description: string?,
+    options: {discord.ApplicationCommandOptionObject}?,
+}
+
+--- Parses a command data object from a discordRestTypes.CreateGuildApplicationCommandRequest into a parsed command data object.
+local function parseApplicationCommandData(data: AppCommandDataLike): ParsedCommandData
+    local parsedData: ParsedCommandData = {
+        name = data.name,
+        description = data.description,
+        options = {},
+        subcommands = {},
+    }
+
+    if not data.options then
+        return parsedData
+    end
+
+    for _, option in data.options do
+        if option.type == ApplicationCommandOptionType.SubCommand or option.type == ApplicationCommandOptionType.SubCommandGroup then
+            local subcommandData = parseApplicationCommandData(option)
+            table.insert(parsedData.subcommands, subcommandData)
+            continue
+        end
+
+        local parsedOption = {
+            name = option.name,
+            description = option.description,
+            type = if option.type == ApplicationCommandOptionType.String then "String"
+                elseif option.type == ApplicationCommandOptionType.Integer then "Integer"
+                elseif option.type == ApplicationCommandOptionType.Boolean then "Boolean"
+                elseif option.type == ApplicationCommandOptionType.User then "User"
+                elseif option.type == ApplicationCommandOptionType.Channel then "Channel"
+                elseif option.type == ApplicationCommandOptionType.Role then "Role"
+                elseif option.type == ApplicationCommandOptionType.Number then "Number"
+                elseif option.type == ApplicationCommandOptionType.Attachment then "Attachment"
+                else tostring(ApplicationCommandOptionType[option.type] or "Unknown: " .. tostring(option.type)),
+            required = option.required or false,
+            choices = option.choices,
+            min_length = option.min_length,
+            max_length = option.max_length,
+        }
+
+        table.insert(parsedData.options, parsedOption)
+    end
+
+    return parsedData
+end
+
 return {
     resolveOptions = resolveOptions,
     parseApplicationCommand = parseApplicationCommand,
+    parseApplicationCommandData = parseApplicationCommandData,
 }
