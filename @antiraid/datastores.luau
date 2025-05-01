@@ -27,7 +27,7 @@ export type StatsStore = DataStore & {
         total_cached_guilds: number,
         total_guilds: number,
         total_users: number,
-        uptime: datetime.DateTime,
+        last_started_at: datetime.DateTime,
     }>
 }
 
