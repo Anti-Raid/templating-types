@@ -2,6 +2,7 @@ local Promise = require("@antiraid/promise")
 local Primitives = require "@antiraid-core/primitives"
 local ExecutorScope = require "@antiraid-core/executorscope"
 local khronosvalue = require "@antiraid-core/khronosvalue"
+local datetime = require "@antiraid/datetime"
 
 --- KvRecord represents a key-value record with metadata.
 ---@class KvRecord
@@ -11,11 +12,16 @@ export type KvRecord = {
     --- The value of the record. This can be any type, depending on what was stored.
     value: khronosvalue.KhronosValue,
     --- Indicates whether the record exists in the key-value store.
-    exists: boolean,
+    exists: true,
     --- The timestamp when the record was created, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
-    created_at: string,
+    created_at: datetime.DateTime,
     --- The timestamp when the record was last updated, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
-    last_updated_at: string,
+    last_updated_at: datetime.DateTime,
+} | {
+    --- The key of the record.
+    key: string,
+    --- Indicates whether the record exists in the key-value store.
+    exists: false,
 }
 
 --- A list of KvRecords

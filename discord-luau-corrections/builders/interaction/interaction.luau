@@ -7,6 +7,7 @@
 	https://discord.com/developers/docs/interactions/application-commands#edit-global-application-command-json-params
 ]]
 
+local interop = require("@antiraid/interop")
 local apiTypes = require("@discord-types/apiTypes")
 local interactionTypes = require("@discord-types/interaction")
 local applicationTypes = require("@discord-types/application")
@@ -175,12 +176,12 @@ function Interaction.Prototype.build(self: Interaction): JSON
 		name_localizations = self.nameLocalizations,
 		description = self.description,
 		description_localizations = self.descriptionLocalizations,
-		options = self.options,
+		options = if #self.options == 0 then setmetatable({}, interop.array_metatable) else self.options,
 		default_member_permissions = self.defaultMemberPermissions,
 		dm_permission = nil :: any,
 		default_permission = nil :: any,
-		integration_types = integrationTypeArray,
-		contexts = contexts,
+		integration_types = if #integrationTypeArray == 0 then setmetatable({}, interop.array_metatable) else integrationTypeArray,
+		contexts = if #contexts == 0 then setmetatable({}, interop.array_metatable) else contexts,
 		type = interactionTypes.ApplicationCommandType[self.type] or nil,
 		nsfw = self.nsfw or false,
 	}
