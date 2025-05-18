@@ -34,39 +34,8 @@ export type Event = {
     author: string?
 }
 
---[[
-    /// The guild id the template is in
-    pub guild_id: serenity::all::GuildId,
-    /// The name of the template
-    pub name: String,
-    /// The description of the template
-    pub description: Option<String>,
-    /// The name of the template as it appears on the template shop listing
-    pub shop_name: Option<String>,
-    /// The owner of the template on the template shop
-    pub shop_owner: Option<serenity::all::GuildId>,
-    /// The events that this template listens to
-    pub events: Vec<String>,
-    /// The channel to send errors to
-    pub error_channel: Option<serenity::all::ChannelId>,
-    /// The content of the template
-    pub content: String,
-    /// The language of the template
-    pub lang: TemplateLanguage,
-    /// The allowed capabilities the template has access to
-    pub allowed_caps: Vec<String>,
-    /// The user who created the template
-    pub created_by: String,
-    /// The time the template was created
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    /// The user who last updated the template
-    pub updated_by: String,
-    /// The time the template was last updated
-    pub updated_at: chrono::DateTime<chrono::Utc>,
-]]--
-
---- Template data. This is subject to change and should only be used for debugging purposes.
-export type Template = {
+--- Information about a script
+export type ScriptData = {
     --- The guild ID the template is in.
     guild_id: string,
     --- The name of the template.
@@ -81,8 +50,6 @@ export type Template = {
     events: {string},
     --- The channel to send errors to.
     error_channel: string?,
-    --- The content of the template.
-    content: string,
     --- The language of the template.
     lang: string,
     --- The allowed capabilities the template has access to.
@@ -104,8 +71,10 @@ export type Template = {
 --- Passing a TemplateContext is often required when using AntiRaid plugins for getting the inner context
 --- of a template.
 export type TemplateContext = {
-    --- The data associated with the template. Subject to change and should only be used for debugging purposes.
-    read data: Template,
+    --- The public data associated with the script.
+    read data: ScriptData,
+    --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
+    read memory_limit: u64,
     --- The current guild ID the template is running on.
     read guild_id: string,
     --- The owner guild ID of the template, if any. For shop templates, this will be the guild ID of the guild which owns the template on the shop
@@ -121,27 +90,4 @@ export type TemplateContext = {
     read has_cap: (self: TemplateContext, cap: string) -> boolean,
 }
 
-
---- Scheduler primitive. Exposed via ``_G.scheduler`` (``@antiraid/concurrency`` re-exports this if you want to avoid casting).
-export type Scheduler = {
-    --- Adds a thread to the waiting queue
-    read addWaitingWait: (th: thread, resume: f64) -> (),
-    --- Adds a thread to the waiting queue with arguments
-    read addWaitingDelay: (f: (any) -> () | thread, resume: f64, ...any) -> (),
-    --- Removes a thread from the waiting queue, returning the number of threads removed
-    read removeWaiting: (th: thread) -> u64,
-    --- Adds a thread to the deferred queue at the front
-    read addDeferredFront: (f: (any) -> () | thread, ...any) -> (),
-    --- Adds a thread to the deferred queue at the back
-    read addDeferredBack: (f: (any) -> () | thread, ...any) -> (),
-    --- Removes a thread from the deferred queue returning the number of threads removed
-    read removeDeferred: (th: thread) -> u64,
-}
-
-local function scheduler(): Scheduler
-    return (_G["scheduler"] :: Scheduler) or error("Scheduler not found")
-end
-
-return {
-    scheduler = scheduler,
-}
+return {}
