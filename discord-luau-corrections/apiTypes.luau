@@ -1575,4 +1575,4 @@ export type InteractionResponseObject = {
 	data: (Partial<MessageObject> | InteractionCallbackAutocompleteObject | InteractionCallbackModalObject)?, -- an optional response message
 }
 
-return "DISCORD_V10_PAYLOAD_TYPES"
+return {}

@@ -1229,4 +1229,4 @@ export type EditFollowupMessageResponse = Response<objects.MessageObject>
 -- https://discord.com/developers/docs/interactions/receiving-and-responding#delete-followup-message
 export type DeleteFollowupMessageResponse = Response<nil>
 
-return "DISCORD_V10_PAYLOAD_TYPES"
+return {}
