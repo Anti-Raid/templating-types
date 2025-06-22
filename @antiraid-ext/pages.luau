@@ -1,6 +1,6 @@
 --- Some nice helpers to make building pages easy and more ergonomic
 
-local pages = require"@antiraid/pages"
+local pages = require"@antiraid-core/plugins/pages"
 local toArray = require"@antiraid-ext/array".toArray
 
 local function stringColumnType(type: "Scalar" | "Array", min_length: number?, max_length: number?, allowed_values: {string}, kind: string): pages.ColumnType

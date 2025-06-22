@@ -1,8 +1,7 @@
 --!strict
 
-local ge = require "@antiraid-ext/executor"
-local promise = require "@antiraid/promise"
-local kv = require "@antiraid/kv"
+local Primitives = require "@antiraid-core/primitives"
+local kv = require "@antiraid-core/plugins/kv"
 
 local onceLocalTab: {[string]: string} = {} -- Stores local `once` calls to avoid re-execution
 
@@ -11,9 +10,9 @@ local onceLocalTab: {[string]: string} = {} -- Stores local `once` calls to avoi
 ---
 --- ``@antiraid/kv`` is used for persistence here to avoid rerunning
 --- the function on worker restart
-local function once<T>(ge: ge.GlobalExecutor, globalid: string, fn: () -> T): T?
+local function once<T>(ctx: Primitives.TemplateContext, globalid: string, fn: () -> T): T?
     -- Check lock
-    local id = "__once:" .. tostring(globalid)
+    local id = tostring(globalid)
 
     local hasRun = onceLocalTab[id]
 
@@ -25,7 +24,7 @@ local function once<T>(ge: ge.GlobalExecutor, globalid: string, fn: () -> T): T?
     -- Lock in the vm itself to ensure yields cannot result in repeated calls to this function
     onceLocalTab[id] = "pending" -- Mark as pending to avoid re-entrant calls
 
-    local ok, hasRunG = pcall(promise.yield, ge.kv:get(id))
+    local ok, hasRunG = pcall(ctx.KV.get, ctx.KV, id, {"once"})
 
     if not ok then 
         -- Release local lock
@@ -45,7 +44,7 @@ local function once<T>(ge: ge.GlobalExecutor, globalid: string, fn: () -> T): T?
         error("once: Failed to execute function for id: " .. id .. ": " .. tostring(result), 2)
     end
 
-    promise.yield(ge.kv:set(id, "done")) -- Set the status to done in the key-value store
+    ctx.KV:set(id, "done", {"once"}) -- Set the status to done in the key-value store
     -- Unlock
     onceLocalTab[id] = "done" -- Mark as done to avoid locking
     return result
@@ -61,19 +60,19 @@ end
 --- version to ensure that the function is executed once per version. This allows for new 
 --- versions of a template to nullify the previous execution and run the function again if/when 
 --- a new version is deployed.
-local function oncePerVersion<T>(ge: ge.GlobalExecutor, id: string, version: string, fn: () -> T): T? 
+local function oncePerVersion<T>(ctx: Primitives.TemplateContext, id: string, version: string, fn: () -> T): T? 
     --- Use find to find all versions we've initialized for
-    local foundRecords = promise.yield(ge.kv:find("__once:" .. id .. ":v%"))
+    local foundRecords = ctx.KV:find(id .. ":v%", {"once"})
 
     -- Check if the version already exists in the found records
     -- removing all previous records for the same id and version
     local foundKey = false
     for _, record in (foundRecords :: kv.KvRecordList) do
-        if record.key == "__once:" .. id .. ":" .. version then
+        if record.key == id .. ":" .. version then
             -- The function has already run for this version, return early
             foundKey = true
         else 
-            promise.yield(ge.kv:delete(record.key))
+            ctx.KV:delete(record.key, {"once"}) -- Remove all previous versions of the same id
         end
     end
 
@@ -82,7 +81,7 @@ local function oncePerVersion<T>(ge: ge.GlobalExecutor, id: string, version: str
     end
 
     local versionedId = id .. ":v" .. version 
-    return once(ge, versionedId, fn) -- Call the existing once function with the versioned id
+    return once(ctx, versionedId, fn) -- Call the existing once function with the versioned id
 end
 
 --- Runs a function only once, when the template is first ever 

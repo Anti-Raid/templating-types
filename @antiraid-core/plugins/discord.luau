@@ -1,10 +1,7 @@
-local Primitives = require "@antiraid-core/primitives"
 local discord = require "@discord-types/apiTypes"
 local discordRest = require "@discord-types/restTypes"
 local lazy = require "@antiraid/lazy"
-local promise = require "@antiraid/promise"
 local typesext = require "@antiraid/typesext"
-local ExecutorScope = require "@antiraid-core/executorscope"
 
 --- Options for getting audit logs in Discord
 export type GetAuditLogOptions = {
@@ -444,148 +441,300 @@ type LazyInviteObject = lazy.Lazy<discord.InviteObject>
 export type DiscordExecutor = {
     -- Antiraid helpers
 
-    -- Checks an audit log reason for validity, errors out if invalid
+    --- @yields
+    ---
+    --- Checks an audit log reason for validity, errors out if invalid
     antiraid_check_reason: (self: DiscordExecutor, reason: string) -> nil,
-    -- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server
-    antiraid_check_permissions: (self: DiscordExecutor, data: AntiRaidCheckPermissionsOptions) -> promise.LuaPromise<AntiRaidCheckPermissionsResponse>,
-    -- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server and is above the target user with an ID of `data.target_id` in terms of hierarchy
-    antiraid_check_permissions_and_hierarchy: (self: DiscordExecutor, data: AntiRaidCheckPermissionsAndHierarchyOptions) -> promise.LuaPromise<AntiRaidCheckPermissionsResponse>,
+    
+    --- @yields
+    ---
+    --- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server
+    antiraid_check_permissions: (self: DiscordExecutor, data: AntiRaidCheckPermissionsOptions) -> AntiRaidCheckPermissionsResponse,
+
+    --- @yields
+    ---
+    --- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server and is above the target user with an ID of `data.target_id` in terms of hierarchy
+    antiraid_check_permissions_and_hierarchy: (self: DiscordExecutor, data: AntiRaidCheckPermissionsAndHierarchyOptions) -> AntiRaidCheckPermissionsResponse,
+
+    --- @yields
+    ---
     --- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the channel `data.channel_id`
-    antiraid_check_channel_permissions: (self: DiscordExecutor, data: AntiRaidCheckChannelPermissionsOptions) -> promise.LuaPromise<AntiRaidCheckChannelPermissionsResponse>,
+    antiraid_check_channel_permissions: (self: DiscordExecutor, data: AntiRaidCheckChannelPermissionsOptions) -> AntiRaidCheckChannelPermissionsResponse,
 
     -- Discord API
 
-    --- Audit Logs
+    -- Audit Logs
 
+    --- @yields
+    ---
     --- Gets the audit logs
-    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> promise.LuaPromise<LazyAuditLogObject>,
+    get_audit_logs: (self: DiscordExecutor, data: GetAuditLogOptions) -> LazyAuditLogObject,
 
-    --- Auto Moderation
+    -- Auto Moderation
 
+    --- @yields
+    --- 
     --- Lists the auto moderation rules available
-    list_auto_moderation_rules: (self: DiscordExecutor) -> promise.LuaPromise<LazyAutomoderationRuleObjectList>,
+    list_auto_moderation_rules: (self: DiscordExecutor) -> LazyAutomoderationRuleObjectList,
+
+    --- @yields
+    ---
     --- Gets an auto moderation rule by ID
-    get_auto_moderation_rule: (self: DiscordExecutor, data: GetAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    get_auto_moderation_rule: (self: DiscordExecutor, data: GetAutoModerationRuleOptions) -> LazyAutomoderationRuleObject,
+
+    --- @yields
+    ---
     --- Creates an auto moderation rule
-    create_auto_moderation_rule: (self: DiscordExecutor, data: CreateAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    create_auto_moderation_rule: (self: DiscordExecutor, data: CreateAutoModerationRuleOptions) -> LazyAutomoderationRuleObject,
+
+    --- @yields
+    ---
     --- Edits an auto moderation rule
-    edit_auto_moderation_rule: (self: DiscordExecutor, data: EditAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    edit_auto_moderation_rule: (self: DiscordExecutor, data: EditAutoModerationRuleOptions) -> LazyAutomoderationRuleObject,
+
+    --- @yields
+    ---
     --- Deletes an auto moderation rule
-    delete_auto_moderation_rule: (self: DiscordExecutor, data: DeleteAutoModerationRuleOptions) -> promise.LuaPromise<LazyAutomoderationRuleObject>,
+    delete_auto_moderation_rule: (self: DiscordExecutor, data: DeleteAutoModerationRuleOptions) -> LazyAutomoderationRuleObject,
     
-    --- Channel
+    -- Channel
     
+    --- @yields
+    ---
     --- Gets a channel
-    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> promise.LuaPromise<LazyChannelObject>, 
+    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> LazyChannelObject, 
+
+    --- @yields
+    ---
     --- Edits a channel
-    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
+    edit_channel: (self: DiscordExecutor, data: EditChannelOptions) -> LazyChannelObject,
+
+    --- @yields
+    ---
     --- Deletes a channel
-    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
+    delete_channel: (self: DiscordExecutor, data: DeleteChannelOptions) -> LazyChannelObject,
+
+    --- @yields
+    ---
     --- Edits channel permissions for a target
-    edit_channel_permissions: (self: DiscordExecutor, data: EditChannelPermissionsOptions) -> promise.LuaPromise<nil>,
+    edit_channel_permissions: (self: DiscordExecutor, data: EditChannelPermissionsOptions) -> nil,
+
+    --- @yields
+    ---
     --- Gets all invites a channel has
-    get_channel_invites: (self: DiscordExecutor) -> promise.LuaPromise<LazyInviteObjectList>,
+    get_channel_invites: (self: DiscordExecutor) -> LazyInviteObjectList,
+
+    --- @yields
+    ---
     --- Creates a channel invite
-    create_channel_invite: (self: DiscordExecutor, data: CreateChannelInviteOptions) -> promise.LuaPromise<LazyInviteObject>,
+    create_channel_invite: (self: DiscordExecutor, data: CreateChannelInviteOptions) -> LazyInviteObject,
+
+    --- @yields
+    ---
     --- Deletes a channel permission
-    delete_channel_permission: (self: DiscordExecutor, data: DeleteChannelPermissionOptions) -> promise.LuaPromise<nil>,
+    delete_channel_permission: (self: DiscordExecutor, data: DeleteChannelPermissionOptions) -> nil,
 
     -- Guild
     
+    --- @yields
+    ---
     --- Gets the guild
-    get_guild: (self: DiscordExecutor) -> promise.LuaPromise<LazyGuildObject>,
+    get_guild: (self: DiscordExecutor) -> LazyGuildObject,
+
+    --- @yields
+    ---
     --- Gets the guilds preview
-    get_guild_preview: (self: DiscordExecutor) -> promise.LuaPromise<LazyGuildPreviewObject>,
+    get_guild_preview: (self: DiscordExecutor) -> LazyGuildPreviewObject,
+
+    --- @yields
+    ---
     --- Edits the guild
-    modify_guild: (self: DiscordExecutor, data: ModifyGuildOptions) -> promise.LuaPromise<LazyGuildObject>,
+    modify_guild: (self: DiscordExecutor, data: ModifyGuildOptions) -> LazyGuildObject,
+
+    --- @yields
+    ---
     --- Gets the guild channels
-    get_guild_channels: (self: DiscordExecutor) -> promise.LuaPromise<LazyChannelsObject>,
+    get_guild_channels: (self: DiscordExecutor) -> LazyChannelsObject,
+
+    --- @yields
+    ---
     --- Creates a guild channel
-    create_guild_channel: (self: DiscordExecutor, data: CreateChannelOptions) -> promise.LuaPromise<LazyChannelObject>,
+    create_guild_channel: (self: DiscordExecutor, data: CreateChannelOptions) -> LazyChannelObject,
+
+    --- @yields
+    ---
     --- Modify guild channel positions. Only channels to be modified are required to be passed in `data`.
-    modify_guild_channel_positions: (self: DiscordExecutor, data: {discordRest.ModifyGuildChannelPositionsRequest}) -> promise.LuaPromise<nil>,
+    modify_guild_channel_positions: (self: DiscordExecutor, data: {discordRest.ModifyGuildChannelPositionsRequest}) -> nil,
+
+    --- @yields
+    ---
     --- List active guild threads
-    list_active_guild_threads: (self: DiscordExecutor) -> promise.LuaPromise<LazyActiveGuildThreadsResponse>,
+    list_active_guild_threads: (self: DiscordExecutor) -> LazyActiveGuildThreadsResponse,
+
+    --- @yields
+    ---
     --- Gets a guild member by ID
-    get_guild_member: (self: DiscordExecutor, user_id: string) -> promise.LuaPromise<LazyGuildMemberObject>,
+    get_guild_member: (self: DiscordExecutor, user_id: string) -> LazyGuildMemberObject,
+
+    --- @yields
+    ---
     --- List all guild members
-    list_guild_members: (self: DiscordExecutor, data: GetGuildMembersOptions) -> promise.LuaPromise<LazyGuildMembersObject>,
+    list_guild_members: (self: DiscordExecutor, data: GetGuildMembersOptions) -> LazyGuildMembersObject,
+
+    --- @yields
+    ---
     --- Search guild members
-    search_guild_members: (self: DiscordExecutor, data: SearchGuildMembersOptions) -> promise.LuaPromise<LazyGuildMembersObject>,
+    search_guild_members: (self: DiscordExecutor, data: SearchGuildMembersOptions) -> LazyGuildMembersObject,
+
+    --- @yields
+    ---
     --- Modify guild member (this includes timing out a member using `communication_disabled_until`)
-    modify_guild_member: (self: DiscordExecutor, data: ModifyGuildMemberOptions) -> promise.LuaPromise<LazyGuildMemberObject>,
+    modify_guild_member: (self: DiscordExecutor, data: ModifyGuildMemberOptions) -> LazyGuildMemberObject,
+
+    --- @yields
+    ---
     --- Adds a role to a member
-    add_guild_member_role: (self: DiscordExecutor, data: AddGuildMemberRoleOptions) -> promise.LuaPromise<nil>,
+    add_guild_member_role: (self: DiscordExecutor, data: AddGuildMemberRoleOptions) -> nil,
+
+    --- @yields
+    ---
     --- Removes a role from a member
-    remove_guild_member_role: (self: DiscordExecutor, data: RemoveGuildMemberRoleOptions) -> promise.LuaPromise<nil>,
-    -- Removes a member from a guild
-    remove_guild_member: (self: DiscordExecutor, data: RemoveGuildMemberOptions) -> promise.LuaPromise<nil>,
+    remove_guild_member_role: (self: DiscordExecutor, data: RemoveGuildMemberRoleOptions) -> nil,
+
+    --- @yields
+    ---
+    --- Removes a member from a guild
+    remove_guild_member: (self: DiscordExecutor, data: RemoveGuildMemberOptions) -> nil,
+
+    --- @yields
+    ---
     --- Gets guild bans
-    get_guild_bans: (self: DiscordExecutor, data: GetGuildBansOptions) -> promise.LuaPromise<LazyBanObjectList>,
+    get_guild_bans: (self: DiscordExecutor, data: GetGuildBansOptions) -> LazyBanObjectList,
+
+    --- @yields
+    ---
     --- Gets a guild ban for a user or nil if it does not exist
-    get_guild_ban: (self: DiscordExecutor, user_id: discord.Snowflake) -> promise.LuaPromise<LazyBanOptionalObject>,
+    get_guild_ban: (self: DiscordExecutor, user_id: discord.Snowflake) -> LazyBanOptionalObject,
+
+    --- @yields
+    ---
     --- Creates a guild ban
-    create_guild_ban: (self: DiscordExecutor, data: CreateGuildBanOptions) -> promise.LuaPromise<nil>,
+    create_guild_ban: (self: DiscordExecutor, data: CreateGuildBanOptions) -> nil,
+
+    --- @yields
+    ---
     --- Removes a guild ban
-    remove_guild_ban: (self: DiscordExecutor, data: RemoveGuildBanOptions) -> promise.LuaPromise<nil>,
+    remove_guild_ban: (self: DiscordExecutor, data: RemoveGuildBanOptions) -> nil,
+
+    --- @yields
+    ---
     --- Returns the guild roles of a guild
-    get_guild_roles: (self: DiscordExecutor, guild_id: discord.Snowflake) -> promise.LuaPromise<LazyRolesObject>,
+    get_guild_roles: (self: DiscordExecutor, guild_id: discord.Snowflake) -> LazyRolesObject,
+
+    --- @yields
+    ---
     --- Returns a guild role by ID
-    get_guild_role: (self: DiscordExecutor, role_id: discord.Snowflake) -> promise.LuaPromise<LazyRoleObject>,
+    get_guild_role: (self: DiscordExecutor, role_id: discord.Snowflake) -> LazyRoleObject,
+
+    --- @yields
+    ---
     --- Creates a guild role
-    create_guild_role: (self: DiscordExecutor, data: CreateGuildRoleOptions) -> promise.LuaPromise<LazyRoleObject>,
+    create_guild_role: (self: DiscordExecutor, data: CreateGuildRoleOptions) -> LazyRoleObject,
+
+    --- @yields
+    ---
     --- Modify guild role positions
-    modify_guild_role_positions: (self: DiscordExecutor, data: ModifyRolePositionOptions) -> promise.LuaPromise<LazyRolesObject>,
+    modify_guild_role_positions: (self: DiscordExecutor, data: ModifyRolePositionOptions) -> LazyRolesObject,
 
     -- Invites
 
+    --- @yields
+    ---
     --- Gets an invite by code
-    get_invite: (self: DiscordExecutor, data: GetInviteOptions) -> promise.LuaPromise<LazyInviteObject>,
+    get_invite: (self: DiscordExecutor, data: GetInviteOptions) -> LazyInviteObject,
+
+    --- @yields
+    ---
     --- Deletes an invite by code
-    delete_invite: (self: DiscordExecutor, data: DeleteInviteOptions) -> promise.LuaPromise<LazyInviteObject>,
+    delete_invite: (self: DiscordExecutor, data: DeleteInviteOptions) -> LazyInviteObject,
 
     -- Messages
 
+    --- @yields
+    ---
     --- Gets messages from a channel
-    get_channel_messages: (self: DiscordExecutor, data: GetMessagesOptions) -> promise.LuaPromise<LazyMessagesObject>,
+    get_channel_messages: (self: DiscordExecutor, data: GetMessagesOptions) -> LazyMessagesObject,
+
+    --- @yields
+    ---
     --- Gets a message
-    get_channel_message: (self: DiscordExecutor, data: GetMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    get_channel_message: (self: DiscordExecutor, data: GetMessageOptions) -> LazyMessageObject,
+
+    --- @yields
+    ---
     --- Creates a message
-    create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> LazyMessageObject,
     
     -- Interactions
     
+    --- @yields
+    ---
     --- Creates an interaction response
-    create_interaction_response: (self: DiscordExecutor, data: CreateInteractionResponseOptions) -> promise.LuaPromise<nil>,
+    create_interaction_response: (self: DiscordExecutor, data: CreateInteractionResponseOptions) -> nil,
+
+    --- @yields
+    ---
     --- Gets the original interaction response
-    get_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> promise.LuaPromise<LazyMessageObject>,
+    get_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> LazyMessageObject,
+
+    --- @yields
+    ---
     --- Edits the original interaction response
-    edit_original_interaction_response: (self: DiscordExecutor, data: EditInteractionResponseOptions) -> promise.LuaPromise<LazyMessageObject>,
+    edit_original_interaction_response: (self: DiscordExecutor, data: EditInteractionResponseOptions) -> LazyMessageObject,
+
+    --- @yields
+    ---
     --- Deletes the original interaction response
-    delete_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> promise.LuaPromise<nil>,
+    delete_original_interaction_response: (self: DiscordExecutor, interaction_token: string) -> nil,
+
+    --- @yields
+    ---
     --- Gets a followup interaction response
-    get_followup_message: (self: DiscordExecutor, data: GetFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    get_followup_message: (self: DiscordExecutor, data: GetFollowupMessageOptions) -> LazyMessageObject,
+
+    --- @yields
+    ---
     --- Creates a followup interaction response
-    create_followup_message: (self: DiscordExecutor, data: CreateFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    create_followup_message: (self: DiscordExecutor, data: CreateFollowupMessageOptions) -> LazyMessageObject,
+
+    --- @yields
+    ---
     --- Edits a followup interaction response
-    edit_followup_message: (self: DiscordExecutor, data: EditFollowupMessageOptions) -> promise.LuaPromise<LazyMessageObject>,
+    edit_followup_message: (self: DiscordExecutor, data: EditFollowupMessageOptions) -> LazyMessageObject,
+
+    --- @yields
+    ---
     --- Deletes a followup interaction response
-    delete_followup_message: (self: DiscordExecutor, data: DeleteFollowupMessageOptions) -> promise.LuaPromise<nil>,
+    delete_followup_message: (self: DiscordExecutor, data: DeleteFollowupMessageOptions) -> nil,
 
     -- Uncategorized (for now)
    
+    --- @yields
+    ---
     --- Gets all guild commands currently registered
-    get_guild_commands: (self: DiscordExecutor) -> promise.LuaPromise<LazyApplicationCommandObject>,
-    --- Creates a guild command
-    create_guild_command: (self: DiscordExecutor, data: CreateCommandOptions) -> promise.LuaPromise<LazyApplicationCommandObject>,
-    --- Creates multiple guild commands
-    create_guild_commands: (self: DiscordExecutor, data: CreateCommandsOptions) -> promise.LuaPromise<LazyApplicationCommandsObject>,
-}
- 
-local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): DiscordExecutor
-    error("Implemented internally in AntiRaid runtime!")
-end
+    get_guild_commands: (self: DiscordExecutor) -> LazyApplicationCommandsObject,
 
-return {
-    new = new
+    --- @yields
+    ---
+    --- Creates a guild command
+    create_guild_command: (self: DiscordExecutor, data: CreateCommandOptions) -> LazyApplicationCommandObject,
+
+    --- @yields
+    ---
+    --- Creates multiple guild commands
+    create_guild_commands: (self: DiscordExecutor, data: CreateCommandsOptions) -> LazyApplicationCommandsObject,
 }
+
+export type Plugin = DiscordExecutor
+ 
+return {}

@@ -3,7 +3,6 @@
 	Mapping out all discord responses that we can get from the Discord v10 REST/HTTP API.
 ]]
 
-local Primitives = require("@antiraid-core/primitives")
 local objects = require("./apiTypes")
 
 -- [[ Base ]] --
@@ -18,7 +17,7 @@ export type CreateMessageAttachment = {
     --- The description (if any) of the attachment
     description: string?,
     --- The content of the attachment
-    content: {Primitives.byte},
+    content: {number},
 }
 
 -- [[ Requests ]] --

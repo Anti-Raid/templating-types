@@ -1,9 +1,17 @@
-assert(require)
 local discord = require("@discord-types/apiTypes")
+local datastoresP = require("@antiraid-core/plugins/datastores")
+local discordP = require("@antiraid-core/plugins/discord")
+local imgcaptchaP = require("@antiraid-core/plugins/img_captcha")
+local kvP = require("@antiraid-core/plugins/kv")
+local lockdownsP = require("@antiraid-core/plugins/lockdowns")
+local objectstorageP = require("@antiraid-core/plugins/objectstorage")
+local pagesP = require("@antiraid-core/plugins/pages")
+local scheduledexecP = require("@antiraid-core/plugins/scheduledexec")
+local userinfoP = require("@antiraid-core/plugins/userinfo")
 
--- AntiRaid primitives, see https://docs.antiraid.xyz/user/templating/2-plugins#primitives
+-- AntiRaid primitives
 -- 
--- Last updated: December 30th 2024
+-- Last updated: June 22nd 2025
 
 -- Core types
 export type u8 = number
@@ -71,6 +79,25 @@ export type ScriptData = {
 --- Passing a TemplateContext is often required when using AntiRaid plugins for getting the inner context
 --- of a template.
 export type TemplateContext = {
+    --- DataStores plugin
+    read DataStores: datastoresP.Plugin,
+    --- Discord plugin
+    read Discord: discordP.Plugin,
+    --- Image Captcha plugin
+    read ImageCaptcha: imgcaptchaP.Plugin,
+    --- Key-Value plugin
+    read KV: kvP.Plugin,
+    --- Lockdowns plugin
+    read Lockdowns: lockdownsP.Plugin,
+    --- Object Storage plugin
+    read ObjectStorage: objectstorageP.Plugin,
+    --- Pages plugin
+    read Pages: pagesP.Plugin,
+    --- Scheduled Execution plugin
+    read ScheduledExecution: scheduledexecP.Plugin,
+    --- User Info plugin
+    read UserInfo: userinfoP.Plugin,
+
     --- The public data associated with the script.
     read data: ScriptData,
     --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
@@ -88,6 +115,9 @@ export type TemplateContext = {
     read current_user: discord.UserObject,
     --- Returns if a template has a specific capability.
     read has_cap: (self: TemplateContext, cap: string) -> boolean,
+    --- The global/common store table shared across all templates within the same
+    --- server
+    store: {},
 }
 
 return {}

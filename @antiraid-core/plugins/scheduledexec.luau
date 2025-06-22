@@ -1,6 +1,3 @@
-local Primitives = require "@antiraid-core/primitives"
-local Promise = require "@antiraid/promise"
-
 --- Represents a scheduled execution
 export type ScheduledExecution = {
     id: string,
@@ -33,10 +30,14 @@ export type CreateScheduledExecution = {
 ---
 --- All scheduled executions have an ID and data associated with them for use by the caller.
 export type ScheduledExecExecutor = {
+    --- @yields
+    ---
     --- Lists all scheduled executions. If ``id`` is provided, then all scheduled executions
     --- with that ID will be returned. See ``create`` for more information on same ID caveats.
-    list: (self: ScheduledExecExecutor, id: string?) -> Promise.LuaPromise<ScheduledExecutionList>,
+    list: (self: ScheduledExecExecutor, id: string?) -> ScheduledExecutionList,
 
+    --- @yields
+    ---
     --- Creates a new scheduled execution
     ---
     --- Note that scheduled executions are not guaranteed to be run at the exact time specified and
@@ -48,16 +49,14 @@ export type ScheduledExecExecutor = {
     ---
     --- The ordering in which scheduled executions are triggered about a small time period is undefined.
     --- It is recommended to use the ``task`` library for small time periods.
-    add: (self: ScheduledExecExecutor, data: CreateScheduledExecution) -> Promise.LuaPromise<nil>,
+    add: (self: ScheduledExecExecutor, data: CreateScheduledExecution) -> nil,
 
+    --- @yields
+    ---
     --- Deletes all scheduled execution with a given ID
-    remove: (self: ScheduledExecExecutor, id: string) -> Promise.LuaPromise<nil>,
+    remove: (self: ScheduledExecExecutor, id: string) -> nil,
 }
 
-local function new(token: Primitives.TemplateContext): ScheduledExecExecutor
-    error("Implemented internally in AntiRaid runtime!")
-end
+export type Plugin = ScheduledExecExecutor
 
-return {
-    new = new
-}
+return {}

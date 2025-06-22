@@ -1,72 +1,4 @@
-local Promise = require("@antiraid/promise")
-local Primitives = require "@antiraid-core/primitives"
-local ExecutorScope = require "@antiraid-core/executorscope"
 local datetime = require "@antiraid/datetime"
-
---[[
-impl LuaUserData for CreateLockdownMode {
-    fn add_fields<F: LuaUserDataFields<Self>>(fields: &mut F) {
-        fields.add_field_method_get("syntax", |_, this| {
-            let syntax = this.0.syntax();
-            Ok(syntax.to_string())
-        });
-    }
-
-    fn add_methods<M: LuaUserDataMethods<Self>>(methods: &mut M) {
-        methods.add_method("to_lockdown_mode", |_, this, string_form: String| {
-            let lockdown_mode = this
-                .0
-                .to_lockdown_mode(&string_form)
-                .map_err(|e| LuaError::external(e.to_string()))?;
-
-            Ok(lockdown_mode.map(LockdownMode))
-        });
-
-        methods.add_meta_function(LuaMetaMethod::Iter, |lua, ud: LuaAnyUserData| {
-            if !ud.is::<CreateLockdownMode>() {
-                return Err(mlua::Error::external("Invalid userdata type"));
-            }
-
-            create_userdata_iterator_with_fields(
-                lua,
-                ud,
-                [
-                    // Fields
-                    "syntax",
-                    // Methods
-                    "to_lockdown_mode",
-                ],
-            )
-        });
-    }
-}
-
-pub struct LockdownMode(pub Box<(dyn lockdowns::LockdownMode + 'static)>);
-
-impl Clone for LockdownMode {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-
-impl LuaUserData for LockdownMode {
-    fn add_fields<F: LuaUserDataFields<Self>>(fields: &mut F) {
-        fields.add_field_method_get("creator", |_, this| {
-            let creator = this.0.creator();
-            Ok(CreateLockdownMode(creator))
-        });
-
-        fields.add_field_method_get("string_form", |_, this| {
-            let string_form = this.0.string_form();
-            Ok(string_form)
-        });
-
-        fields.add_field_method_get("specificity", |_, this| {
-            let specificity = this.0.specificity();
-            Ok(specificity)
-        });
-    }
-}]]
 
 --- Structure for creating new lockdown modes
 export type CreateLockdownMode = {
@@ -116,14 +48,20 @@ export type LockdownSet = {
     ---
     --- This acquires a exclusive write lock on the LockdownSet
     sort: (self: LockdownSet) -> (),
+
+    --- @yields
+    ---
     --- Applies a lockdown. 
     ---
     --- This acquires a exclusive write lock on the LockdownSet
-    apply: (self: LockdownSet, lockdown_type: LockdownMode, reason: string) -> Promise.LuaPromise<LockdownAddStatus>,
+    apply: (self: LockdownSet, lockdown_type: LockdownMode, reason: string) -> LockdownAddStatus,
+
+    --- @yields
+    ---
     --- Removes a lockdown by ID
     ---
     --- This acquires a exclusive write lock on the LockdownSet
-    remove: (self: LockdownSet, id: string) -> Promise.LuaPromise<LockdownRemoveStatus>,
+    remove: (self: LockdownSet, id: string) -> LockdownRemoveStatus,
 }
 
 --- LockdownAddStatus represents the result of adding a lockdown
@@ -170,9 +108,12 @@ export type LockdownTestResult = typeof(setmetatable({} :: {
     --- Other changes needed
     other_changes_needed: { string },
     --- Display the changeset, resolved with role names
-    display_changeset: (self: LockdownTestResult, lockdown_set: LockdownSet) -> Promise.LuaPromise<string>,
+    display_changeset: (self: LockdownTestResult, lockdown_set: LockdownSet) -> string,
+
+    --- @yields
+    ---
     --- Tries to autofix the issues
-    try_auto_fix: (self: LockdownTestResult, lockdown_set: LockdownSet) -> Promise.LuaPromise<nil>,
+    try_auto_fix: (self: LockdownTestResult, lockdown_set: LockdownSet) -> nil,
 }, {} :: {
     --- Converts the LockdownTestResult to a error string
    __tostring: (self: LockdownTestResult) -> string 
@@ -181,49 +122,25 @@ export type LockdownTestResult = typeof(setmetatable({} :: {
 --- LockdownExecutor allows templates to list, create and delete AntiRaid lockdowns
 ---@class LockdownExecutor
 export type LockdownExecutor = {
+    --- @yields
     --- Fetches the current lockdown set of the guild
     ---
     --- A lockdown set is the main entrypoint for viewing and applying lockdowns
     ---
     --- Needed capability: ``lockdowns:fetch_lockdown_set``
-    fetch_lockdown_set: (self: LockdownExecutor) -> Promise.LuaPromise<LockdownSet>,
+    fetch_lockdown_set: (self: LockdownExecutor) -> LockdownSet,
 }
 
-local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): LockdownExecutor
-    error("Implemented internally in AntiRaid runtime!")
-end
-
-
-local CreateQuickServerLockdown: CreateLockdownMode = {} :: CreateLockdownMode
-local CreateTraditionalServerLockdown: CreateLockdownMode = {} :: CreateLockdownMode
-local CreateSingleChannelLockdown: CreateLockdownMode = {} :: CreateLockdownMode
-local CreateRoleLockdown: CreateLockdownMode = {} :: CreateLockdownMode
-
-local function QuickServerLockdown(): LockdownMode
-    error("Implemented internally in AntiRaid runtime!")
-end
-
-local function TraditionalServerLockdown(): LockdownMode
-    error("Implemented internally in AntiRaid runtime!")
-end
-
-local function SingleChannelLockdown(channel_id: string): LockdownMode
-    error("Implemented internally in AntiRaid runtime!")
-end
-
-local function RoleLockdown(role_id: string): LockdownMode
-    error("Implemented internally in AntiRaid runtime!")
-end
-
-
-return {
-    new = new,
-    CreateQuickServerLockdown = CreateQuickServerLockdown,
-    CreateTraditionalServerLockdown = CreateTraditionalServerLockdown,
-    CreateSingleChannelLockdown = CreateSingleChannelLockdown,
-    CreateRoleLockdown = CreateRoleLockdown,
-    QuickServerLockdown = QuickServerLockdown,
-    TraditionalServerLockdown = TraditionalServerLockdown,
-    SingleChannelLockdown = SingleChannelLockdown,
-    RoleLockdown = RoleLockdown,
+export type Plugin = {
+    Client: LockdownExecutor,
+    CreateQuickServerLockdown: CreateLockdownMode,
+    CreateTraditionalServerLockdown: CreateLockdownMode,
+    CreateSingleChannelLockdown: (channel_id: string) -> CreateLockdownMode,
+    CreateRoleLockdown: (role_id: string) -> CreateLockdownMode,
+    QuickServerLockdown: () -> LockdownMode,
+    TraditionalServerLockdown: () -> LockdownMode,
+    SingleChannelLockdown: (channel_id: string) -> LockdownMode,
+    RoleLockdown: (role_id: string) -> LockdownMode,
 }
+
+return {}

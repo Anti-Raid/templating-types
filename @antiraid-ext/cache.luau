@@ -33,8 +33,9 @@ end
 
 function CachedTable:remove<K, V>(key: K)
     self.__tab[key] = nil
-    task.cancel(self.__expiries[key])
-    self.__expiries[key] = nil
+    local expiries = self.__expiries :: any
+    task.cancel(expiries[key])
+    expiries[key] = nil
 end
 
 function CachedTable:close<K, V>()

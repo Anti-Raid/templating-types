@@ -1,5 +1,3 @@
-local Primitives = require("@antiraid-core/primitives")
-
 type TimeoutThread = {
     thread: thread,
     isDone: boolean,
@@ -131,10 +129,6 @@ local function clearInterval(tid: number)
     end
 end
 
-local function getScheduler(): Primitives.Scheduler 
-    return _G.scheduler
-end
-
 -- Test
 if(_G._TEST_ASYNC_WORK ~= nil) then
     setTimeout(function()
@@ -200,5 +194,4 @@ return {
     clearTimeout = clearTimeout,
     setInterval = setInterval,
     clearInterval = clearInterval,
-    getScheduler = getScheduler
 }

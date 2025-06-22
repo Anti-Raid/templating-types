@@ -1,7 +1,3 @@
-local Primitives = require "@antiraid-core/primitives"
-local Promise = require "@antiraid/promise"
-local ExecutorScope = require "@antiraid-core/executorscope"
-
 --- Supported setting operations for a setting
 export type SettingOperations = {
     --- @field boolean Can the setting be viewed?
@@ -126,22 +122,25 @@ export type Page = {
 }
 
 export type PageExecutor = {
+    --- @yields
+    ---
     --- @function () -> Page
     --- Returns the current page.
-    get: (self: PageExecutor) -> Promise.LuaPromise<Page?>,
+    get: (self: PageExecutor) -> Page?,
+
+    --- @yields
+    ---
     --- @function () -> Promise<void>
     --- Sets a page to be the templates page. This will overwrite any existing page if one exists.
-    set: (self: PageExecutor, page: Page) -> Promise.LuaPromise<{}>,
+    set: (self: PageExecutor, page: Page) -> nil,
+
+    --- @yields
+    ---
     --- @function () -> Promise<void>
     --- Deletes the templates page. This will not delete the page itself, but will remove it from the server's list of custom pages.
-    delete: (self: PageExecutor) -> Promise.LuaPromise<{}>,
+    delete: (self: PageExecutor) -> nil,
 }
 
---- Creates a new PageExecutor
-local function new(token: Primitives.TemplateContext, scope: ExecutorScope.ExecutorScope?): PageExecutor
-    error("Implemented internally in AntiRaid runtime!")
-end
+export type Plugin = PageExecutor
 
-return {
-    new = new,
-}
+return {}
