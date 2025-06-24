@@ -1,28 +1,31 @@
-local Primitives = require("@antiraid-core/primitives")
-local Promise = require("@antiraid/promise")
-
 export type Chunk = {
-    --- Requires the ``luau:eval.set_environment`` capability to modify
+    --- Sets the environment of the chunk (_G).
     environment: {[any]: any}?,
-    --- Requires the ``luau:eval.set_optimization_level`` capability to modify
+    
+    --- Sets the optimization level of the chunk.
     optimization_level: number?,
-    --- Requires the ``luau:eval.modify_set_code`` capability to modify
+    
+    --- Text code to be evaluated. Bytecode evaluation is not allowed due to
+    --- security reasons.
     code: string,
-    --- Requires the ``luau:eval.set_chunk_name`` capability to modify
+    
+    ---  The name of the chunk, used for debugging purposes.
     chunk_name: string?,
-    --- Requires the ``luau:eval.call`` capability to use. Takes in args and returns the 
-    --- returned values from the ``code`` being evaluated.
+
+    --- Takes in args and returns the returned values from the ``code`` being evaluated. This will run the code in main thread / coroutine.running() == nil
     call: (self: Chunk, args: any) -> any,
-    --- Requires the ``luau:eval.call_async`` capability to use. Takes in args and returns the
-    --- returned values from the ``code`` being evaluated.
+
+    --- @yields
     ---
-    --- This runs the code asynchronously
-    call_async: (self: Chunk, args: any) -> Promise.LuaPromise<any>,
+    --- Takes in args and returns the returned values from the ``code`` being evaluated.
+    ---
+    --- This runs the code asynchronously within a coroutine, allowing it to call
+    --- yielding functions
+    call_async: (self: Chunk, args: any) -> any,
 }
 
---- Requires the ``luau:eval`` capability to use. Be careful as this allows
---- for arbitrary code execution.
-local function load(token: Primitives.TemplateContext, code: string): Chunk
+--- Loads a Luau chunk.
+local function load(code: string): Chunk
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -30,7 +33,6 @@ end
 local function format(...: any): string
     error("Implemented internally in AntiRaid runtime!")
 end
-
 
 return {
     load = load,
