@@ -123,14 +123,14 @@ export type KvExecutor = {
     --- Sets the expiry time of a record.
     --- @param key string The key of the record.
     --- @param expires_at datetime.DateTime The new expiration time of the record.
-    setexpiry: (self: KvExecutor, key: string, scopes: {string}?, expires_at: datetime.DateTime) -> nil,
+    setexpiry: (self: KvExecutor, key: string, scopes: {string}?, expires_at: datetime.DateTime?) -> nil,
 
     --- @yields
     ---
     --- Sets the expiry time of a record by ID.
     --- @param id string The ID of the record.
     --- @param expires_at datetime.DateTime The new expiration time of the record.
-    setexpirybyid: (self: KvExecutor, id: string, expires_at: datetime.DateTime) -> nil,
+    setexpirybyid: (self: KvExecutor, id: string, expires_at: datetime.DateTime?) -> nil,
 
     --- @yields
     ---
