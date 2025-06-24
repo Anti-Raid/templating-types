@@ -74,14 +74,11 @@ export type ExternalKeyUpdateEventData = {
     action: "create" | "update" | "delete"
 }
 
---- Data sent when a scheduled execution is triggered.
-export type ScheduledExecutionEventData = {
+--- Data sent when a key expires.
+export type KeyExpiryEvent = {
     id: string,
-    data: any,
-    --- String representation of the time the event is scheduled to run at
-    ---
-    --- This can be converted to an ``@antiraid/datetime`` using datetime.UTC:fromString
-    run_at: string
+    key: string,
+    scopes: {string}
 }
 
 return {}
