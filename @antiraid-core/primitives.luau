@@ -6,7 +6,6 @@ local kvP = require("@antiraid-core/plugins/kv")
 local lockdownsP = require("@antiraid-core/plugins/lockdowns")
 local objectstorageP = require("@antiraid-core/plugins/objectstorage")
 local pagesP = require("@antiraid-core/plugins/pages")
-local scheduledexecP = require("@antiraid-core/plugins/scheduledexec")
 local userinfoP = require("@antiraid-core/plugins/userinfo")
 
 -- AntiRaid primitives
@@ -93,8 +92,6 @@ export type TemplateContext = {
     read ObjectStorage: objectstorageP.Plugin,
     --- Pages plugin
     read Pages: pagesP.Plugin,
-    --- Scheduled Execution plugin
-    read ScheduledExecution: scheduledexecP.Plugin,
     --- User Info plugin
     read UserInfo: userinfoP.Plugin,
 
