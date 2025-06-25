@@ -33,7 +33,10 @@ export type StatsStore = DataStore & {
 
 export type LinksStore = DataStore & {
     links: () -> {
-        support_server: string
+        support_server: string,
+        api_url: string,
+        frontend_url: string,
+        docs_url: string,
     }
 }
 
