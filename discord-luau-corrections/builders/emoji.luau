@@ -27,8 +27,6 @@ end
 	Set the name of the emoji to use.
 ]]
 function Emoji.Prototype.setName(self: Emoji, emojiName: string): Emoji
-	assert(validateKebabCase(emojiName), `Emoji names are Kebab case!`)
-
 	self.emojiName = emojiName
 
 	return self
