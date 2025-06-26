@@ -7,8 +7,6 @@
 	https://discord.com/developers/docs/resources/emoji#emoji-object
 ]]
 
-local validateKebabCase = require("@discord-types/utils/validateKebabCase")
-
 local Emoji = {}
 
 Emoji.Prototype = {}
@@ -36,7 +34,6 @@ end
 	Responsible for building the Emoji JSON that can be parsed by the Discord API.
 ]]
 function Emoji.Prototype.build(self: Emoji): JSON
-	assert(self.emojiId, `Emoji ID is required.`)
 	assert(self.emojiName, `Emoji name is required.`)
 
 	return {
