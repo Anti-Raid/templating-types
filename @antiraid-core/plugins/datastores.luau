@@ -53,8 +53,6 @@ export type Spawn = {
     execute: boolean,
     --- If create is false, this is required
     id: string?,
-    --- The user ID of the user who spawned the job
-    user_id: string,
 }
 
 --- Jobsrver Status
