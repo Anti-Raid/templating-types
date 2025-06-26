@@ -114,7 +114,10 @@ export type JobServerStore = DataStore & {
     --- @yields
     ---
     --- Gets a job from jobserver given its job ID
-    get: (id: string) -> Job,
+    ---
+    --- If needs_statuses is set to true, then statuses are sent, otherwise
+    ---- the statuses will be an empty table to reduce memory consumption
+    get: (id: string, needs_statuses: boolean?) -> Job,
 
     --- @yields
     ---
