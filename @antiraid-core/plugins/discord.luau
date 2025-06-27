@@ -327,6 +327,22 @@ export type AntiRaidCheckChannelPermissionsResponse = {
     permissions: string
 }
 
+export type AntiraidFusedMemberSingle = {
+    --- The member
+    member: discord.GuildMemberObject,
+    --- The resolved permissions of the member in the guild
+    resolved_perms: string
+}
+
+--- A fused member contains both a member, the guild and the resolved permissions of
+--- the member in the guild. This is useful for operations that require both the member and the guild context, such as permission checks.
+export type AntiraidFusedMember = {
+    --- The partial guild
+    partial_guild: discord.Partial<discord.GuildObject>,
+    --- The member and resolved permissions
+    members: {AntiraidFusedMemberSingle}
+}
+
 --- Options for creating a guild role
 export type CreateGuildRoleOptions = {
     --- The reason for the creation
@@ -394,6 +410,8 @@ export type DeleteInviteOptions = {
     reason: string
 }
 
+-- Lazy<AntiraidFusedMember>
+type LazyAntiraidFusedMember = lazy.Lazy<AntiraidFusedMember>
 --- Lazy<discord.AuditLogObject>
 type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
 --- Lazy<discord.ChannelObject>
@@ -422,6 +440,8 @@ type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
 type LazyRoleObject = lazy.Lazy<discord.GuildRoleObject>
 --- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
 type LazyRolesObject = lazy.Lazy<{discord.GuildRoleObject}>
+--- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
+type LazyRolesMapObject = lazy.Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
 --- Lazy<discordRest.ListActiveGuildThreadsResponse>
 type LazyActiveGuildThreadsResponse = lazy.Lazy<discordRest.ListActiveGuildThreadsResponse>
 --- Lazy<discord.GuildObject>
@@ -460,6 +480,12 @@ export type DiscordExecutor = {
     ---
     --- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the channel `data.channel_id`
     antiraid_check_channel_permissions: (self: DiscordExecutor, data: AntiRaidCheckChannelPermissionsOptions) -> AntiRaidCheckChannelPermissionsResponse,
+
+    --- @yields
+    ---
+    --- Fetches the member and resolved permissions of a user in the guild
+    --- (also called a 'fused member' as it contains both the member and the resolved permissions)
+    antiraid_get_fused_member: (self: DiscordExecutor, ids: {discord.Snowflake}) -> LazyAntiraidFusedMember,
 
     -- Discord API
 
@@ -629,7 +655,7 @@ export type DiscordExecutor = {
     --- @yields
     ---
     --- Returns the guild roles of a guild
-    get_guild_roles: (self: DiscordExecutor, guild_id: discord.Snowflake) -> LazyRolesObject,
+    get_guild_roles: (self: DiscordExecutor) -> LazyRolesMapObject,
 
     --- @yields
     ---
