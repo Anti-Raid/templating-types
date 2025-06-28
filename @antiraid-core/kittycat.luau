@@ -386,7 +386,7 @@ local function check_patch_changes_str(manager_perms: {string}, current_perms: {
 end
 
 -- Test
-if(_G._TEST_ASYNC_WORK ~= nil) then
+local function test()
     -- TEST CODE
     local function internalProtectedEquals(o1, o2, ignore_mt, callList)
         if o1 == o2 then return true end
@@ -608,5 +608,6 @@ return {
     has_perm = has_perm,
     has_perm_str = has_perm_str,
     check_patch_changes = check_patch_changes,
-    check_patch_changes_str = check_patch_changes_str
+    check_patch_changes_str = check_patch_changes_str,
+    test = test
 }

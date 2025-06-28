@@ -338,7 +338,7 @@ export type AntiraidFusedMemberSingle = {
 --- the member in the guild. This is useful for operations that require both the member and the guild context, such as permission checks.
 export type AntiraidFusedMember = {
     --- The partial guild
-    partial_guild: discord.Partial<discord.GuildObject>,
+    guild: discord.Partial<discord.GuildObject>,
     --- The member and resolved permissions
     members: {AntiraidFusedMemberSingle}
 }
