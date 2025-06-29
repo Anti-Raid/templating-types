@@ -1,18 +1,3 @@
---- Supported setting operations for a setting
-export type SettingOperations = {
-    --- @field boolean Can the setting be viewed?
-    view: boolean,
-
-    --- @field boolean Can the setting be created?
-    create: boolean,
-
-    --- @field boolean Can the setting be updated?
-    update: boolean,
-
-    --- @field boolean Can the setting be deleted?
-    delete: boolean,
-}
-
 --- A suggestion for a column. Can either be a static set of suggestions or no suggestions at all.
 export type ColumnSuggestion = {
     type: "None"
@@ -24,7 +9,11 @@ export type ColumnSuggestion = {
 --- The type-specific data about a column
 export type ColumnType = {
     type: "Scalar" | "Array",
-    inner: "String",
+    inner: InnerColumnType,
+}
+
+export type InnerColumnType = {
+    type: "String",
     --- @field number The minimum length of the string
     min_length: number?,
     --- @field number The maximum length of the string
@@ -37,24 +26,19 @@ export type ColumnType = {
     --- e.g. textarea, channel, user, role, kittycat-permission, uuid, interval, timestamp etc.
     kind: string
 } | {
-    type: "Scalar" | "Array",
-    inner: "Integer"
+    type: "Integer",
 } | {
-    type: "Scalar" | "Array",
-    inner: "Float"
+    type: "Float",
 } | {
-    type: "Scalar" | "Array",
-    inner: "BitFlag",
+    type: "BitFlag",
     --- @field {string} The bitflag values as a hashmap
     values: {[string]: number}
 } | {
-    type: "Scalar" | "Array",
-    inner: "Boolean"
+    type: "Boolean",
 } | {
-    type: "Scalar" | "Array",
-    inner: "Json",
-    --- @field The maximum size, in bytes, of the JSON object
-    max_bytes: number?,
+    type: "Json",
+    --- @field Style to use when rendering the JSON object
+    style: string
 }
 
 export type OperationType = "View" | "Create" | "Update" | "Delete"
@@ -73,6 +57,9 @@ export type Column = {
     --- @field ColumnType The type of the column
     column_type: ColumnType,
 
+    --- @field string Is this column a primary key? This can be used when rendering the column in the UI.
+    primary_key: boolean,
+
     --- @field boolean Whether or not the column is nullable
     nullable: boolean,
 
@@ -85,7 +72,7 @@ export type Column = {
     --- @field {string} The operations for which the field should be ignored (essentially, read only)
     ---
     --- Semantics are defined by the template.
-    ignored_for: {OperationType}
+    readonly: {OperationType}
 }
 
 export type Setting = {
@@ -98,10 +85,6 @@ export type Setting = {
     --- @field string The description of the option
     description: string,
 
-    --- @field string The primary key of the table. This *should* be present in user responses to page settings
-    --- as well but this is not guaranteed and must be checked for by the template.
-    primary_key: string,
-
     --- @field string Title template, used for the title of the embed
     title_template: string,
 
@@ -109,38 +92,7 @@ export type Setting = {
     columns: {Column},
 
     --- @field SettingOperations The supported operations for this option
-    supported_operations: SettingOperations
+    operations: {OperationType},
 }
-
-export type Page = {
-    --- @field string The title of the page.
-    title: string,
-    --- @field string The description of the page.
-    description: string,
-    --- @field {Setting} The settings of the page.
-    settings: {Setting}
-}
-
-export type PageExecutor = {
-    --- @yields
-    ---
-    --- @function () -> Page
-    --- Returns the current page.
-    get: (self: PageExecutor) -> Page?,
-
-    --- @yields
-    ---
-    --- @function () -> Promise<void>
-    --- Sets a page to be the templates page. This will overwrite any existing page if one exists.
-    set: (self: PageExecutor, page: Page) -> nil,
-
-    --- @yields
-    ---
-    --- @function () -> Promise<void>
-    --- Deletes the templates page. This will not delete the page itself, but will remove it from the server's list of custom pages.
-    delete: (self: PageExecutor) -> nil,
-}
-
-export type Plugin = PageExecutor
 
 return {}

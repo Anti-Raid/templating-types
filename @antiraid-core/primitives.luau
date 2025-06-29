@@ -5,7 +5,6 @@ local imgcaptchaP = require("@antiraid-core/plugins/img_captcha")
 local kvP = require("@antiraid-core/plugins/kv")
 local lockdownsP = require("@antiraid-core/plugins/lockdowns")
 local objectstorageP = require("@antiraid-core/plugins/objectstorage")
-local pagesP = require("@antiraid-core/plugins/pages")
 local userinfoP = require("@antiraid-core/plugins/userinfo")
 
 -- AntiRaid primitives
@@ -71,6 +70,11 @@ export type ScriptData = {
     updated_at: string,
 }
 
+export type Limitations = {
+    --- Capabilities that the template has access to.
+    capabilities: {string},
+}
+
 --- TemplateContext is a struct that represents the context of a template. 
 --- 
 --- Stores key data including the templates data, pragma and what capabilities it should have access to. 
@@ -90,8 +94,6 @@ export type TemplateContext = {
     read Lockdowns: lockdownsP.Plugin,
     --- Object Storage plugin
     read ObjectStorage: objectstorageP.Plugin,
-    --- Pages plugin
-    read Pages: pagesP.Plugin,
     --- User Info plugin
     read UserInfo: userinfoP.Plugin,
 
@@ -112,6 +114,12 @@ export type TemplateContext = {
     read current_user: discord.UserObject,
     --- Returns if a template has a specific capability.
     read has_cap: (self: TemplateContext, cap: string) -> boolean,
+    --- Returns if a template has any of the specified capabilities.
+    read has_any_cap: (self: TemplateContext, caps: {string}) -> boolean,
+    --- Returns a new TemplateContext with the specified limits which must be a strict subset
+    --- of the current context's limits.
+    read withlimits: (self: TemplateContext, limits: Limitations) -> TemplateContext,
+
     --- The global/common store table shared across all templates within the same
     --- server
     store: {},
