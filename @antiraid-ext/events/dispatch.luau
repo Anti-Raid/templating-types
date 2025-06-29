@@ -17,7 +17,7 @@ end
 
 --- Simple helper method that calls ``callback`` when the event matches the name. See ``doesEventMatch`` for more information
 --- on how the name is matched.
-local function onEvent(event: Primitives.Event, pats: string | {string}, callback: (Primitives.Event) -> ())    
+local function onEvent(event: Primitives.Event, pats: string | {string}, callback: (Primitives.Event) -> ())
     if type(pats) == "string" then
         if doesEventMatch(pats, event) then
             return callback(event)
@@ -31,9 +31,28 @@ local function onEvent(event: Primitives.Event, pats: string | {string}, callbac
     end
 end
 
+--- Simple helper method that calls ``callback`` when the event matches the name. See ``doesEventMatch`` for more information
+--- on how the name is matched.
+local function onEventGeneric<R>(event: Primitives.Event, pats: string | {string}, callback: (Primitives.Event) -> R): R? 
+    if type(pats) == "string" then
+        if doesEventMatch(pats, event) then
+            return callback(event)
+        end
+    else
+        for _, pat in ipairs(pats) do
+            if doesEventMatch(pat, event) then
+                return callback(event)
+            end
+        end
+    end
+
+    return nil
+end
+
 assert(doesEventMatch("Discord.InteractionCreate", {base_name = "Discord", name = "INTERACTION_CREATE"}))
 
 return {
     doesEventMatch = doesEventMatch,
-    onEvent = onEvent
+    onEvent = onEvent,
+    onEventGeneric = onEventGeneric
 }

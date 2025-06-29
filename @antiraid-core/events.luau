@@ -1,67 +1,21 @@
 local discord = require("@discord-types/apiTypes")
-local userinfo = require("@antiraid-core/plugins/userinfo")
+local settings = require("@antiraid-core/settings")
 
---- Data sent when a builtin command is executed.
-export type BuiltinCommandExecuteData = {
-    command: string,
-    user_id: discord.Snowflake,
-    user_info: userinfo.UserInfo
+--- Get settings event
+export type GetSettingsEvent = {
+    author: discord.Snowflake,
 }
 
---- Data sent when a permission check is performed.
-export type PermissionCheckData = {
-    perm: string,
-    user_id: discord.Snowflake,
-    user_info: userinfo.UserInfo
-}
-
---- A moderation action to be performed.
-export type ModerationAction = {
-    Kick: {
-        member: discord.GuildMemberObject
-    }
-} | {
-    TempBan: {
-        user: discord.UserObject,
-        duration: number,
-        prune_dmd: number
-    }
-} | {
-    Ban: {
-        user: discord.UserObject,
-        prune_dmd: number
-    }
-} | {
-    Unban: {
-        user: discord.UserObject
-    }
-} | {
-    Timeout: {
-        member: discord.GuildMemberObject,
-        duration: number -- Duration, in seconds
-    }
-} | {
-    Prune: {
-        user: discord.UserObject?,
-        prune_opts: any,
-        channels: {discord.Snowflake}
-    }
-}
-
---- Data sent when a moderation action is started.
-export type ModerationStartEventData = {
-    correlation_id: string, -- This will also be sent on ModerationEndEventData to correlate the events while avoiding duplication of data
-    action: any,
-    author: discord.GuildMemberObject,
-    num_stings: number,
-    reason: string?
-}
-
---- Data sent when a moderation action is ended.
----
---- This will correlate with a ModerationStart's event data (to avoid duplication of data)
-export type ModerationEndEventData = {
-    correlation_id: string -- Will correlate with a ModerationStart's event data
+--- Setting execute event
+export type SettingExecuteEvent = {
+    --- ID of the setting being executed
+    id: string,
+    --- The author of the event
+    author: discord.Snowflake,
+    --- The operation being performed on the setting
+    op: settings.OperationType,
+    --- The fields
+    fields: {[string]: any},
 }
 
 --- Data sent when a key is updated externally (through the web dashboard etc)
