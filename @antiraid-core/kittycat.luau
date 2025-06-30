@@ -308,7 +308,11 @@ export type CheckPatchChangesError = {
     negator: Permission,
 }
 
-local function cpce_to_string(err: CheckPatchChangesError): string
+local function cpce_to_string(err: CheckPatchChangesError?): string
+    if not err then
+        return "An unknown check_patch_changes error occurred [is nil]"
+    end
+
     if err.type == "NoPermission" then
         return "You do not have permission to change the permission: " .. tostring(err.permission)
     elseif err.type == "LacksNegatorForWildcard" then
