@@ -308,6 +308,16 @@ export type CheckPatchChangesError = {
     negator: Permission,
 }
 
+local function cpce_to_string(err: CheckPatchChangesError): string
+    if err.type == "NoPermission" then
+        return "You do not have permission to change the permission: " .. tostring(err.permission)
+    elseif err.type == "LacksNegatorForWildcard" then
+        return "You do not have a negator for the wildcard permission: " .. tostring(err.wildcard) .. ", missing negator: " .. tostring(err.negator)
+    else
+        return "An unknown check_patch_changes error occurred"
+    end
+end
+
 local function check_patch_changes(manager_perms: {Permission}, current_perms: {Permission}, new_perms: {Permission}): (boolean, CheckPatchChangesError?)
     -- Find symmetric difference between current_perms and new_perms
     local changed: {Permission} = {}
@@ -609,5 +619,6 @@ return {
     has_perm_str = has_perm_str,
     check_patch_changes = check_patch_changes,
     check_patch_changes_str = check_patch_changes_str,
+    cpce_to_string = cpce_to_string,
     test = test
 }
