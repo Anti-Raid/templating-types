@@ -56,13 +56,13 @@ end
 --[[
 	Creates a new snowflake
 ]]
-function Snowflake.Interface.new(snowflake: string)
+function Snowflake.Interface.new(snowflake: string): Snowflake
 	return setmetatable(
 		{
 			snowflake = snowflake,
-		} :: Snowflake,
+		},
 		{ __index = Snowflake.Prototype }
-	)
+	) :: Snowflake
 end
 
 export type Snowflake = typeof(Snowflake.Prototype) & {
