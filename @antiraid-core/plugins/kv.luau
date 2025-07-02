@@ -47,9 +47,7 @@ export type KvExecutor = {
     read origin_guild_id: string,
 
     --- Whether or not unscoped operations are allowed.
-    --- Requires the kv.meta:unscoped_allowed:set to set this field
-    --- and kv.meta:unscoped_allowed to get this field.
-    unscoped_allowed: boolean,
+    read unscoped_allowed: boolean,
 
     --- @yields
     ---
@@ -64,14 +62,14 @@ export type KvExecutor = {
     --- Finds matching records in this key-value scope.
     --- @param query string The key to search for. % matches zero or more characters; _ matches a single character. To search anywhere in a string, surround {KEY} with %, e.g. %{KEY}%
     --- @return {KvRecord} The records.
-    find: (self: KvExecutor, query: string, scopes: {string}?) -> KvRecordList,
+    find: (self: KvExecutor, query: string, scopes: {string}) -> KvRecordList,
 
     --- @yields
     ---
     --- Gets a value from this key-value scope.
     --- @param key string The key of the record.
     --- @return any The value of the record.
-    get: (self: KvExecutor, key: string, scopes: {string}?) -> khronosvalue.KhronosValue,
+    get: (self: KvExecutor, key: string, scopes: {string}) -> khronosvalue.KhronosValue,
 
     --- @yields
     ---
@@ -85,7 +83,7 @@ export type KvExecutor = {
     --- Gets a record from this key-value scope.
     --- @param key string The key of the record.
     --- @return KvRecord The record.
-    getrecord: (self: KvExecutor, key: string, scopes: {string}?) -> KvRecord,
+    getrecord: (self: KvExecutor, key: string, scopes: {string}) -> KvRecord,
 
     --- @yields
     ---
@@ -99,17 +97,17 @@ export type KvExecutor = {
     --- Returns all keys present in this key-value scope.
     ---
     --- This needs the ``kv.meta[SCOPE]:keys`` capability for all scopes provided.
-    keys: (self: KvExecutor, scopes: {string}?) -> KvRecordList,
+    keys: (self: KvExecutor, scopes: {string}) -> KvRecordList,
 
     --- @yields
     ---
     --- Sets a record in the key-value store.
     --- @param key string The key of the record.
     --- @param value any The value of the record.
-    --- @param scopes {string}? The scopes to set the record in. If not provided, the record will be set in the unscoped scope.
+    --- @param scopes {string} The scopes to set the record in. If not provided, the record will be set in the unscoped scope.
     --- @param expires_at datetime.DateTime? The expiration time of the record, if any
     --- @return The result of the set operation, containing whether the key previously existed and the ID of the record.
-    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scopes: {string}?, expires_at: datetime.DateTime?) -> SetResult,
+    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scopes: {string}, expires_at: datetime.DateTime?) -> SetResult,
 
     --- @yields
     --- Sets a record in the key-value store by ID.
@@ -123,7 +121,7 @@ export type KvExecutor = {
     --- Sets the expiry time of a record.
     --- @param key string The key of the record.
     --- @param expires_at datetime.DateTime The new expiration time of the record.
-    setexpiry: (self: KvExecutor, key: string, scopes: {string}?, expires_at: datetime.DateTime?) -> nil,
+    setexpiry: (self: KvExecutor, key: string, scopes: {string}, expires_at: datetime.DateTime?) -> nil,
 
     --- @yields
     ---
@@ -136,7 +134,7 @@ export type KvExecutor = {
     ---
     --- Deletes a record from this key-value scope
     --- @param key string The key of the record.
-    delete: (self: KvExecutor, key: string, scopes: {string}?) -> nil,
+    delete: (self: KvExecutor, key: string, scopes: {string}) -> nil,
 
     --- @yields
     ---

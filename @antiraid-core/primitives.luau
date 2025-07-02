@@ -90,6 +90,10 @@ export type TemplateContext = {
     read ImageCaptcha: imgcaptchaP.Plugin,
     --- Key-Value plugin
     read KV: kvP.Plugin,
+    --- Unscoped Key-Value plugin
+    ---
+    --- This requires the `kv.meta:unscoped_allowed` capability to index into/use
+    read UnscopedKV: kvP.Plugin, 
     --- Lockdowns plugin
     read Lockdowns: lockdownsP.Plugin,
     --- Object Storage plugin
