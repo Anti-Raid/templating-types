@@ -5,7 +5,6 @@ local imgcaptchaP = require("@antiraid-core/plugins/img_captcha")
 local kvP = require("@antiraid-core/plugins/kv")
 local lockdownsP = require("@antiraid-core/plugins/lockdowns")
 local objectstorageP = require("@antiraid-core/plugins/objectstorage")
-local userinfoP = require("@antiraid-core/plugins/userinfo")
 
 -- AntiRaid primitives
 -- 
@@ -98,8 +97,6 @@ export type TemplateContext = {
     read Lockdowns: lockdownsP.Plugin,
     --- Object Storage plugin
     read ObjectStorage: objectstorageP.Plugin,
-    --- User Info plugin
-    read UserInfo: userinfoP.Plugin,
 
     --- The public data associated with the script.
     read data: ScriptData,
