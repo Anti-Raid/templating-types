@@ -41,8 +41,6 @@ export type InnerColumnType = {
     style: string
 }
 
-export type OperationType = "View" | "Create" | "Update" | "Delete"
-
 --- A column in a setting
 export type Column = {
     --- @field string The ID of the column
@@ -69,10 +67,11 @@ export type Column = {
     --- @field boolean Whether or not the column is a secret field
     secret: boolean,
 
-    --- @field {string} The operations for which the field should be ignored (essentially, read only)
-    ---
-    --- Semantics are defined by the template.
-    readonly: {OperationType}
+    --- @field {string} The operations for which the field should be hidden (essentially, not shown in the UI)
+    hidden: {string}?,
+
+    --- @field {string} The operations for which the field should be read only in the UI
+    readonly: {string}
 }
 
 export type Setting = {
@@ -91,8 +90,14 @@ export type Setting = {
     --- @field {Column} The columns for this option
     columns: {Column},
 
+    --- @field string? Index by
+    ---
+    --- If set, all options within the setting will be draggable with the provided index field (must be
+    --- a integer being set to the position of the item in the list)
+    index_by: string?,
+
     --- @field SettingOperations The supported operations for this option
-    operations: {OperationType},
+    operations: {string},
 }
 
 return {}
