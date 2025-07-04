@@ -125,12 +125,76 @@ export type JobServerStore = DataStore & {
     delete: (id: string) -> nil
 }
 
+--- A Template object.
+export type Template = {
+    --- The name of the template
+    name: string,
+    --- The events that trigger the template
+    events: { string },
+    --- The channel to send errors to
+    error_channel: string?,
+    --- The content of the template
+    content: { [string]: string },
+    --- The language of the template
+    lang: string,
+    --- The capabilities allowed for this template
+    allowed_caps: { string },
+    --- The date and time when the template was created
+    created_at: datetime.DateTime,
+    --- The date and time when the template was last updated
+    updated_at: datetime.DateTime,
+    --- Whether or not the template is paused
+    paused: boolean,
+}
+
+--- A CreateTemplate object.
+export type CreateTemplate = {
+    --- The name of the template
+    name: string,
+    --- The events that trigger the template
+    events: { string },
+    --- The channel to send errors to
+    error_channel: string?,
+    --- The content of the template
+    content: { [string]: string },
+    --- The language of the template
+    lang: string,
+    --- The capabilities allowed for this template
+    allowed_caps: { string },
+    --- Whether or not the template is paused
+    paused: boolean,
+}
+
+--- A TemplateStore object.
+export type TemplateStore = DataStore & {
+    --- @yields
+    ---
+    --- Lists all templates
+    list: () -> { Template },
+
+    --- @yields
+    ---
+    --- Creates a new template
+    create: (template: CreateTemplate) -> nil,
+
+    --- @yields
+    ---
+    --- Updates an existing template
+    update: (template: CreateTemplate) -> nil,
+
+    --- @yields
+    ---
+    --- Deletes a template by name
+    delete: (name: string) -> nil,
+}
+
 --- A datastore executor holds DataStore's 
 export type DataStoreExecutor = {
     StatsStore: StatsStore?, -- AntiRaid bot only (CLI not supported)
     CopyDataStore: CopyDataStore?, -- Should be present
     LinksStore: LinksStore?, -- AntiRaid bot only (CLI not supported)
     JobServerStore: JobServerStore?, -- AntiRaid bot only (CLI not supported)
+    TemplateStore: TemplateStore?, -- AntiRaid bot only (CLI not supported)
 }
 
 export type Plugin = DataStoreExecutor
