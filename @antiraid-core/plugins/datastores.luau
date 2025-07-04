@@ -37,7 +37,8 @@ export type LinksStore = DataStore & {
         api_url: string,
         frontend_url: string,
         docs_url: string,
-    }
+    },
+    event_list: () -> { string },
 }
 
 -- Jobserver
