@@ -3,7 +3,7 @@
 local settings = require"@antiraid-core/settings"
 local toArray = require"@antiraid-ext/array".toArray
 
-local function stringColumnType(type: "Scalar" | "Array", min_length: number?, max_length: number?, allowed_values: {string}, kind: string): settings.ColumnType
+local function stringColumnType(type: "Scalar" | "Array", min_length: number?, max_length: number?, allowed_values: {string}, kind: string, suggestions: {string}?): settings.ColumnType
     return {
         type = type,
         inner = {
@@ -11,6 +11,7 @@ local function stringColumnType(type: "Scalar" | "Array", min_length: number?, m
             min_length = min_length,
             max_length = max_length,
             allowed_values = toArray(allowed_values),
+            suggestions = suggestions and toArray(suggestions) or nil,
             kind = kind    
         },
     }
@@ -63,19 +64,6 @@ local function jsonColumnType(type: "Scalar" | "Array", style: string?): setting
     }
 end
 
-local function noSuggestions(): settings.ColumnSuggestion
-    return {
-        type = "None"
-    }
-end
-
-local function staticSuggestions(suggestions: {string}): settings.ColumnSuggestion
-    return {
-        type = "Static",
-        suggestions = toArray(suggestions)
-    }
-end
-
 -- Common fields
 local function columnCreatedAt(): settings.Column 
     return {
@@ -87,7 +75,6 @@ local function columnCreatedAt(): settings.Column
         nullable = false,
         readonly = {"View", "Create", "Update", "Delete"},
         secret = false,
-        suggestions = noSuggestions(),
     }
 end
 
@@ -101,7 +88,6 @@ local function columnCreatedBy(): settings.Column
         nullable = false,
         readonly = {"View", "Create", "Update", "Delete"},
         secret = false,
-        suggestions = noSuggestions(),
     }
 end
 
@@ -115,7 +101,6 @@ local function columnLastUpdatedAt(): settings.Column
         nullable = false,
         readonly = {"View", "Create", "Update", "Delete"},
         secret = false,
-        suggestions = noSuggestions(),
     }
 end
 
@@ -129,7 +114,6 @@ local function columnLastUpdatedBy(): settings.Column
         nullable = false,
         readonly = {"View", "Create", "Update", "Delete"},
         secret = false,
-        suggestions = noSuggestions(),
     }
 end
 
@@ -213,8 +197,6 @@ return {
     bitFlagColumnType = bitFlagColumnType,
     booleanColumnType = booleanColumnType,
     jsonColumnType = jsonColumnType,
-    noSuggestions = noSuggestions,
-    staticSuggestions = staticSuggestions,
 
     -- columns
     columnCreatedAt = columnCreatedAt,

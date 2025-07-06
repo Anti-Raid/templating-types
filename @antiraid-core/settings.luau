@@ -22,6 +22,8 @@ export type InnerColumnType = {
     ---
     --- If empty, all values are allowed.
     allowed_values: {string},
+    --- @field {string}? The suggestions for the string. If not set, no suggestions will be shown.
+    suggestions: {string}?,
     --- @field string The kind of string this is. This will be used to determine how the string is rendered client-side.
     --- e.g. textarea, channel, user, role, kittycat-permission, uuid, interval, timestamp etc.
     kind: string
@@ -60,12 +62,6 @@ export type Column = {
 
     --- @field boolean Whether or not the column is nullable
     nullable: boolean,
-
-    --- @field ColumnSuggestion The suggestions for the column
-    suggestions: ColumnSuggestion,
-
-    --- @field boolean Whether or not the column is a secret field
-    secret: boolean,
 
     --- @field {string} The operations for which the field should be hidden (essentially, not shown in the UI)
     hidden: {string}?,
