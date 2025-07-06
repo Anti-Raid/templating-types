@@ -94,6 +94,12 @@ export type Setting = {
 
     --- @field SettingOperations The supported operations for this option
     operations: {string},
+
+    --- Icon to use for the setting
+    icon: string?,
+
+    --- Client side validation script
+    validation_template: string?,
 }
 
 return {}

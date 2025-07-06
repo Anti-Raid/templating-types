@@ -11,7 +11,7 @@ local function stringColumnType(type: "Scalar" | "Array", min_length: number?, m
             min_length = min_length,
             max_length = max_length,
             allowed_values = toArray(allowed_values),
-            suggestions = suggestions and toArray(suggestions) or nil,
+            suggestions = if suggestions and #suggestions then suggestions :: {string} else nil,
             kind = kind    
         },
     }
