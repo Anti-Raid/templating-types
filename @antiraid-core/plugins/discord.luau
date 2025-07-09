@@ -487,6 +487,9 @@ export type DiscordExecutor = {
     --- (also called a 'fused member' as it contains both the member and the resolved permissions)
     antiraid_get_fused_member: (self: DiscordExecutor, ids: {discord.Snowflake}) -> LazyAntiraidFusedMember,
 
+    --- Returns the member count of a guild if found in cache internally
+    antiraid_guild_member_count: (self: DiscordExecutor) -> number?,
+
     -- Discord API
 
     -- Audit Logs

@@ -80,8 +80,8 @@ export type Setting = {
     --- @field string The description of the option
     description: string,
 
-    --- @field string Title template, used for the title of the embed
-    title_template: string,
+    --- @field string View template, used for setting the title of the embed and handling client side errors etc.
+    view_template: string,
 
     --- @field {Column} The columns for this option
     columns: {Column},
@@ -100,6 +100,9 @@ export type Setting = {
 
     --- Client side validation script
     validation_template: string?,
+
+    --- Post-send script to run after the setting has been sent to the server
+    postsend_template: string?,
 }
 
 return {}
