@@ -1,14 +1,26 @@
+--- A CachedTable is a table that stores key-value pairs with an expiration time.
 export type CachedTable<K, V> = {
+    --- Gets a value from the cache by its key.
+    --- @field {[K]: V} The table that stores the key-value pairs
     get: (self: CachedTable<K, V>, key: K) -> V?, 
+    --- Sets a value in the cache with an expiration time.
+    --- @param key The key to set the value for
+    --- @param value The value to set
+    --- @param expiry The time in seconds after which the value will expire
+    --- @return nil
     set: (self: CachedTable<K, V>, key: K, value: V, expiry: number) -> (),
+    --- Removes a value from the cache by its key.
+    --- @param key The key to remove
+    --- @return nil
     remove: (self: CachedTable<K, V>, key: K) -> (),
+    --- Closes the cache, removing all key-value pairs and cancelling any pending expiries.
+    --- @return nil
     close: (self: CachedTable<K, V>) -> (),
+    --- Gets the number of key-value pairs in the cache.
+    --- @return number The number of key-value pairs in the cache
     len: (self: CachedTable<K, V>) -> number,
 }
 
---- @class CachedTable<K, V>
----
---- A CachedTable is a table that stores key-value pairs with an expiration time.
 local CachedTable = {}
 CachedTable.__index = CachedTable
 

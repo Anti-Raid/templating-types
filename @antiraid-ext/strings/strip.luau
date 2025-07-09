@@ -1,4 +1,9 @@
 --- Strips a set of characters from the beginning and end of a string.
+---
+--- @param str string The string to strip.
+--- @param chars string? The characters to strip. Defaults to whitespace characters (" \t\n\r").
+--- @return string The stripped string.
+--- @return number The index of the last character in the stripped string.
 local function string_strip(str: string, chars: string?): (string, number)
     local start = 1
     local finish = #str

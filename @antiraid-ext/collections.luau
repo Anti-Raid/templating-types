@@ -1,4 +1,4 @@
--- From https://github.com/aatxe/lrt/blob/primary/std/collections.luau
+-- From https://github.com/luau-lang/lute/blob/primary/lute/std/libs/table.luau
 local function map<K, A, B>(table: {[K]: A}, f: (A) -> B): {[K]: B}
     local new = {}
 

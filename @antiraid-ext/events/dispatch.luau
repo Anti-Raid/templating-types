@@ -7,6 +7,9 @@ local Primitives = require("@antiraid-core/primitives")
 --- For example, using either ``Message`` or ``Discord.Message`` as name would match a Discord Message event.
 ---
 --- **Note that this function is case-insensitive and internally converts all strings to lowercase.**
+--- @param pat string The name to match against.
+--- @param event Primitives.Event The event to check.
+--- @return boolean True if the event matches the name, false otherwise.
 local function doesEventMatch(pat: string, event: Primitives.Event)
     local baseName = string.lower(event.base_name)
     local name = string.lower(event.name):gsub("_", "")
@@ -17,13 +20,18 @@ end
 
 --- Simple helper method that calls ``callback`` when the event matches the name. See ``doesEventMatch`` for more information
 --- on how the name is matched.
+---
+--- @param event Primitives.Event The event to listen for.
+--- @param pats string | {string} The name or list of names to match against.
+--- @param callback function The callback to run when the event matches the name. The callback will receive the event as an argument.
+--- @return nil
 local function onEvent(event: Primitives.Event, pats: string | {string}, callback: (Primitives.Event) -> ())
     if type(pats) == "string" then
         if doesEventMatch(pats, event) then
             return callback(event)
         end
     else
-        for _, pat in ipairs(pats) do
+        for _, pat in pats do
             if doesEventMatch(pat, event) then
                 return callback(event)
             end
@@ -39,7 +47,7 @@ local function onEventGeneric<R>(event: Primitives.Event, pats: string | {string
             return callback(event)
         end
     else
-        for _, pat in ipairs(pats) do
+        for _, pat in pats do
             if doesEventMatch(pat, event) then
                 return callback(event)
             end

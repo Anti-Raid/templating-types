@@ -1,16 +1,16 @@
 --- Retrieves a global variable 
 ---
 --- @param k any
---- @returns any
-local function get(k: any)
-    return _G[k]
+--- @return any
+local function get<T>(k: any): T?
+    return _G[k] 
 end
 
 --- Sets a global variable
 ---
 --- @param k any
 --- @param v any
---- @returns void
+--- @return void
 local function set<T>(k: any, v: T)
     _G[k] = v
 end
@@ -21,8 +21,8 @@ end
 --- @param k any
 --- @param default any
 --- @param f fun(v: any): any
---- @returns any
-local function update<T>(k: any, default: () -> T, f: (T) -> T)
+--- @return The result of the function `f` applied to the value of `k`
+local function update<T>(k: any, default: () -> T, f: (T) -> T): T
     local v = _G[k]
     if v == nil then
         v = default()

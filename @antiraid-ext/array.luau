@@ -65,6 +65,8 @@ local function internalProtectedEquals(o1, o2, ignore_mt, callList)
     return true
 end
 
+--- Compares two objects for equality, including arrays and tables.
+---
 ---@param o1 any|table First object to compare
 ---@param o2 any|table Second object to compare
 ---@param ignore_mt boolean True to ignore metatables (a recursive function to tests tables inside tables)
@@ -72,7 +74,12 @@ local function arraysEqual(o1, o2, ignore_mt)
     return internalProtectedEquals(o1, o2, ignore_mt or true, {})
 end
 
-local function toArray<T>(a: T): T --[[ Converts a value to an array. If the value is already an array, it is returned as is. If the value is not an array, it is wrapped in an array. ]]
+--- Converts a value to an array. 
+---
+--- If the value is already an array, it is returned as is with a special ``array_metatable`` set as its metatable.
+---
+--- If the value is not an array, it is wrapped in an array.
+local function toArray<T>(a: T): T 
     if typeof(a) == "table" then
         if getmetatable(a) == interop.array_metatable then
             return a

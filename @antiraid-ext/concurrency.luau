@@ -18,11 +18,14 @@ local intervals: { [number]: IntervalThread } = {}
 ---
 --- Functions like JavaScript's setTimeout.
 ---
---- Should also work on Roblox as well
+--- @param callback The function to call after the delay.
+--- @param delay The delay in milliseconds. If a string is passed, it will be converted to a number.
+--- @param ... Additional arguments to pass to the callback function.
+--- @return tid The timeout ID, which can be used to cancel the timeout with `clearTimeout`.
 local function setTimeout(callback: (any) -> (), delay: number?, ...): number 
     local args = {...}
 
-    if(typeof(delay) == "string") then
+    if typeof(delay) == "string" then
         -- Convert string to number
         delay = tonumber(delay)
     end
@@ -53,11 +56,12 @@ end
 ---
 --- Functions like JavaScript's clearTimeout.
 ---
---- Should also work on Roblox as well
+--- @param tid The timeout ID to cancel.
+--- @return nil
 local function clearTimeout(tid: number)
     local th = timeouts[tid]
 
-    if(not th) then
+    if not th then
         return
     end
 
@@ -72,7 +76,10 @@ end
 ---
 --- Functions like JavaScript's setInterval.
 ---
---- Should also work on Roblox as well
+--- @param callback The function to call at each interval.
+--- @param delay The delay in milliseconds. If a string is passed, it will be converted to a number.
+--- @param ... Additional arguments to pass to the callback function.
+--- @return tid The interval ID, which can be used to cancel the interval with `clear
 local function setInterval(callback: (any) -> (), delay: number?, ...): number    
     local args = {...}
     if(typeof(delay) == "string") then
@@ -80,8 +87,8 @@ local function setInterval(callback: (any) -> (), delay: number?, ...): number
         delay = tonumber(delay)
     end
 
-    -- Default delay is 0
-    delay = delay or 0
+    -- Default delay is 500 milliseconds
+    delay = delay or 500
 
     local tid = #intervals + 1
     intervals[tid] = {
@@ -113,11 +120,12 @@ end
 ---
 --- Functions like JavaScript's clearInterval.
 ---
---- Should also work on Roblox as well
+--- @param tid The interval ID to cancel.
+--- @return nil
 local function clearInterval(tid: number)
     local th = intervals[tid]
 
-    if(not th) then
+    if not th then
         return
     end
 
@@ -130,7 +138,7 @@ local function clearInterval(tid: number)
 end
 
 -- Test
-if(_G._TEST_ASYNC_WORK ~= nil) then
+if(_G.cli ~= nil) then
     setTimeout(function()
         print("Task")
     end, 1000)
@@ -170,7 +178,7 @@ if(_G._TEST_ASYNC_WORK ~= nil) then
 
     setTimeout(function()
         print("Clearing interval for sidABC")
-        clearInterval(sidABC :: number)
+        clearInterval(sidABC)
     end, 100)
 
     print("Hello, world D")
@@ -181,12 +189,8 @@ if(_G._TEST_ASYNC_WORK ~= nil) then
 
     setTimeout(function()
         print("Clearing timeout for tidABC")
-        clearTimeout(tidABC :: number)
+        clearTimeout(tidABC)
     end, 1000)
-
-    task.wait(10)
-
-    --return -1
 end
 
 return {

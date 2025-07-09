@@ -227,10 +227,12 @@ local function parseApplicationCommand(interaction: discord.InteractionObject): 
         return nil -- No data, we can't really proceed from here
     end
 
-    local baseName = interaction.data.name
+    local data = interaction.data :: discord.InteractionDataObject
+
+    local baseName = data.name
 
     -- Get options for further parsing
-    local options = resolveOptions(interaction.data.options or {}, interaction.data.resolved or {} :: discord.ResolvedDataStructure)
+    local options = resolveOptions(data.options or {}, data.resolved or {} :: discord.ResolvedDataStructure)
 
     local namelist = {baseName} -- This will hold the final name list for the command
 

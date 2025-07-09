@@ -17,7 +17,7 @@ local errorTable = {
 }
 
 local function run<T...>(func: (T...) -> (), ...: T...)
-	local ref: thread? = freeThread
+	local ref = freeThread
 	freeThread = nil
 
 	func(...)
@@ -27,30 +27,13 @@ end
 
 local function yieldLoop()
 	while true do
-		run(cyield())
+		run(cyield() :: any)
 	end
 end
 
 local signal = {}
 signal.__index = signal
-type InternalIdentity<T...> = typeof(setmetatable(
-	{} :: {
-		[number]: (T...) -> (),
-	},
-	{
-		-- Workaround for generics: This basically creates a unique metatable type for each signal
-		-- This is because if we use the same metatable for all signals, the generics will be shared because
-		-- well that's how metatables work.
-		__index = signal :: {
-			fire: (self: InternalIdentity<T...>, T...) -> (),
-			connect: (self: InternalIdentity<T...>, callback: (T...) -> ()) -> () -> (),
-			once: (self: InternalIdentity<T...>, callback: (T...) -> ()) -> () -> (),
-			wait: (self: InternalIdentity<T...>) -> T...,
-			disconnectAll: (self: InternalIdentity<T...>) -> T...,
-			delete: (self: InternalIdentity<T...>) -> (),
-		},
-	}
-))
+type InternalIdentity<T...> = setmetatable<{ (T...) -> () }, typeof(signal)>
 
 --[=[
 	@class signal
@@ -63,13 +46,7 @@ type InternalIdentity<T...> = typeof(setmetatable(
 	```
 ]=]
 local function constructor<T...>(): InternalIdentity<T...>
-	return setmetatable(
-		{} :: {
-			[number]: (T...) -> (),
-		},
-		-- See above comment
-		signal :: any
-	)
+	return setmetatable({}, signal)
 end
 
 --[=[
@@ -105,10 +82,10 @@ end
 ]=]
 function signal.connect<T...>(self: InternalIdentity<T...>, callback: (T...) -> ())
 	table.insert(self, callback)
-	local callbackRef = callback
 
 	return function()
-		local index = table.find(self, callbackRef)
+		local index = table.find(self, callback)
+
 		if index then
 			table.remove(self, index)
 		end
@@ -131,14 +108,14 @@ end
 	@return void
 ]=]
 function signal.fire<T...>(self: InternalIdentity<T...>, ...: T...)
-	for _, callback in self do
+	for i = #(self :: any), 1, -1 do
 		if not freeThread then
 			freeThread = coroutine.create(yieldLoop)
 			tspawn(freeThread :: thread)
 		end
 
 		-- Type states don't take into account assigning yet
-		tspawn(freeThread :: thread, callback, ...)
+		tspawn(freeThread :: thread, self[i], ...)
 	end
 end
 
@@ -155,7 +132,8 @@ end
 function signal.once<T...>(self: InternalIdentity<T...>, callback: (T...) -> ())
 	local disconnect
 	disconnect = self:connect(function(...)
-		(disconnect :: any)()
+		assert(disconnect ~= nil, "Luau")
+		disconnect()
 
 		callback(...)
 	end)

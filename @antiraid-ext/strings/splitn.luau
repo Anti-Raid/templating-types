@@ -1,5 +1,10 @@
 --- Splits a string into a table of substrings, using a separator string.
 --- Stops splitting after n substrings have been found or the end of the string is reached.
+---
+--- @param str string The string to split.
+--- @param sep string The separator string to use for splitting.
+--- @param n number The maximum number of substrings to return.
+--- @return A table of strings containing the substrings.
 local function string_splitn(str: string, sep: string, n: number): {string}
     local parts = {}
     local i = 1
