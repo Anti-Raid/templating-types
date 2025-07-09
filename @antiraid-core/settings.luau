@@ -81,7 +81,7 @@ export type Setting = {
     description: string,
 
     --- @field string View template, used for setting the title of the embed and handling client side errors etc.
-    view_template: string,
+    view_template: string?,
 
     --- @field {Column} The columns for this option
     columns: {Column},
@@ -103,6 +103,9 @@ export type Setting = {
 
     --- Post-send script to run after the setting has been sent to the server
     postsend_template: string?,
+
+    --- DEPRACRATED, but still used in production badgerfang (TO REMOVE)
+    title_template: string?,
 }
 
 return {}
