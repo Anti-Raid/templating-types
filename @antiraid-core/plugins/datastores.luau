@@ -137,7 +137,7 @@ export type Template = {
     --- The content of the template
     content: { [string]: string },
     --- The language of the template
-    lang: string,
+    language: string,
     --- The capabilities allowed for this template
     allowed_caps: { string },
     --- The date and time when the template was created
@@ -159,7 +159,7 @@ export type CreateTemplate = {
     --- The content of the template
     content: { [string]: string },
     --- The language of the template
-    lang: string,
+    language: string,
     --- The capabilities allowed for this template
     allowed_caps: { string },
     --- Whether or not the template is paused
