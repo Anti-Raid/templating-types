@@ -267,7 +267,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
                 table.insert(kittycatPermissions, kittycatPerm)
             end
 
-            table.insert(overrideEntries, {userid = record.key, perm_overrides = kittycatPermissions})
+            table.insert(overrideEntries, {userid = record.key, perm_overrides = kittycatPermissions, raw = record})
         end
 
         return overrideEntries
