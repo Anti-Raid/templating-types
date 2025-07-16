@@ -101,7 +101,7 @@ end
 --- this struct contains the roles and channels each lockdown knows about
 export type LockdownSharableData = {
     role_permissions: {[discord.Snowflake]: string},
-    channel_permissions: {[discord.Snowflake]: string}
+    channel_permissions: {[discord.Snowflake]: {discord.OverwriteObject}},
 }
 
 return {

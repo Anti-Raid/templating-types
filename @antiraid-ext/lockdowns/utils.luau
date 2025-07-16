@@ -1,0 +1,125 @@
+local mode = require("./mode")
+local handle = require("./handle")
+local permissions = require("@discord-types/permission")
+local discord = require("@discord-types/apiTypes")
+
+--- Merges a set of lockdown sharable data's assuming that least recent lockdowns are first
+local function mergelsd(lsd: {handle.LockdownSharableData}): handle.LockdownSharableData     
+    local new_channel_perms = {}
+
+    -- Add all new/unique permission overwrites of users/roles
+    --
+    -- If said users overwrites are already present in the map, new overwrites will be ignored.
+    --
+    -- This works because the least recent lockdowns are checked first
+    local per_channel_done_roles = {}
+    local per_channel_done_users = {}
+
+    for _, data in lsd do
+        for channel_id, overwrites in data.channel_permissions do
+            if not per_channel_done_roles[channel_id] then
+                per_channel_done_roles[channel_id] = {}
+            end
+            if not per_channel_done_users[channel_id] then
+                per_channel_done_users[channel_id] = {}
+            end
+            local done_roles = per_channel_done_roles[channel_id]
+            local done_users = per_channel_done_users[channel_id]
+            if not new_channel_perms[channel_id] then
+                new_channel_perms[channel_id] = {}
+            end
+            local channel_pos = new_channel_perms[channel_id]
+
+            for _, overwrite in overwrites do
+                if overwrite.type == permissions.OverwriteObjectTypeRole then
+                    local role_id = overwrite.id
+                    if not done_roles[role_id] then
+                        table.insert(channel_pos, overwrite)
+                        done_roles[role_id] = true
+                    end
+                elseif overwrite.type == permissions.OverwriteObjectTypeMember then
+                    local user_id = overwrite.id
+                    if not done_users[user_id] then
+                        table.insert(channel_pos, overwrite)
+                        done_users[user_id] = true
+                    end
+                end
+            end
+        end
+    end
+
+    -- Merge role permissions, taking only the first found entry
+    local new_role_perms = {}
+
+    for _, data in lsd do
+        for role_id, perms in data.role_permissions do
+            if not new_role_perms[role_id] then
+                new_role_perms[role_id] = perms
+            end
+        end
+    end
+
+    return {
+        role_permissions = new_role_perms,
+        channel_permissions = new_channel_perms,
+    }
+end
+
+--- Returns the underlying permissions (or otherwise) for a given state
+---
+--- This works by merging the shareable data from all lockdowns in the order of least recent first,
+--- to ensure that the permissions are derived from the least recent lockdowns first and then using
+--- `f` to extract the desired data from the merged sharable data
+local function getunderlying<T, U>(
+    lockdowns: {mode.Lockdown},
+    state: T,
+    f: (handle.LockdownSharableData, T) -> U?
+): U?
+    -- Sort lockdown indexes by creation date with least recent first (reverse)
+    local lockdown_idxs = {}
+    for i = 0, #lockdowns - 1 do
+        table.insert(lockdown_idxs, i)
+    end
+
+    table.sort(lockdown_idxs, function(a, b)
+        return lockdowns[a].created_at < lockdowns[b].created_at
+    end)
+
+    -- Now loop over all lockdowns
+    -- Because we sorted by creation date, the least recent lockdowns will be checked first
+    -- hence ensuring the permissions we get are from before lockdowns
+    local unmerged_lsds = {}
+    for _, idx in lockdown_idxs do
+        local lockdown = lockdowns[idx]
+        table.insert(unmerged_lsds, lockdown.type.shareable(lockdown))
+    end
+
+    local merged_lsd = mergelsd(unmerged_lsds)
+
+    return f(merged_lsd, state)
+end
+
+local function getunderlyingrolepermissions(
+    lockdowns: {mode.Lockdown},
+    role_id: discord.Snowflake
+): string?
+    return getunderlying(lockdowns, role_id, function(data: handle.LockdownSharableData, role_id: discord.Snowflake)
+        return data.role_permissions[role_id]
+    end)
+end
+
+local function getunderlyingchannelpermissions(
+    lockdowns: {mode.Lockdown},
+    channel_id: discord.Snowflake
+): {discord.OverwriteObject}?
+    return getunderlying(lockdowns, channel_id, function(data: handle.LockdownSharableData, channel_id: discord.Snowflake)
+        return data.channel_permissions[channel_id]
+    end)
+end
+
+return {
+    mergelsd = mergelsd,
+    getunderlying = getunderlying,
+    getunderlyingrolepermissions = getunderlyingrolepermissions,
+    getunderlyingchannelpermissions = getunderlyingchannelpermissions,
+}

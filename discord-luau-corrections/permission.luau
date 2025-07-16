@@ -120,8 +120,13 @@ local function toBitflag(permissions: {Permissions}): typesext.U64Convertibles
 	return bitflag
 end
 
+local OverwriteObjectTypeRole = 0
+local OverwriteObjectTypeMember = 1
+
 return {
 	Permissions = Permissions,
 	fromBitFlag = fromBitflag,
 	toBitFlag = toBitflag,
+	OverwriteObjectTypeRole = OverwriteObjectTypeRole,
+	OverwriteObjectTypeMember = OverwriteObjectTypeMember,
 }
