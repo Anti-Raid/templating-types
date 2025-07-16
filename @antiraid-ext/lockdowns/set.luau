@@ -1,3 +1,4 @@
+--- @internal Lockdown only
 --- Sets
 ---
 --- Sets can add/get unique elements.
@@ -11,7 +12,9 @@ export type Set<K> = typeof(setmetatable({} :: {
     --- Removes an element from the set 
     remove: (element: K) -> (),
     --- Returns if an element exists in the priority set or not
-    exists: (element: K) -> boolean
+    exists: (element: K) -> boolean,
+    --- Clears the set
+    clear: () -> (),
 }, {} :: {
     __iter: (self: Set<K>) -> () -> K?
 }))
@@ -37,6 +40,10 @@ local function Set<K>(): Set<K>
         return elements[element] ~= nil
     end
 
+    local function clear()
+        elements = {}
+    end
+
     -- Should return iterator function and state as per Luau docs for generalized iterators.
     setmetatable(self, {
         --- Iterates over the elements and their highest priorities
@@ -51,6 +58,7 @@ local function Set<K>(): Set<K>
     self.add = add
     self.remove = remove
     self.exists = exists
+    self.clear = clear
 
     return self :: Set<K>
 end

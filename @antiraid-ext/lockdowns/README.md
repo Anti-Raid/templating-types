@@ -87,4 +87,4 @@ As such, using Rules 1 and 2, the following holds true:
 
 ``tsl + scl/<channel_id> - tsl - scl/<channel_id> = 0``
 
-Current port status: Line 646 of lib.rs with priorityset done
+Current port status: Line 1026 of lib.rs with priorityset done

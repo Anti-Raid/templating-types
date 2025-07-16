@@ -1,3 +1,4 @@
+--- @internal Lockdown only
 --- Priority sets
 ---
 --- PrioritySet can add elements with its priority with all priorities being saved.

@@ -1,17 +1,9 @@
--- WIP/TODO
 local discord = require("@discord-types/apiTypes")
 local datetime = require("@antiraid/datetime")
 local handle = require("./handle")
 local Primitives = require"@antiraid-core/primitives"
 
 export type Lockdown = {
-    --[[
-    pub id: uuid::Uuid,
-    pub reason: String,
-    pub r#type: Box<dyn LockdownMode>,
-    pub data: serde_json::Value,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    ]]
     id: string,
     reason: string,
     type: LockdownMode,
@@ -22,7 +14,7 @@ export type Lockdown = {
 --- Base lockdown mode data
 export type BaseLockdownModeData = {
     guild: discord.GuildObject,
-    channels: { [discord.Snowflake]: discord.ChannelObject },
+    channels: {discord.ChannelObject},
     critical_roles: {discord.Snowflake},
     lockdowns: {Lockdown}
 }
@@ -68,4 +60,35 @@ export type LockdownMode = {
     handle: (data: BaseLockdownModeData, lockdown: Lockdown) -> handle.LockdownModeHandle,
 }
 
-return {}
+local DummyLockdownMode: LockdownMode = {
+    string_form = function() return "dummy" end,
+    specificity = function() return -math.huge end,
+    test = function(data): () error("Cannot apply a test lockdown") end,
+    autofix = function(data): () error("Cannot apply a test lockdown") end,
+    setup = function(data) error("Cannot apply a test lockdown") end,
+    shareable = function(lockdown): any error("Cannot apply a test lockdown") end,
+    create = function(data): () error("Cannot apply a test lockdown") end,
+    revert = function(data): () error("Cannot apply a test lockdown") end,
+    handle = function(data, lockdown): any error("Cannot apply a test lockdown") end,
+}
+
+local lockdownModeRegistry = {}
+local function registerLockdownMode(func: (stringform: string) -> LockdownMode?)
+    table.insert(lockdownModeRegistry, func)
+end
+
+local function getLockdownMode(stringform: string): LockdownMode?
+    for _, func in lockdownModeRegistry do
+        local mode = func(stringform)
+        if mode then
+            return mode
+        end
+    end
+    return nil
+end
+
+return {
+    registerLockdownMode = registerLockdownMode,
+    getLockdownMode = getLockdownMode,
+    DummyLockdownMode = DummyLockdownMode
+}

@@ -3,6 +3,49 @@ local handle = require("./handle")
 local permissions = require("@discord-types/permission")
 local discord = require("@discord-types/apiTypes")
 
+--[[
+/// Returns the critical roles for a [PartialGuild](`serenity::all::PartialGuild`)
+///
+/// The ``set_member_roles`` here are the pre-defined roles set by the server that should be locked down
+/// If ``set_member_roles`` is empty (no overrides), the @everyone role is returned
+pub fn get_critical_roles(
+    pg: &serenity::all::PartialGuild,
+    set_critical_roles: &HashSet<serenity::all::RoleId>,
+) -> Result<HashSet<serenity::all::RoleId>, Error> {
+    if set_critical_roles.is_empty() {
+        // Find the everyone role
+        let everyone_role = pg
+            .roles
+            .iter()
+            .find(|r| r.id.get() == pg.id.get())
+            .ok_or_else(|| Error::from("No @everyone role found"))?;
+
+        Ok(std::iter::once(everyone_role.id).collect())
+    } else {
+        Ok(set_critical_roles.clone())
+    }
+}
+]]
+
+--- Returns the critical roles for a guild
+---
+--- The ``set_member_roles`` here are the pre-defined roles set by the server that should be locked down
+--- If ``set_member_roles`` is empty (no overrides), the @everyone role is returned
+local function getCriticalRoles(guild: discord.GuildObject, set_member_roles: {discord.Snowflake}): {discord.Snowflake}
+    if #set_member_roles == 0 then
+        -- Find the everyone role
+        assert(guild.roles, "Internal error: Guild roles are not set")
+        for _, role in guild.roles do
+            if role.id == guild.id then
+                return {role.id or error("Internal error: @everyone role has no ID")}
+            end
+        end
+        error("Internal error: No @everyone role found")
+    else
+        return set_member_roles
+    end
+end
+
 --- Merges a set of lockdown sharable data's assuming that least recent lockdowns are first
 local function mergelsd(lsd: {handle.LockdownSharableData}): handle.LockdownSharableData     
     local new_channel_perms = {}
@@ -118,6 +161,7 @@ local function getunderlyingchannelpermissions(
 end
 
 return {
+    getCriticalRoles = getCriticalRoles,
     mergelsd = mergelsd,
     getunderlying = getunderlying,
     getunderlyingrolepermissions = getunderlyingrolepermissions,
