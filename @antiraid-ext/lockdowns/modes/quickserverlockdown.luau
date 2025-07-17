@@ -3,6 +3,7 @@ local mode = require("../mode")
 local handle = require("../handle")
 local utils = require("../utils")
 local discord = require "@discord-types/apiTypes"
+local set = require"@antiraid-ext/set"
 
 -- The base permissions for quick lockdown
 --
@@ -142,7 +143,49 @@ local function QuickServerLockdown(): mode.LockdownMode
         }
     end
 
-    --local function create() end
+    local function create(data: mode.ExtLockdownModeData) 
+        assert(data.guild.roles, "Internal error: Guild roles not found")
+        for _, role in data.guild.roles do 
+            if data.critical_roles.exists(role.id) then
+                local newrole = data.ctx.Discord:modify_guild_role({
+                    reason = "Quick server lockdown",
+                    role_id = role.id,
+                    data = {
+                        permissions = tostring(permissions.toBitFlag(LOCKDOWN_PERMS))
+                    }
+                }).data
+                _replace(data, newrole)            
+            end
+        end
+    end
+
+    local function revert(data: mode.ExtLockdownModeData) 
+        assert(data.guild.roles, "Internal error: Guild roles not found")
+
+        local oldpermissions = _fromdata(data.lockdown.data)
+        for _, role in data.guild.roles do 
+            if data.critical_roles.exists(role.id) then
+                local perms = tostring(oldpermissions[role.id] or permissions.toBitFlag(BASE_PERMS))
+
+                local newrole = data.ctx.Discord:modify_guild_role({
+                    reason = "Quick server lockdown",
+                    role_id = role.id,
+                    data = {
+                        permissions = perms
+                    }
+                }).data
+                _replace(data, newrole)            
+            end
+        end
+    end
+
+    local function handle(data: mode.BaseLockdownModeData, lockdown: mode.Lockdown): handle.LockdownModeHandle
+        -- QSL locks the critical roles
+        return {
+            roles = data.critical_roles,
+            channels = set.Set() :: set.Set<discord.Snowflake>,
+        }
+    end
 
     self.string_form = string_form
     self.specificity = specificity
@@ -150,11 +193,9 @@ local function QuickServerLockdown(): mode.LockdownMode
     self.autofix = autofix
     self.setup = setup
     self.shareable = shareable
-
-    self.create = function(data: mode.ExtLockdownModeData): () error("Cannot apply a test lockdown") end
-    self.revert = function(data: mode.ExtLockdownModeData): () error("Cannot apply a test lockdown") end
-    self.handle = function(data: mode.BaseLockdownModeData, lockdown: mode.Lockdown): any error("Cannot apply a test lockdown") end
-
+    self.create = create
+    self.revert = revert
+    self.handle = handle
 
     return self
 end
