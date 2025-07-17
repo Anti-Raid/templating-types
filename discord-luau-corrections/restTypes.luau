@@ -75,7 +75,7 @@ export type EditCurrentApplicationRequest = Request<{
 -- https://discord.com/developers/docs/resources/channel#modify-channel
 export type ModifyChannelRequest = Request<{
 	name: string?, -- 1-100 character channel name
-	type: objects.ChannelType, -- the type of channel; only conversion between text and announcement is supported and only in guilds with the "NEWS" feature
+	type: objects.ChannelType?, -- the type of channel; only conversion between text and announcement is supported and only in guilds with the "NEWS" feature
 	icon: string?, -- (if a group DM, the base64 encoded icon for the group DM)
 	position: number?, -- the position of the channel in the left-hand listing (channels with the same position are sorted by id)
 	topic: string?, -- 0-1024 character channel topic (0-4096 characters for GUILD_FORUM and GUILD_MEDIA channels)
@@ -86,7 +86,7 @@ export type ModifyChannelRequest = Request<{
 	permission_overwrites: { objects.OverwriteObject }?, -- channel or category-specific permissions
 	parent_id: objects.Snowflake?, -- id of the new parent category for a channel
 	rtc_region: string?, -- channel voice region id, automatic when set to null
-	video_quality_mode: objects.VideoQualityMode, -- the camera video quality mode of the voice channel
+	video_quality_mode: objects.VideoQualityMode?, -- the camera video quality mode of the voice channel
 	default_auto_archive_duration: number?, -- the default duration that the clients use (not the API) for newly created threads in the channel, in minutes, to automatically archive the thread after recent activity
 	flags: number?, -- channel flags combined as a bitfield. Currently only REQUIRE_TAG (1 << 4) is supported by GUILD_FORUM and GUILD_MEDIA channels. HIDE_MEDIA_DOWNLOAD_OPTIONS (1 << 15) is supported only by GUILD_MEDIA channels
 	available_tags: { objects.ForumTagObject }?, -- the set of tags that can be used in a GUILD_FORUM or a GUILD_MEDIA channel; limited to 20
@@ -98,7 +98,7 @@ export type ModifyChannelRequest = Request<{
 	auto_archive_duration: number?, -- the thread will stop showing in the channel list after auto_archive_duration minutes of inactivity, can be set to: 60, 1440, 4320, 10080
 	locked: boolean?, -- whether the thread is locked; when a thread is locked, only users with MANAGE_THREADS can unarchive it
 	invitable: boolean?, -- whether non-moderators can add other non-moderators to a thread; only available on private threads
-	applied_tags: {objects.Snowflake} --- the IDs of the set of tags that have been applied to a thread in a GUILD_FORUM or a GUILD_MEDIA channel; limited to 5
+	applied_tags: {objects.Snowflake}? --- the IDs of the set of tags that have been applied to a thread in a GUILD_FORUM or a GUILD_MEDIA channel; limited to 5
 }>
 
 -- https://discord.com/developers/docs/resources/channel#create-message

@@ -719,7 +719,7 @@ export type DefaultReactionObject = {
 
 -- https://discord.com/developers/docs/resources/channel#channel-object
 export type ChannelObject = {
-	id: Snowflake?, -- the id of this channel
+	id: Snowflake, -- the id of this channel
 	type: ChannelType, -- the type of channel
 	guild_id: Snowflake?, -- the id of the guild (may be missing for some channel objects received over gateway guild dispatches)
 	position: number, -- sorting position of the channel (channels with the same position are sorted by id)

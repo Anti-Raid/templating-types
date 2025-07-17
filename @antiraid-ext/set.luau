@@ -18,21 +18,30 @@ export type Set<K> = typeof(setmetatable({} :: {
     exists: (element: K) -> boolean,
     --- Clears the set
     clear: () -> (),
+    --- Copy of the set
+    --- 
+    --- **Time complexity: O(n)** where `n` is the number of elements in the set.
+    copy: () -> Set<K>,
 }, {} :: {
-    __iter: (self: Set<K>) -> () -> K?
+    __iter: (self: Set<K>) -> () -> K?,
+    __len: (self: Set<K>) -> number,
 }))
 
 local function Set<K>(): Set<K>
     local self = {}
 
-    local elements: {[K]: boolean} = {}
+    local elements: {[K]: true} = {}
+    local count = 0 -- Number of elements in the set
 
     local function add(element: K)
         if typeof(element) ~= "string" and typeof(element) ~= "number" then 
             error("Set can only be called using string and number arguments")
         end
 
-        elements[element] = false
+        if elements[element] then return end -- Already exists, no need to add again
+
+        elements[element] = true -- Add the element to the set
+        count += 1
     end
 
     local function insert(elements: {K}) 
@@ -40,7 +49,9 @@ local function Set<K>(): Set<K>
     end
 
     local function remove(element: K)
+        if not elements[element] then return end -- Element does not exist, no need to remove
         elements[element] = nil
+        count -= 1
     end
 
     local function delete(elements: {K}) 
@@ -53,6 +64,15 @@ local function Set<K>(): Set<K>
 
     local function clear()
         elements = {}
+        count = 0
+    end
+
+    local function copy(): Set<K>
+        local newSet = Set()
+        for element in elements do
+            newSet.add(element)
+        end
+        return newSet
     end
 
     -- Should return iterator function and state as per Luau docs for generalized iterators.
@@ -64,6 +84,10 @@ local function Set<K>(): Set<K>
                 return nextEl
             end, elements
         end,
+        --- Returns the number of elements in the set
+        __len = function()
+            return count
+        end,
     })
 
     self.add = add
@@ -72,6 +96,7 @@ local function Set<K>(): Set<K>
     self.delete = delete
     self.exists = exists
     self.clear = clear
+    self.copy = copy
 
     return self :: Set<K>
 end
