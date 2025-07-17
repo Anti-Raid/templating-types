@@ -41,6 +41,7 @@ local function LockdownSet(ctx: Primitives.TemplateContext): LockdownSet
         channels = guild_data.channels,
         critical_roles = criticalroles,
         lockdowns = lockdowns,
+        ctx = ctx
     }
 
     --- Returns a ExtLockdownModeData given handles and the lockdown

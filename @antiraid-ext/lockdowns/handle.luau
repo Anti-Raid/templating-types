@@ -1,4 +1,4 @@
-local set = require("./set")
+local set = require("../set")
 local priorityset = require("./priorityset")
 local discord = require("@discord-types/apiTypes")
 
@@ -13,8 +13,8 @@ export type LockdownModeHandle = {
 --- along with what specificity they have
 local function LockdownModeHandle(): LockdownModeHandle
     local self = {}
-    self.roles = set() :: set.Set<discord.Snowflake>
-    self.channels = set() :: set.Set<discord.Snowflake>
+    self.roles = set.Set() :: set.Set<discord.Snowflake>
+    self.channels = set.Set() :: set.Set<discord.Snowflake>
     return self
 end
 

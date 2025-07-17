@@ -3,6 +3,7 @@ local reflect = require("@discord-types/utils/table/reflect")
 local typesext = require("@antiraid/typesext")
 local bit = typesext.bitu64
 local fromBf = require("@discord-types/utils/frombf")
+local set = require("@antiraid-ext/set")
 
 local Permissions = table.freeze(reflect({
 	CreateInstantInvite = bit.lshift(1, 0),
@@ -105,13 +106,31 @@ export type Permissions =
 	| "SendPolls"
 	| "UseExternalApps"
 
+--- Given a bitflag of permissions, returns a table of permission strings
 local function fromBitflag(bitflag: typesext.U64Convertibles): {Permissions} 
-	return fromBf(bitflag, Permissions :: any) :: any
+	return fromBf.fromBitflag(bitflag, Permissions :: any) :: any
 end
 
+--- Given a bitflag of permissions, returns a set of permission strings
+local function fromBitflagToSet(bitflag: typesext.U64Convertibles): set.Set<Permissions>
+	return fromBf.fromBitflagToSet(bitflag, Permissions :: any) :: any
+end
+
+--- Converts a table of permission strings to a bitflag
 local function toBitflag(permissions: {Permissions}): typesext.U64Convertibles
 	local bitflag = 0
 	for _, permission in permissions do
+		if not Permissions[permission] then
+			error("Invalid permission: " .. permission)
+		end
+		bitflag = bit.bor(bitflag, Permissions[permission] :: string)
+	end
+	return bitflag
+end
+
+local function toBitflagFromSet(permissions: set.Set<Permissions>): typesext.U64Convertibles
+	local bitflag = 0
+	for permission in permissions do
 		if not Permissions[permission] then
 			error("Invalid permission: " .. permission)
 		end
@@ -126,7 +145,9 @@ local OverwriteObjectTypeMember = 1
 return {
 	Permissions = Permissions,
 	fromBitFlag = fromBitflag,
+	fromBitFlagToSet = fromBitflagToSet,
 	toBitFlag = toBitflag,
+	toBitflagFromSet = toBitflagFromSet,
 	OverwriteObjectTypeRole = OverwriteObjectTypeRole,
 	OverwriteObjectTypeMember = OverwriteObjectTypeMember,
 }

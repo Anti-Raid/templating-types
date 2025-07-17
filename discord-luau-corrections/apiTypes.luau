@@ -464,7 +464,7 @@ export type GuildRoleTagObject = {
 
 -- https://discord.com/developers/docs/topics/permissions#role-object
 export type GuildRoleObject = {
-	id: Snowflake?, -- role id
+	id: Snowflake, -- role id
 	name: string, -- role name
 	color: number, -- integer representation of hexadecimal color code
 	hoist: boolean, -- if this role is pinned in the user listing

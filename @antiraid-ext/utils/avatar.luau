@@ -11,7 +11,7 @@ local function avatarUrl(user: apiTypes.UserObject)
     end
 
     local index = 0
-    if user.discriminator or user.discriminator == "0" or user.discriminator == "0000" then
+    if user.discriminator == "0" or user.discriminator == "0000" then
         index = tostring((tonumber(user.discriminator) or 0) % 5)
     else
         index = tostring(typesext.bitu64.rshift(typesext.U64((user :: any).id), 22) % 6) -- ((user_id >> 22) % 6)

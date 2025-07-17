@@ -1,0 +1,162 @@
+local permissions = require"@discord-types/permission"
+local mode = require("../mode")
+local handle = require("../handle")
+local utils = require("../utils")
+local discord = require "@discord-types/apiTypes"
+
+-- The base permissions for quick lockdown
+--
+-- If any of these permissions are provided, quick lockdown cannot proceed
+local BASE_PERMS: {permissions.Permissions} = {
+    "ViewChannel",
+    "SendMessages",
+}
+
+-- Stores the internal set of changes required for the quick server lockdown to perform as expected
+type RoleChange = {
+    op: "Add" | "Remove",
+    perms: {permissions.Permissions},
+    role: discord.GuildRoleObject
+}
+
+local LOCKDOWN_PERMS: {permissions.Permissions} = {"ViewChannel"}
+
+local function QuickServerLockdown(): mode.LockdownMode 
+    local self = {}
+
+    local function _fromdata(data: any): {[discord.Snowflake]: string}
+        for roleId, perm in data do
+            if type(roleId) ~= "string" or type(perm) ~= "string" then
+                error("Invalid data format for QuickServerLockdown")
+            end
+        end
+        return data
+    end
+
+    local function string_form(): string
+        return "qsl"
+    end
+
+    -- Lowest specificity, as it is a quick lockdown
+    local function specificity(): number
+        return 0
+    end
+
+    --- Internal method to replace a role
+    local function _replace(data: mode.BaseLockdownModeData, role: discord.GuildRoleObject) 
+        assert(data.guild.roles, "Internal error: Guild roles not found")
+        for idx, obj in data.guild.roles do 
+            if obj.id == role.id then 
+                data.guild.roles[idx] = role 
+                return
+            end
+        end
+
+        -- If we couldn't update, then add
+        table.insert(data.guild.roles, role)
+    end
+
+    -- Internal method to collect needed role changes
+    local function _test(data: mode.BaseLockdownModeData): {RoleChange}
+        assert(data.guild.roles, "Internal error: Guild roles not found")
+
+        local changes: {RoleChange} = {}
+
+        for _, role in data.guild.roles do 
+            local op: "Add" | "Remove" = if data.critical_roles.exists(role.id) then "Add" else "Remove"
+                
+            local rolePerms = permissions.fromBitFlagToSet(role.permissions)
+
+            local neededPerms = {}
+            for _, perm in BASE_PERMS do
+                if not rolePerms.exists(perm) then
+                    table.insert(neededPerms, perm)
+                end
+            end
+
+            if #neededPerms > 0 then
+                table.insert({
+                    op = op,
+                    perms = neededPerms,
+                    role = role
+                })
+            end
+        end
+
+        return changes
+    end
+
+    local function test(data: mode.BaseLockdownModeData) 
+        local changes = _test(data)
+        if #changes > 0 then
+            local errMsg = "The following changes are required for the quick server lockdown to proceed:\n"
+            for _, change in changes do
+                errMsg = errMsg .. string.format("- %s %s %s (%s)\n", change.op, table.concat(change.perms), change.role.name, change.role.id)
+            end
+            error(errMsg)
+        end
+    end
+
+    local function autofix(data: mode.BaseLockdownModeData) 
+        local changeset = _test(data)
+        for _, change in changeset do 
+            local rolePerms = permissions.fromBitFlagToSet(change.role.permissions)
+            if change.op == "Add" then 
+                rolePerms.insert(change.perms)
+            else 
+                rolePerms.delete(change.perms)
+            end
+
+            -- Update the role permissions
+            local permBitflag = tostring(permissions.toBitflagFromSet(rolePerms))
+            local role = data.ctx.Discord:modify_guild_role({ reason = "Autofix attempted", role_id = change.role.id, data = { permissions = permBitflag } }).data
+
+            _replace(data, role)
+        end
+    end
+
+    local function setup(data: mode.BaseLockdownModeData) 
+        assert(data.guild.roles, "Internal error: Guild roles not found")
+
+        local map: {[discord.Snowflake]: string} = {}
+
+        -- Collect map of roles with the underlying perms
+        for _, role in data.guild.roles do 
+            local perms = role.permissions
+
+            -- Check for an underlying permission to the role
+            local underlying = utils.getunderlyingrolepermissions(data.lockdowns, role.id)
+            if underlying then perms = underlying end -- Update if underlying is present
+
+            map[role.id] = perms
+        end
+
+        return map
+    end
+
+    local function shareable(lockdown: mode.Lockdown): handle.LockdownSharableData 
+        local data = _fromdata(lockdown.data)
+        return {
+            role_permissions = data,
+            channel_permissions = {}
+        }
+    end
+
+    --local function create() end
+
+    self.string_form = string_form
+    self.specificity = specificity
+    self.test = test
+    self.autofix = autofix
+    self.setup = setup
+    self.shareable = shareable
+
+    self.create = function(data: mode.ExtLockdownModeData): () error("Cannot apply a test lockdown") end
+    self.revert = function(data: mode.ExtLockdownModeData): () error("Cannot apply a test lockdown") end
+    self.handle = function(data: mode.BaseLockdownModeData, lockdown: mode.Lockdown): any error("Cannot apply a test lockdown") end
+
+
+    return self
+end
+
+return QuickServerLockdown

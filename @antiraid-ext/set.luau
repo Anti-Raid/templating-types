@@ -1,4 +1,3 @@
---- @internal Lockdown only
 --- Sets
 ---
 --- Sets can add/get unique elements.
@@ -9,8 +8,12 @@
 export type Set<K> = typeof(setmetatable({} :: {
     --- Adds an element to the set
     add: (element: K) -> (),
+    --- Inserts a set of elements into the set
+    insert: (elements: {K}) -> (),
     --- Removes an element from the set 
     remove: (element: K) -> (),
+    --- Deletes a set of elements from the set
+    delete: (elements: {K}) -> (),
     --- Returns if an element exists in the priority set or not
     exists: (element: K) -> boolean,
     --- Clears the set
@@ -32,8 +35,16 @@ local function Set<K>(): Set<K>
         elements[element] = false
     end
 
+    local function insert(elements: {K}) 
+        for _, element in elements do add(element) end
+    end
+
     local function remove(element: K)
         elements[element] = nil
+    end
+
+    local function delete(elements: {K}) 
+        for _, element in elements do remove(element) end
     end
 
     local function exists(element: K): boolean
@@ -56,11 +67,28 @@ local function Set<K>(): Set<K>
     })
 
     self.add = add
+    self.insert = insert
     self.remove = remove
+    self.delete = delete
     self.exists = exists
     self.clear = clear
 
     return self :: Set<K>
 end
 
-return Set
+--- Creates a set from a table of elements
+---
+--- **Time complexity: O(n)** where `n` is the number of elements in the table.
+local function fromtable<K>(table: {K}): Set<K>
+    local Set = Set()
+    for _, element in table do
+        Set.add(element)
+    end
+
+    return Set
+end
+
+return {
+    Set = Set,
+    fromtable = fromtable,
+}

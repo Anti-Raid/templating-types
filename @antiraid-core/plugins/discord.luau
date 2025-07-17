@@ -359,6 +359,24 @@ export type ModifyRolePositionOptions = {
     reason: string
 }
 
+--- Options for modifying a guild role
+export type EditGuildRoleOptions = {
+    --- The reason for the creation
+    reason: string,
+    --- The data to create the role with
+    data: discordRest.ModifyGuildRoleRequest,
+    --- Role ID
+    role_id: discord.Snowflake
+}
+
+--- Options for deleting a guild role
+export type DeleteGuildRoleOptions = {
+    --- The reason for the creation
+    reason: string,
+    --- Role ID
+    role_id: discord.Snowflake
+}
+
 export type CreateChannelInviteOptions = {
     --- The channel ID
     channel_id: discord.Snowflake,
@@ -674,6 +692,16 @@ export type DiscordExecutor = {
     ---
     --- Modify guild role positions
     modify_guild_role_positions: (self: DiscordExecutor, data: ModifyRolePositionOptions) -> LazyRolesObject,
+
+    --- @yields
+    ---
+    --- Modifies a guild role
+    modify_guild_role: (self: DiscordExecutor, data: EditGuildRoleOptions) -> LazyRoleObject,
+
+    --- @yields
+    ---
+    --- Deletes a guild role
+    delete_guild_role: (self: DiscordExecutor, data: DeleteGuildRoleOptions) -> (),
 
     -- Invites
 

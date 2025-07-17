@@ -2,6 +2,7 @@ local discord = require("@discord-types/apiTypes")
 local datetime = require("@antiraid/datetime")
 local handle = require("./handle")
 local Primitives = require"@antiraid-core/primitives"
+local set = require"../set"
 
 export type Lockdown = {
     id: string,
@@ -15,13 +16,13 @@ export type Lockdown = {
 export type BaseLockdownModeData = {
     guild: discord.GuildObject,
     channels: {discord.ChannelObject},
-    critical_roles: {discord.Snowflake},
-    lockdowns: {Lockdown}
+    critical_roles: set.Set<discord.Snowflake>,
+    lockdowns: {Lockdown},
+    ctx: Primitives.TemplateContext,
 }
 
 --- Extended lockdown mode data
 export type ExtLockdownModeData = BaseLockdownModeData & {
-    ctx: Primitives.TemplateContext,
     all_handles: handle.LockdownModeHandles,
     lockdown: Lockdown,
 }
@@ -48,7 +49,7 @@ export type LockdownMode = {
     setup: (data: BaseLockdownModeData) -> any,
 
     --- Returns the sharable lockdown data
-    shareable: (lockdown: Lockdown) -> any,
+    shareable: (lockdown: Lockdown) -> handle.LockdownSharableData,
 
     --- Creates a new lockdown
     create: (data: ExtLockdownModeData) -> (),
