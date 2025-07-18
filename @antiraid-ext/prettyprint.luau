@@ -150,7 +150,7 @@ local function traverseTable(dataTable, seen, indent)
     return output
 end
 
-return function(dataTable)
+return function(dataTable: any)
     if typeof(dataTable) ~= "table" then
         return formatValue(dataTable)
     end
