@@ -95,22 +95,15 @@ local function getunderlying<T, U>(
     state: T,
     f: (handle.LockdownSharableData, T) -> U?
 ): U?
-    -- Sort lockdown indexes by creation date with least recent first (reverse)
-    local lockdown_idxs = {}
-    for i = 0, #lockdowns - 1 do
-        table.insert(lockdown_idxs, i)
-    end
-
-    table.sort(lockdown_idxs, function(a, b)
-        return lockdowns[a].created_at < lockdowns[b].created_at
+    table.sort(lockdowns, function(a: mode.Lockdown, b: mode.Lockdown): boolean
+        return a.created_at < b.created_at
     end)
 
     -- Now loop over all lockdowns
     -- Because we sorted by creation date, the least recent lockdowns will be checked first
     -- hence ensuring the permissions we get are from before lockdowns
     local unmerged_lsds = {}
-    for _, idx in lockdown_idxs do
-        local lockdown = lockdowns[idx]
+    for _, lockdown in lockdowns do
         table.insert(unmerged_lsds, lockdown.type.shareable(lockdown))
     end
 
