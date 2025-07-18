@@ -115,17 +115,14 @@ local function LockdownSet(ctx: Primitives.TemplateContext): LockdownSet
     --- Removes a lockdown from the set
     local function remove(id: string): mode.Lockdown
         local lockdown: mode.Lockdown? = nil
-        local idx: number? = nil
         for i, l in lockdowns do
             if l.id == id then
                 lockdown = l
-                idx = i
                 break
             end
         end
 
         assert(lockdown, "Lockdown with ID " .. id .. " not found")
-        assert(idx, "Lockdown with ID " .. id .. " not found in the list [idx not set]")
 
         local currenthandles = _getHandles()
 
@@ -142,7 +139,16 @@ local function LockdownSet(ctx: Primitives.TemplateContext): LockdownSet
         lockdownmanager.delete(lockdown.id)
 
         -- Remove the lockdown from the list
+        local idx = nil
+        for i, l in lockdowns do
+            if l.id == id then
+                idx = i
+                break
+            end
+        end
+        assert(idx, "Lockdown with ID " .. id .. " not found in the list")
         table.remove(lockdowns, idx)
+
         return lockdown
     end
 
