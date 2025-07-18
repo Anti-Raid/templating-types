@@ -62,7 +62,7 @@ local function QuickServerLockdown(): mode.LockdownMode
             end
 
             if #neededPerms > 0 then
-                table.insert({
+                table.insert(changes, {
                     op = op,
                     perms = neededPerms,
                     role = role
