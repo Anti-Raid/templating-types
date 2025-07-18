@@ -33,7 +33,7 @@ local function LockdownManager(ctx: Primitives.TemplateContext, reg_val: mode.Lo
 
     local function _parseLockdown(item: kv.KvRecord): mode.Lockdown
         assert(item.exists, "Internal error: Lockdown item does not exist")
-        local lockdownId = item.id
+        local lockdownId = item.key
         local reason = assertString("reason", item.value.reason)
         local type_val = assertString("type", item.value.type)
         local modev = mode.getLockdownMode(reg, type_val)
