@@ -1,6 +1,6 @@
 local discord = require "@discord-types/apiTypes"
 local discordRest = require "@discord-types/restTypes"
-local lazy = require "@antiraid/lazy"
+local lazy = require "@antiraid-core/lazy"
 local typesext = require "@antiraid/typesext"
 
 --- Options for getting audit logs in Discord
