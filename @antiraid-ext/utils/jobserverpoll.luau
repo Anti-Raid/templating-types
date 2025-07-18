@@ -136,10 +136,11 @@ local function jobToEmbed(
     end
 
     local description = string.format(
-        "%s Job state: %s\nJob ID: %s\nCreated at: <t:%d:R>",
+        "%s Job state: %s\nJob ID: %s\nJob Task: %s\nCreated at: <t:%d:R>",
         getIconOfState(job.state),
         job.state,
         job.id,
+        job.name,
         job.created_at.timestamp_seconds
     )
 
