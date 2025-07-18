@@ -114,7 +114,7 @@ local function QuickServerLockdown(): mode.LockdownMode
             -- Update the role permissions
             local permBitflag = tostring(permissions.toBitflagFromSet(rolePerms))
 
-            if #rolePerms - #permissions.fromBitFlagToSet(change.role.permissions) ~= #change.perms then 
+            if math.abs(#rolePerms - #permissions.fromBitFlagToSet(change.role.permissions)) ~= #change.perms then 
                 error("Internal error: sanity check failed - The number of permissions changed does not match the expected number [going from " .. change.role.permissions .. " to " .. permBitflag .. "]")
             end
 
