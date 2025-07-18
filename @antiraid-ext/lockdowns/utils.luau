@@ -139,10 +139,54 @@ local function getunderlyingchannelpermissions(
     end)
 end
 
+--- Replaces a role in the guild roles list
+local function replacerole(data: mode.BaseLockdownModeData, role: discord.GuildRoleObject, hint_idx: number?) 
+    assert(data.guild.roles, "Internal error: Guild roles not found")
+
+    if hint_idx then
+        if data.guild.roles[hint_idx] and data.guild.roles[hint_idx].id == role.id then
+            data.guild.roles[hint_idx] = role
+            return
+        end
+    end
+
+    for idx, obj in data.guild.roles do 
+        if obj.id == role.id then 
+            data.guild.roles[idx] = role 
+            return
+        end
+    end
+
+    -- If we couldn't update, then add
+    table.insert(data.guild.roles, role)
+end
+
+--- Replaces a channel in the guild channel list
+local function replacechannel(data: mode.BaseLockdownModeData, channel: discord.ChannelObject, hint_idx: number?) 
+    if hint_idx then
+        if data.channels[hint_idx] and data.channels[hint_idx].id == channel.id then
+            data.channels[hint_idx] = channel
+            return
+        end
+    end
+
+    for idx, obj in data.channels do 
+        if obj.id == channel.id then 
+            data.channels[idx] = channel 
+            return
+        end
+    end
+
+    -- If we couldn't update, then add
+    table.insert(data.channels, channel)
+end
+
 return {
     getCriticalRoles = getCriticalRoles,
     mergelsd = mergelsd,
     getunderlying = getunderlying,
     getunderlyingrolepermissions = getunderlyingrolepermissions,
     getunderlyingchannelpermissions = getunderlyingchannelpermissions,
+    replacerole = replacerole,
+    replacechannel = replacechannel,
 }

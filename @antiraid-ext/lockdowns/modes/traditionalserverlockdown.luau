@@ -17,22 +17,9 @@ local DENY_PERMS: {permissions.Permissions} = {
 local function TraditionalLockdown(): mode.LockdownMode 
     local self = {}
 
-    --- Internal method to replace a channel
-    local function _replace(data: mode.BaseLockdownModeData, channel: discord.ChannelObject) 
-        for idx, obj in data.channels do 
-            if obj.id == channel.id then 
-                data.channels[idx] = channel 
-                return
-            end
-        end
-
-        -- If we couldn't update, then add
-        table.insert(data.channels, channel)
-    end
-
     local function _fromdata(data: any): {[discord.Snowflake]: {discord.OverwriteObject}}
-        for roleId, perm in data do
-            if type(roleId) ~= "string" or type(perm) ~= "table" then
+        for channelid, perm in data do
+            if type(channelid) ~= "string" or type(perm) ~= "table" then
                 error("Invalid data format for TraditionalLockdown")
             end
 
@@ -50,7 +37,7 @@ local function TraditionalLockdown(): mode.LockdownMode
     end
 
     local function string_form(): string
-        return "qtsl"
+        return "tsl"
     end
 
     --- TSL > QSL as it updates all channels in a server
@@ -72,7 +59,7 @@ local function TraditionalLockdown(): mode.LockdownMode
             local underlying = utils.getunderlyingchannelpermissions(data.lockdowns, channel.id)
             if underlying then overwrites = underlying end -- Update if underlying is present
 
-            map[channel.id] = overwrites
+            map[channel.id] = overwrites or {} -- Use the overwrites or an empty table if none exist
         end
 
         return map
@@ -88,7 +75,7 @@ local function TraditionalLockdown(): mode.LockdownMode
 
     local function create(data: mode.ExtLockdownModeData) 
         local limiter = ActionLimiter(2, 3) -- 2 attempts every 3 seconds
-        for _, channel in data.channels do 
+        for idx, channel in data.channels do 
             if data.all_handles.ischannellocked(channel.id, specificity()) then 
                 continue -- Someone else is handling this channel
             end
@@ -129,7 +116,7 @@ local function TraditionalLockdown(): mode.LockdownMode
                 }
             }).data
 
-            _replace(data, newchannel)
+            utils.replacechannel(data, newchannel, idx)
         end
     end
 
@@ -153,7 +140,7 @@ local function TraditionalLockdown(): mode.LockdownMode
                 }
             }).data
 
-            _replace(data, newchannel)
+            utils.replacechannel(data, newchannel)
         end
     end
 

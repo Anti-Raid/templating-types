@@ -43,20 +43,6 @@ local function QuickServerLockdown(): mode.LockdownMode
         return 0
     end
 
-    --- Internal method to replace a role
-    local function _replace(data: mode.BaseLockdownModeData, role: discord.GuildRoleObject) 
-        assert(data.guild.roles, "Internal error: Guild roles not found")
-        for idx, obj in data.guild.roles do 
-            if obj.id == role.id then 
-                data.guild.roles[idx] = role 
-                return
-            end
-        end
-
-        -- If we couldn't update, then add
-        table.insert(data.guild.roles, role)
-    end
-
     -- Internal method to collect needed role changes
     local function _test(data: mode.BaseLockdownModeData): {RoleChange}
         assert(data.guild.roles, "Internal error: Guild roles not found")
@@ -112,7 +98,7 @@ local function QuickServerLockdown(): mode.LockdownMode
             local permBitflag = tostring(permissions.toBitflagFromSet(rolePerms))
             local role = data.ctx.Discord:modify_guild_role({ reason = "Autofix attempted", role_id = change.role.id, data = { permissions = permBitflag } }).data
 
-            _replace(data, role)
+            utils.replacerole(data, role)
         end
     end
 
@@ -145,7 +131,7 @@ local function QuickServerLockdown(): mode.LockdownMode
 
     local function create(data: mode.ExtLockdownModeData) 
         assert(data.guild.roles, "Internal error: Guild roles not found")
-        for _, role in data.guild.roles do 
+        for idx, role in data.guild.roles do 
             if data.critical_roles.exists(role.id) then
                 local newrole = data.ctx.Discord:modify_guild_role({
                     reason = "Quick server lockdown",
@@ -154,7 +140,7 @@ local function QuickServerLockdown(): mode.LockdownMode
                         permissions = tostring(permissions.toBitFlag(LOCKDOWN_PERMS))
                     }
                 }).data
-                _replace(data, newrole)            
+                utils.replacerole(data, newrole, idx)            
             end
         end
     end
@@ -163,7 +149,7 @@ local function QuickServerLockdown(): mode.LockdownMode
         assert(data.guild.roles, "Internal error: Guild roles not found")
 
         local oldpermissions = _fromdata(data.lockdown.data)
-        for _, role in data.guild.roles do 
+        for idx, role in data.guild.roles do 
             if data.critical_roles.exists(role.id) then
                 local perms = tostring(oldpermissions[role.id] or permissions.toBitFlag(BASE_PERMS))
 
@@ -174,7 +160,7 @@ local function QuickServerLockdown(): mode.LockdownMode
                         permissions = perms
                     }
                 }).data
-                _replace(data, newrole)            
+                utils.replacerole(data, newrole, idx)            
             end
         end
     end
