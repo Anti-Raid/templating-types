@@ -4,6 +4,7 @@ local assertString = require "@antiraid-ext/settings".assertString
 local kv = require "@antiraid-core/plugins/kv"
 local typesext = require "@antiraid/typesext"
 local datetime = require "@antiraid/datetime"
+local DEFAULT_REGISTRY = require "./moderegistry".DEFAULT_REGISTRY
 
 export type CreateLockdown = {
     id: string?, -- ID of the lockdown, if not provided a random one will be generated
@@ -26,15 +27,16 @@ export type LockdownManager = {
 }
 
 --- A data fetcher for lockdowns.
-local function LockdownManager(ctx: Primitives.TemplateContext): LockdownManager
+local function LockdownManager(ctx: Primitives.TemplateContext, reg_val: mode.LockdownModeRegistry?): LockdownManager
+    local reg = reg_val or DEFAULT_REGISTRY
     local self = {}
 
     local function _parseLockdown(item: kv.KvRecord): mode.Lockdown
         assert(item.exists, "Internal error: Lockdown item does not exist")
         local lockdownId = item.id
         local reason = assertString("reason", item.value.reason)
-        local type = assertString("type", item.value.type)
-        local modev = mode.getLockdownMode(type)
+        local type_val = assertString("type", item.value.type)
+        local modev = mode.getLockdownMode(reg, type_val)
         local ldata = item.value.data
         local createdAt = item.created_at
 

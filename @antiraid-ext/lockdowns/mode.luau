@@ -73,13 +73,11 @@ local DummyLockdownMode: LockdownMode = {
     handle = function(data, lockdown): any error("Cannot apply a test lockdown") end,
 }
 
-local lockdownModeRegistry = {}
-local function registerLockdownMode(func: (stringform: string) -> LockdownMode?)
-    table.insert(lockdownModeRegistry, func)
-end
+export type RegistryCall = (stringform: string) -> LockdownMode?;
+export type LockdownModeRegistry = {RegistryCall}
 
-local function getLockdownMode(stringform: string): LockdownMode?
-    for _, func in lockdownModeRegistry do
+local function getLockdownMode(reg: LockdownModeRegistry, stringform: string): LockdownMode?
+    for _, func in reg do
         local mode = func(stringform)
         if mode then
             return mode
@@ -89,7 +87,6 @@ local function getLockdownMode(stringform: string): LockdownMode?
 end
 
 return {
-    registerLockdownMode = registerLockdownMode,
     getLockdownMode = getLockdownMode,
     DummyLockdownMode = DummyLockdownMode
 }
