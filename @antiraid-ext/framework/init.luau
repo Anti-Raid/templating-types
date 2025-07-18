@@ -1,8 +1,10 @@
 local coretypes = require"@self/coretypes"
 local storage = require"@self/storage"
-local coreframework = require"@self/coreframework"
+local flowbase = require"@self/flowbase"
+local commandbuilder = require"@self/commandbuilder"
 
 export type Framework = coretypes.Framework
+export type BaseFramework = coretypes.BaseFramework
 export type Command = coretypes.Command
 export type KeyExpiryData = coretypes.KeyExpiryData
 export type ButtonCallbackData = coretypes.ButtonCallbackData
@@ -14,5 +16,9 @@ return {
     getFramework = storage.get,
     setFramework = storage.set,
     replaceFramework = storage.replace,
-    Framework = coreframework.Framework,
+
+    CommandBuilder = commandbuilder,
+
+    -- Base framework
+    FlowBase = flowbase.BaseFramework,
 }

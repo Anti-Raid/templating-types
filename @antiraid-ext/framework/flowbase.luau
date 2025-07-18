@@ -4,20 +4,30 @@ local discord = require"@discord-types/apiTypes"
 local commandBuilder = require "@discord-types/builders/interaction/interaction"
 local interaction = require"@antiraid-ext/interactions"
 local pp = require"@antiraid-ext/prettyprint"
+local CommandBuilder = require"./commandbuilder"
 
 local APP_COMMAND_CHATINPUT = 1
 
-local function Framework(strict: boolean?): coretypes.Framework
+--- FlowFramework provides a Framework interface with the following special features:
+---
+--- 1. Commands can be registered directly as full name, e.g: "test foo bar" with the
+--- commands being automatically compiled into a single command with subcommands.
+--- 2. Subcommands and subcommand groups are automatically handled, with the base command
+--- being created if it does not exist.
+--- 3. getcommand returns either the full command (if registered as such) or the base command
+--- if the command was registered as one monolithic unit.
+local function BaseFramework(strict_val: boolean?): coretypes.BaseFramework
+    local strict = strict_val == nil or strict_val
     local self = {}
 
     -- Internal storage for compiled commands
     local compiled_commands = nil :: {discordRestTypes.CreateGuildApplicationCommandRequest}?
 
-    self.registered_commands = {} :: {[string]: coretypes.Command}
+    local registered_commands = {} :: {[string]: coretypes.Command}
     self.suffix = nil :: string?
 
     -- Registers a command in the framework.
-    local function registerCommand(command: coretypes.Command, allowOverwrite: boolean?)
+    local function registerCommand(command: coretypes.Command)
         if not command or not command.name or not command.command or not command.run then
             error("Invalid command provided")
         end
@@ -26,11 +36,11 @@ local function Framework(strict: boolean?): coretypes.Framework
             command.name = command.name .. self.suffix
         end
 
-        if not allowOverwrite and self.registered_commands[command.name] then
+        if strict and registered_commands[command.name] then
             error("Command with name '" .. command.name .. "' is already registered")
         end
 
-        self.registered_commands[command.name] = command
+        registered_commands[command.name] = command
         compiled_commands = nil -- Invalidate compiled commands
     end
 
@@ -46,7 +56,7 @@ local function Framework(strict: boolean?): coretypes.Framework
             [3] = {}  -- Subcommand 
         }
 
-        for _, command in self.registered_commands do 
+        for _, command in registered_commands do 
             -- Split command.name by spaces to handle subcommands
             local split = command.name:split(" ")
 
@@ -65,14 +75,19 @@ local function Framework(strict: boolean?): coretypes.Framework
         -- First add the base commands
         for _, commandData in compiledCommandsMap[1] do
             local req = commandData.req
+            -- Set the type to ChatInput
             req.type = APP_COMMAND_CHATINPUT
-            req.integration_types = {interaction.IntegrationType("GuildInstall")}
+            -- Set the integration type to GuildInstall if not already set
+            if not req.integration_types or #req.integration_types == 0 then
+                req.integration_types = {interaction.IntegrationType("GuildInstall")}
+            end
+            -- Add the base command to the compiled commands
             table.insert(compiledCommands, commandData.req)
         end
 
         -- Next add the subcommands, with a base command autoadded
         for _, commandData in compiledCommandsMap[2] do
-            -- Check if the base command exists, if not create it
+            -- Check if the base command exists
             local baseCommandObj = nil :: discordRestTypes.CreateGuildApplicationCommandRequest?
             for _, cmd in compiledCommands do
                 if cmd.name == commandData.parts[1] then
@@ -81,6 +96,11 @@ local function Framework(strict: boolean?): coretypes.Framework
                 end
             end
 
+            -- If the base command does not exist, create it
+            -- and add it to the compiled commands
+            --
+            -- As Lua tables are reference types, just mutating the baseCommandObj
+            -- table after insertion to compiledCommands should work
             if baseCommandObj == nil then
                 baseCommandObj = commandBuilder.new({ name = commandData.parts[1] })
                     :addIntegrationType("GuildInstall")
@@ -96,7 +116,7 @@ local function Framework(strict: boolean?): coretypes.Framework
                 table.insert(compiledCommands, baseCommandObj)
             end
 
-            -- Add the subcommand to the base command
+            -- Some type assertions and verifications
             baseCommandObj = baseCommandObj :: discordRestTypes.CreateGuildApplicationCommandRequest
 
             if not baseCommandObj.options then
@@ -105,10 +125,11 @@ local function Framework(strict: boolean?): coretypes.Framework
 
             local options = baseCommandObj.options :: {discord.ApplicationCommandOptionObject}
 
-            -- Validate options
+            -- Validate options to ensure the base command does not have any non-subcommand related options
             if #options > 0 then 
                 for _, option in options do
-                    if option.type ~= interaction.ApplicationCommandOptionType("SubCommand") then 
+                    -- It is perfectly valid for a base command to have subcommands and a subcommand group
+                    if option.type ~= interaction.ApplicationCommandOptionType("SubCommand") and option.type ~= interaction.ApplicationCommandOptionType("SubCommandGroup") then 
                         error("A subcommand can only be added to a base command if the base command has no other options but " .. option.name .. " is not a subcommand")
                     end
                     if option.name == commandData.parts[2] then 
@@ -164,10 +185,15 @@ local function Framework(strict: boolean?): coretypes.Framework
 
             -- Check if the subcommand group exists, if not create it
             local subcommand = nil :: discord.ApplicationCommandOptionObject?
-            for _, option in options do
-                if option.name == commandData.parts[2] then 
-                    subcommand = option
-                    break
+            if #options > 0 then 
+                for _, option in options do
+                    -- It is perfectly valid for a base command to have subcommands and a subcommand group
+                    if option.type ~= interaction.ApplicationCommandOptionType("SubCommand") and option.type ~= interaction.ApplicationCommandOptionType("SubCommandGroup") then 
+                        error("A subcommand can only be added to a base command if the base command has no other options but " .. option.name .. " is not a subcommand")
+                    end
+                    if option.name == commandData.parts[2] then 
+                        subcommand = option
+                    end
                 end
             end
 
@@ -216,77 +242,37 @@ local function Framework(strict: boolean?): coretypes.Framework
         return compiled_commands :: {discordRestTypes.CreateGuildApplicationCommandRequest}
     end
 
+    local function getcommand(name: {string}): coretypes.Command?
+        if not name or #name == 0 then
+            error("Name cannot be empty")
+        end
+
+        local command = registered_commands[table.concat(name, " ")]
+        if command then
+            return command :: coretypes.Command
+        end
+        
+        if #name > 1 then 
+            command = registered_commands[name[1]]
+            if command then
+                return command :: coretypes.Command
+            end
+        end
+
+        return nil
+    end
+
     self.registerCommand = registerCommand
     self._compileCommands = _compileCommands
     self.commands = commands
-
-    return self
-end
-
-local function CommandBuilder(): coretypes.CommandBuilder
-    local self = {}
-
-    local function setSchema(schema: discordRestTypes.CreateGuildApplicationCommandRequest): coretypes.CommandBuilder
-        self.schema = schema :: discordRestTypes.CreateGuildApplicationCommandRequest?
-        return self :: coretypes.CommandBuilder
-    end
-
-    local function addSchema(name: string, fn: (commandBuilder.Interaction) -> commandBuilder.JSON): coretypes.CommandBuilder
-        local baseSchema = commandBuilder.new({ name = name })
-            :addIntegrationType("GuildInstall")
-            :setType("ChatInput")
-            :addContext("Guild")
-
-        self.schema = fn(baseSchema) :: discordRestTypes.CreateGuildApplicationCommandRequest?
-        return self :: coretypes.CommandBuilder
-    end
-
-    local function setRun(run: (data: coretypes.RunData) -> ()): coretypes.CommandBuilder
-        self.run = run :: ((coretypes.RunData) -> ())?
-        return self :: coretypes.CommandBuilder
-    end
-
-    local function setAutocompleter(autocompleter: ((data: coretypes.AutocompleteRunData) -> {discord.ApplicationCommandOptionChoiceObject})?): coretypes.CommandBuilder
-        self.autocompleter = autocompleter :: ((coretypes.AutocompleteRunData) -> {discord.ApplicationCommandOptionChoiceObject})?
-        return self :: coretypes.CommandBuilder
-    end
-
-    local function setKeyExpirations(keyexpiries: {[string]: (data: coretypes.KeyExpiryData) -> nil}?): coretypes.CommandBuilder
-        self.keyexpiries = keyexpiries :: {[string]: (data: coretypes.KeyExpiryData) -> nil}?
-        return self :: coretypes.CommandBuilder
-    end
-
-    local function build(): coretypes.Command
-        assert(self.schema, "Command schema is not set")
-        assert(self.run, "Command run function is not set")
-
-        return {
-            name = self.schema.name,
-            command = self.schema,
-            run = self.run,
-            autocompleter = self.autocompleter,
-            keyexpiries = self.keyexpiries,
-        } :: coretypes.Command
-    end
-
-    self.schema = nil :: discordRestTypes.CreateGuildApplicationCommandRequest?
-    self.run = nil :: ((coretypes.RunData) -> ())?
-    self.autocompleter = nil :: ((coretypes.AutocompleteRunData) -> {discord.ApplicationCommandOptionChoiceObject})?
-    self.keyexpiries = nil ::  {[string]: (data: coretypes.KeyExpiryData) -> nil}?
-
-    self.setSchema = setSchema
-    self.addSchema = addSchema
-    self.setRun = setRun
-    self.setAutocompleter = setAutocompleter
-    self.setKeyExpirations = setKeyExpirations
-    self.build = build
+    self.getcommand = getcommand
 
     return self
 end
 
 -- Test Framework.commands
 if _G.cli then 
-    local TFramework = Framework()
+    local TFramework = BaseFramework()
     TFramework.registerCommand(
         CommandBuilder()
         .addSchema("test foo bar", function(i): commandBuilder.JSON 
@@ -322,5 +308,5 @@ if _G.cli then
 end
 
 return {
-    Framework = Framework,
+    BaseFramework = BaseFramework,
 }

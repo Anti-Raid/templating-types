@@ -10,20 +10,25 @@ local events = require"@antiraid-core/events"
 local commandBuilder = require "@discord-types/builders/interaction/interaction"
 
 --- Framework provides a simple abstraction for building custom scripts with
---- command handling etc. done for you.
+--- command handling etc. done for you
 export type Framework = {
-    --- The commands that are registered in the framework.
-    read registered_commands: {[string]: Command},
+    base: BaseFramework
+}
+
+--- BaseFramework provides a simple abstraction around command registration.
+export type BaseFramework = {
     --- What command suffix is being used for commands.
     ---
     --- This is useful for prod/dev environments
     suffix: string?,
     --- Registers a command in the framework.
-    registerCommand: (command: Command, allowOverwrite: boolean?) -> (),
+    registerCommand: (command: Command) -> (),
     --- Returns the compiled commands of the framework.
     ---
     --- This moves subcommands and subcommand groups to the base command (creating the base command if needed)
-    commands: () -> {discordRestTypes.CreateGuildApplicationCommandRequest}
+    commands: () -> {discordRestTypes.CreateGuildApplicationCommandRequest},
+    --- Returns the closest command given the name as a split string (by space)
+    getcommand: (name: {string}) -> Command?,
 }
 
 --- A builder for creating commands in the framework.
