@@ -43,7 +43,7 @@ local function SingleChannelLockdown(channelid: discord.Snowflake): mode.Lockdow
         return 2
     end
 
-    --- TSL doesn't need to test anything so this is a no-op
+    --- SCL doesn't need to test anything so this is a no-op
     local function test_autofix_noop(_data: mode.BaseLockdownModeData) end
 
     local function setup(data: mode.BaseLockdownModeData) 

@@ -86,7 +86,7 @@ export type Permissions =
 	| "ManageNicknames"
 	| "ManageRoles"
 	| "ManageWebhooks"
-	| "ManageEmojisAndStickers"
+	| "ManageGuildExpressions"
 	| "UseApplicationCommands"
 	| "RequestToSpeak"
 	| "ManageEvents"
