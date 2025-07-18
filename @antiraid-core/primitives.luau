@@ -3,7 +3,6 @@ local datastoresP = require("@antiraid-core/plugins/datastores")
 local discordP = require("@antiraid-core/plugins/discord")
 local imgcaptchaP = require("@antiraid-core/plugins/img_captcha")
 local kvP = require("@antiraid-core/plugins/kv")
-local lockdownsP = require("@antiraid-core/plugins/lockdowns")
 local objectstorageP = require("@antiraid-core/plugins/objectstorage")
 
 -- AntiRaid primitives
@@ -93,8 +92,6 @@ export type TemplateContext = {
     ---
     --- This requires the `kv.meta:unscoped_allowed` capability to index into/use
     read UnscopedKV: kvP.Plugin, 
-    --- Lockdowns plugin
-    read Lockdowns: lockdownsP.Plugin,
     --- Object Storage plugin
     read ObjectStorage: objectstorageP.Plugin,
 
