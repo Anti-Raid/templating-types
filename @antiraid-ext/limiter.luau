@@ -30,6 +30,7 @@ local function ActionLimiter(allowed: number, timePeriod: number, penalty_multip
             -- Too many attempts, sleep for PENALTY_MULTIPLIER times the time period
             local sleepTime = timePeriod * penalty_multiplier
             task.wait(sleepTime)
+            table.clear(attempts) -- Clear attempts after sleeping
             return
         end
 
