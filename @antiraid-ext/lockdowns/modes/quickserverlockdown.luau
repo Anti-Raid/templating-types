@@ -104,21 +104,14 @@ local function QuickServerLockdown(): mode.LockdownMode
     local function autofix(data: mode.BaseLockdownModeData) 
         local changeset = _test(data)
         for _, change in changeset do 
-            local rolePerms = permissions.fromBitFlagToSet(change.role.permissions)
+            local newperms = change.role.permissions
             if change.op == "Add" then 
-                rolePerms.insert(change.perms)
+                newperms = permissions.addToPerms(change.role.permissions, change.perms)
             else 
-                rolePerms.delete(change.perms)
+                newperms = permissions.removeFromPerms(change.role.permissions, change.perms)
             end
             
-            -- Update the role permissions
-            local permBitflag = tostring(permissions.toBitflagFromSet(rolePerms))
-
-            if math.abs(#rolePerms - #permissions.fromBitFlagToSet(change.role.permissions)) ~= #change.perms then 
-                error("Internal error: sanity check failed - The number of permissions changed does not match the expected number [going from " .. change.role.permissions .. " to " .. permBitflag .. "]")
-            end
-
-            local role = data.ctx.Discord:modify_guild_role({ reason = "Autofix attempted", role_id = change.role.id, data = { permissions = permBitflag } }).data
+            local role = data.ctx.Discord:modify_guild_role({ reason = "Autofix attempted", role_id = change.role.id, data = { permissions = tostring(newperms) } }).data
 
             utils.replacerole(data, role)
         end

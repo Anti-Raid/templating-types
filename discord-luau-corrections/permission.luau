@@ -128,6 +128,7 @@ local function toBitflag(permissions: {Permissions}): typesext.U64Convertibles
 	return bitflag
 end
 
+--- Converts a set of permission strings to a bitflag
 local function toBitflagFromSet(permissions: set.Set<Permissions>): typesext.U64Convertibles
 	local bitflag = 0
 	for permission in permissions do
@@ -137,6 +138,24 @@ local function toBitflagFromSet(permissions: set.Set<Permissions>): typesext.U64
 		bitflag = bit.bor(bitflag, Permissions[permission] :: string)
 	end
 	return bitflag
+end
+
+--- Adds the given permissions to the bitflag
+---
+--- Unlike the other methods here, this method is non-destructive and does not modify the original bitflag.
+--- (e.g. if Discord has new permissions we don't know about, those will still be preserved)
+local function addToPerms(bf: typesext.U64Convertibles, permissions: {Permissions}): typesext.U64Convertibles
+	local bitflag = toBitflag(permissions)
+	return bit.bor(bf, bitflag)
+end
+
+--- Removes the given permissions from the bitflag
+---
+--- Unlike the other methods here, this method is non-destructive and does not modify the original bitflag.
+--- (e.g. if Discord has new permissions we don't know about, those will still be preserved)
+local function removeFromPerms(bf: typesext.U64Convertibles, permissions: {Permissions}): typesext.U64Convertibles
+	local bitflag = toBitflag(permissions)
+	return bit.band(bf, bit.bnot(bitflag))
 end
 
 local OverwriteObjectTypeRole = 0
@@ -150,4 +169,6 @@ return {
 	toBitflagFromSet = toBitflagFromSet,
 	OverwriteObjectTypeRole = OverwriteObjectTypeRole,
 	OverwriteObjectTypeMember = OverwriteObjectTypeMember,
+	addToPerms = addToPerms,
+	removeFromPerms = removeFromPerms,
 }
