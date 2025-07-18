@@ -56,7 +56,7 @@ local function QuickServerLockdown(): mode.LockdownMode
 
             local neededPerms = {}
             for _, perm in BASE_PERMS do
-                if not rolePerms.exists(perm) then
+                if rolePerms.exists(perm) then
                     table.insert(neededPerms, perm)
                 end
             end
