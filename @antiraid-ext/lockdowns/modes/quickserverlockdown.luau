@@ -115,7 +115,7 @@ local function QuickServerLockdown(): mode.LockdownMode
             local permBitflag = tostring(permissions.toBitflagFromSet(rolePerms))
 
             if #rolePerms - #permissions.fromBitFlagToSet(change.role.permissions) ~= #change.perms then 
-                error("Sanity check failed: The number of permissions changed does not match the expected number")
+                error("Internal error: sanity check failed - The number of permissions changed does not match the expected number [going from " .. change.role.permissions .. " to " .. permBitflag .. "]")
             end
 
             local role = data.ctx.Discord:modify_guild_role({ reason = "Autofix attempted", role_id = change.role.id, data = { permissions = permBitflag } }).data
