@@ -20,6 +20,8 @@ export type LockdownSet = {
     remove: (id: string) -> mode.Lockdown,
     --- Removes all lockdowns in order of specificity
     removeall: () -> (),
+    --- Run the autofixer for a lockdown mode
+    autofix: (mode: mode.LockdownMode) -> (),
 }
 
 --- Creates a new LockdownSet
@@ -161,6 +163,11 @@ local function LockdownSet(ctx: Primitives.TemplateContext): LockdownSet
 
         table.clear(lockdowns)
     end
+
+    --- Run the autofixer for a lockdown mode
+    local function autofix(mode: mode.LockdownMode)
+        mode.autofix(baseLockdownModeData)
+    end
     
     self.lockdowns = lockdowns
     self.settings = settings
@@ -170,6 +177,7 @@ local function LockdownSet(ctx: Primitives.TemplateContext): LockdownSet
     self.apply = apply
     self.remove = remove
     self.removeall = removeall
+    self.autofix = autofix
 
     return self
 end

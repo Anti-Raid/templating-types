@@ -46,7 +46,11 @@ local function TraditionalLockdown(): mode.LockdownMode
     end
 
     --- TSL doesn't need to test anything so this is a no-op
-    local function test_autofix_noop(_data: mode.BaseLockdownModeData) end
+    local function test_noop(_data: mode.BaseLockdownModeData) end
+
+    local function autofix_noop(_data: mode.BaseLockdownModeData): ()
+        error("A Traditional Lockdown does not support autofixing")
+    end
 
     local function setup(data: mode.BaseLockdownModeData) 
         local map: {[discord.Snowflake]: {discord.OverwriteObject}} = {}
@@ -158,8 +162,8 @@ local function TraditionalLockdown(): mode.LockdownMode
 
     self.string_form = string_form
     self.specificity = specificity
-    self.test = test_autofix_noop
-    self.autofix = test_autofix_noop
+    self.test = test_noop
+    self.autofix = autofix_noop
     self.setup = setup
     self.shareable = shareable
     self.create = create
