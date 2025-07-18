@@ -50,23 +50,40 @@ local function QuickServerLockdown(): mode.LockdownMode
         local changes: {RoleChange} = {}
 
         for _, role in data.guild.roles do 
-            local op: "Add" | "Remove" = if data.critical_roles.exists(role.id) then "Add" else "Remove"
-                
-            local rolePerms = permissions.fromBitFlagToSet(role.permissions)
+            if data.critical_roles.exists(role.id) then
+                local rolePerms = permissions.fromBitFlagToSet(role.permissions)
 
-            local neededPerms = {}
-            for _, perm in BASE_PERMS do
-                if rolePerms.exists(perm) then
-                    table.insert(neededPerms, perm)
+                local neededPerms = {}
+                for _, perm in BASE_PERMS do
+                    if not rolePerms.exists(perm) then
+                        table.insert(neededPerms, perm)
+                    end
                 end
-            end
 
-            if #neededPerms > 0 then
-                table.insert(changes, {
-                    op = op,
-                    perms = neededPerms,
-                    role = role
-                })
+                if #neededPerms > 0 then
+                    table.insert(changes, {
+                        op = "Add",
+                        perms = neededPerms,
+                        role = role
+                    })
+                end
+            else 
+                local rolePerms = permissions.fromBitFlagToSet(role.permissions)
+
+                local neededPerms = {}
+                for _, perm in BASE_PERMS do
+                    if rolePerms.exists(perm) then
+                        table.insert(neededPerms, perm)
+                    end
+                end
+
+                if #neededPerms > 0 then
+                    table.insert(changes, {
+                        op = "Remove",
+                        perms = neededPerms,
+                        role = role
+                    })
+                end
             end
         end
 
@@ -78,7 +95,7 @@ local function QuickServerLockdown(): mode.LockdownMode
         if #changes > 0 then
             local errMsg = "The following changes are required for the quick server lockdown to proceed:\n"
             for _, change in changes do
-                errMsg = errMsg .. string.format("- %s %s %s (%s)\n", change.op, table.concat(change.perms), change.role.name, change.role.id)
+                errMsg = errMsg .. string.format("- %s %s %s (%s)\n", change.op, table.concat(change.perms, ", "), change.role.name, change.role.id)
             end
             error(errMsg)
         end
@@ -93,7 +110,7 @@ local function QuickServerLockdown(): mode.LockdownMode
             else 
                 rolePerms.delete(change.perms)
             end
-
+            
             -- Update the role permissions
             local permBitflag = tostring(permissions.toBitflagFromSet(rolePerms))
             local role = data.ctx.Discord:modify_guild_role({ reason = "Autofix attempted", role_id = change.role.id, data = { permissions = permBitflag } }).data
