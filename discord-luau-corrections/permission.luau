@@ -68,7 +68,7 @@ export type Permissions =
 	| "Stream"
 	| "ViewChannel"
 	| "SendMessages"
-	| "SendTtsMessages"
+	| "SendTTSMessages"
 	| "ManageMessages"
 	| "EmbedLinks"
 	| "AttachFiles"

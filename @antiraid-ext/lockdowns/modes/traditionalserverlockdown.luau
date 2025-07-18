@@ -10,7 +10,7 @@ local ActionLimiter = require"@antiraid-ext/limiter"
 local DENY_PERMS: {permissions.Permissions} = {
     "SendMessages",
     "SendMessagesInThreads",
-    "SendTtsMessages",
+    "SendTTSMessages",
     "Connect",
 }
 

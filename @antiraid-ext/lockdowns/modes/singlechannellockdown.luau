@@ -9,7 +9,7 @@ local set = require"@antiraid-ext/set"
 local DENY_PERMS: {permissions.Permissions} = {
     "SendMessages",
     "SendMessagesInThreads",
-    "SendTtsMessages",
+    "SendTTSMessages",
     "Connect",
 }
 
