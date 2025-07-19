@@ -1,8 +1,18 @@
 local Primitives = require "@antiraid-core/primitives"
+local interop = require "@antiraid/interop"
 
 --- Returns the exact set of events that builtins has access to
 local function getSubscribedEvents(ctx: Primitives.TemplateContext): {string}
     return ctx.data.events
+end
+
+local function _cloneTableDespiteMetatable(t: {string}): {string} 
+    local newTable = {}
+    for _, v in t do
+        table.insert(newTable, v)
+    end
+    setmetatable(newTable, interop.array_metatable)
+    return newTable
 end
 
 --- Registers a event
@@ -26,7 +36,7 @@ local function registerEvent(ctx: Primitives.TemplateContext, event: string): ()
 
     if not template and ctx.data.name == "$builtins" then 
         -- Builtins special case: The template may not be on DB
-        local events = table.clone(ctx.data.events)
+        local events = _cloneTableDespiteMetatable(ctx.data.events)
         table.insert(events, event)
         ts.create({
             name = ctx.data.name,
@@ -41,7 +51,7 @@ local function registerEvent(ctx: Primitives.TemplateContext, event: string): ()
 
     assert(template, "Template not found in TemplateStore")
 
-    local events = table.clone(template.events)
+    local events = _cloneTableDespiteMetatable(template.events)
     table.insert(events, event)
 
     ts.update({
