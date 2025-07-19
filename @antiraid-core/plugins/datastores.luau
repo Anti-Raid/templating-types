@@ -175,6 +175,11 @@ export type TemplateStore = DataStore & {
 
     --- @yields
     ---
+    --- Gets a template by name
+    get: (name: string) -> Template?,
+
+    --- @yields
+    ---
     --- Creates a new template
     create: (template: CreateTemplate) -> nil,
 
