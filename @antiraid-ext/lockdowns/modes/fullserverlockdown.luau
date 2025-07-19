@@ -22,20 +22,20 @@ type RoleChange = {
 
 local LOCKDOWN_PERMS: {permissions.Permissions} = {"ViewChannel"}
 
-local function QuickServerLockdown(): mode.LockdownMode 
+local function FullServerLockdown(): mode.LockdownMode 
     local self = {}
 
     local function _fromdata(data: any): {[discord.Snowflake]: string}
         for roleId, perm in data do
             if type(roleId) ~= "string" or type(perm) ~= "string" then
-                error("Invalid data format for QuickServerLockdown")
+                error("Invalid data format for FullServerLockdown")
             end
         end
         return data
     end
 
     local function string_form(): string
-        return "qsl"
+        return "full"
     end
 
     -- Lowest specificity, as it is a quick lockdown
@@ -86,6 +86,8 @@ local function QuickServerLockdown(): mode.LockdownMode
                 end
             end
         end
+
+        -- TODO: In the future, check channels too
 
         return changes
     end
@@ -181,7 +183,7 @@ local function QuickServerLockdown(): mode.LockdownMode
     end
 
     local function handle(data: mode.BaseLockdownModeData, lockdown: mode.Lockdown): handle.LockdownModeHandle
-        -- QSL locks the critical roles
+        -- FullServerLockdown locks the critical roles
         return {
             roles = data.critical_roles,
             channels = set.Set() :: set.Set<discord.Snowflake>,
@@ -201,4 +203,4 @@ local function QuickServerLockdown(): mode.LockdownMode
     return self
 end
 
-return QuickServerLockdown
+return FullServerLockdown

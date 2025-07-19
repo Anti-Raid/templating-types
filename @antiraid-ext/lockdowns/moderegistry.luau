@@ -1,19 +1,11 @@
-local qsl = require"./modes/quickserverlockdown"
-local tsl = require"./modes/traditionalserverlockdown"
+local full = require"./modes/fullserverlockdown"
 local scl = require"./modes/singlechannellockdown"
 local role = require"./modes/rolelockdown"
 local mode = require"./mode"
 
-local qsl_regcallback: mode.RegistryCall = function(stringform: string): mode.LockdownMode?
-    if stringform == "qsl" then
-        return qsl()
-    end
-    return nil
-end
-
-local tsl_regcallback: mode.RegistryCall = function(stringform: string): mode.LockdownMode?
-    if stringform == "tsl" then
-        return tsl()
+local full_regcallback: mode.RegistryCall = function(stringform: string): mode.LockdownMode?
+    if stringform == "qsl" or stringform == "full" then
+        return full()
     end
     return nil
 end
@@ -47,8 +39,7 @@ local role_regcallback: mode.RegistryCall = function(stringform: string): mode.L
 end
 
 local DEFAULT_REGISTRY: mode.LockdownModeRegistry = {
-    qsl_regcallback,
-    tsl_regcallback,
+    full_regcallback,
     scl_regcallback,
     role_regcallback
 }
