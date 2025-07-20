@@ -8,6 +8,15 @@ local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local appcommands = require"@antiraid-ext/appcommands"
 local events = require"@antiraid-core/events"
 local commandBuilder = require "@discord-types/builders/interaction/interaction"
+local settings = require "@antiraid-core/settings"
+
+export type BaseFrameworkData = {
+    stingManager: stingmanager.StingManager,
+    punishmentmanager: punishmentmanager.PunishmentManager,
+    builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
+    userinfomanager: userinfomanager.UserInfoManager,
+    settings: {settings.Setting},
+}
 
 --- Framework provides a simple abstraction for building custom scripts with
 --- command handling etc. done for you
@@ -18,7 +27,21 @@ export type Framework = {
     attachButtonCallback: (buttonId: string, callback: (bcd: ButtonCallbackData) -> nil) -> nil,
     --- Drops a button callback from the framework.
     dropButtonCallback: (buttonId: string) -> nil,
+    --- Base framework data. Will only be set on first dispatch
+    data: BaseFrameworkData?,
 }
+
+export type SettingsData = {
+    userinfomanager: userinfomanager.UserInfoManager,
+    ctx: primitives.TemplateContext, 
+}
+
+export type FrameworkSetting = {
+    schema: settings.Setting?,
+    dynSchema: (ctx: primitives.TemplateContext) -> settings.Setting,
+    execute: (event: events.SettingExecuteEvent, data: SettingsData) -> any
+}
+
 
 --- BaseFramework provides a simple abstraction around command registration.
 export type BaseFramework = {
@@ -28,6 +51,8 @@ export type BaseFramework = {
     suffix: string?,
     --- Registers a command in the framework.
     registerCommand: (command: Command) -> (),
+    --- Registers a setting into the framework.
+    registerSetting: (name: string, setting: FrameworkSetting) -> (),
     --- Returns the compiled commands of the framework.
     ---
     --- This moves subcommands and subcommand groups to the base command (creating the base command if needed)
@@ -36,6 +61,8 @@ export type BaseFramework = {
     getcommand: (name: {string}) -> Command?,
     --- Returns a list of all commands in the framework.
     getcommands: () -> {[string]: Command},
+    --- Returns a list of all settings in the framework.
+    getsettings: () -> {[string]: FrameworkSetting},
 }
 
 --- A builder for creating commands in the framework.
@@ -55,10 +82,10 @@ export type CommandBuilder = {
 }
 
 export type Command = {
-    --- The full name of the command.
-    name: string,
     --- Discord command definition.
     command: discordRestTypes.CreateGuildApplicationCommandRequest,
+    --- A register command to return the command definition at runtime.
+    register: (() -> discordRestTypes.CreateGuildApplicationCommandRequest)?,
     --- The function that runs when the command is executed.
     run: (data: RunData) -> (),
     --- The function that runs when the command is autocompleted.

@@ -3,6 +3,7 @@ local coretypes = require"@self/coretypes"
 local function Framework(base: coretypes.BaseFramework): coretypes.Framework 
     local self = {}
     self.base = base
+    self.data = nil :: coretypes.BaseFrameworkData?
 
     local attachedButtonCallbacks = {} :: { [string]: (bcd: coretypes.ButtonCallbackData) -> nil }
 

@@ -26,22 +26,46 @@ local function BaseFramework(strict_val: boolean?): coretypes.BaseFramework
     local registered_commands = {} :: {[string]: coretypes.Command}
     self.suffix = nil :: string?
 
+    local registered_settings = {} :: {[string]: coretypes.FrameworkSetting}
+
     -- Registers a command in the framework.
     local function registerCommand(command: coretypes.Command)
-        if not command or not command.name or not command.command or not command.run then
+        if command.register then 
+            command.command = command.register()
+        end
+
+        if not command or not command.command or not command.run then
             error("Invalid command provided")
         end
 
         if self.suffix then
-            command.name = command.name .. self.suffix
+            local commandname = command.command.name:split(" ")
+            commandname[1] = commandname[1] .. self.suffix
+            command.command.name = table.concat(commandname, " ")
         end
 
-        if strict and registered_commands[command.name] then
-            error("Command with name '" .. command.name .. "' is already registered")
+        if strict and registered_commands[command.command.name] then
+            error("Command with name '" .. command.command.name .. "' is already registered")
         end
 
-        registered_commands[command.name] = command
+        registered_commands[command.command.name] = command
         compiled_commands = nil -- Invalidate compiled commands
+    end
+
+    local function registerSetting(name: string, setting: coretypes.FrameworkSetting)
+        if not setting or (not setting.schema and not setting.dynSchema) or not setting.execute then
+            error("Invalid setting provided")
+        end
+
+        if self.suffix then
+            name ..= self.suffix
+        end
+
+        if strict and registered_settings[name] then
+            error("Setting with name '" .. name .. "' is already registered")
+        end
+
+        registered_settings[name] = setting
     end
 
     local function _compileCommands(): {discordRestTypes.CreateGuildApplicationCommandRequest} 
@@ -58,10 +82,10 @@ local function BaseFramework(strict_val: boolean?): coretypes.BaseFramework
 
         for _, command in registered_commands do 
             -- Split command.name by spaces to handle subcommands
-            local split = command.name:split(" ")
+            local split = command.command.name:split(" ")
 
             if #split ~= 1 and #split ~= 2 and #split ~= 3 then
-                error("Command name '" .. command.name .. "' must be either a single word (command), two words (subcommand), or three words (subcommand group)")
+                error("Command name '" .. command.command.name .. "' must be either a single word (command), two words (subcommand), or three words (subcommand group)")
             end
 
             table.insert(compiledCommandsMap[#split], {
@@ -266,11 +290,17 @@ local function BaseFramework(strict_val: boolean?): coretypes.BaseFramework
         return registered_commands
     end
 
+    local function getsettings(): {[string]: coretypes.FrameworkSetting}
+        return registered_settings
+    end
+
     self.registerCommand = registerCommand
+    self.registerSetting = registerSetting
     self._compileCommands = _compileCommands
     self.commands = commands
     self.getcommand = getcommand
     self.getcommands = getcommands
+    self.getsettings = getsettings
 
     return self
 end
