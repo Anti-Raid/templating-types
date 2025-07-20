@@ -1,4 +1,4 @@
-local coretypes = require"@self/coretypes"
+local coretypes = require"./coretypes"
 
 local function Framework(base: coretypes.BaseFramework): coretypes.Framework 
     local self = {}
