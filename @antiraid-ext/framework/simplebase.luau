@@ -65,7 +65,7 @@ local function BaseFramework(strict_val: boolean?): coretypes.BaseFramework
             error("Name cannot be empty")
         end
 
-        local command = registered_commands[table.concat(name, " ")]
+        local command = registered_commands[name[1]]
         if command then
             return command :: coretypes.Command
         end
