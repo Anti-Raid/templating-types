@@ -3,7 +3,7 @@ local FlowBase = require"./flowbase"
 local Framework = require"./framework"
 local coretypes = require"./coretypes"
 
-local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, ...: {coretypes.Command}) 
+local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, commands: {coretypes.Command}) 
     if not base or type(base) ~= "table" then
         error("Base framework must be a valid BaseFramework instance")
     end
@@ -11,7 +11,7 @@ local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, .
     local self = Framework.Framework(base)
 
     -- Register all commands passed to the framework
-    for _, command in ... do
+    for _, command in commands do
         if command and type(command) == "table" then
             self.base.registerCommand(command)
         else
@@ -22,12 +22,12 @@ local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, .
     return self
 end
 
-local function SimpleFramework(strict_val: boolean, suffix: string?, ...: {coretypes.Command}) 
-    return CustomFramework(SimpleBase.BaseFramework(strict_val), suffix, ...)
+local function SimpleFramework(strict_val: boolean, suffix: string?, commands: {coretypes.Command}) 
+    return CustomFramework(SimpleBase.BaseFramework(strict_val), suffix, commands)
 end
 
-local function FlowFramework(strict_val: boolean, suffix: string?, ...: {coretypes.Command}) 
-    return CustomFramework(FlowBase.BaseFramework(strict_val), suffix, ...)
+local function FlowFramework(strict_val: boolean, suffix: string?, commands: {coretypes.Command}) 
+    return CustomFramework(FlowBase.BaseFramework(strict_val), suffix, commands)
 end
 
 return {
