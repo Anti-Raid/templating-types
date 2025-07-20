@@ -1,7 +1,7 @@
-local SimpleBase = require"@self/simplebase"
-local FlowBase = require"@self/flowbase"
-local Framework = require"@self/framework"
-local coretypes = require"@self/coretypes"
+local SimpleBase = require"./simplebase"
+local FlowBase = require"./flowbase"
+local Framework = require"./framework"
+local coretypes = require"./coretypes"
 
 local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, ...: {coretypes.Command}) 
     if not base or type(base) ~= "table" then
