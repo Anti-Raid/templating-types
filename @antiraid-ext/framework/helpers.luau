@@ -10,6 +10,10 @@ local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, c
 
     local self = Framework.Framework(base)
 
+    if suffix then 
+        self.base.suffix = suffix
+    end
+
     -- Register all commands passed to the framework
     for _, command in commands do
         if command and type(command) == "table" then
