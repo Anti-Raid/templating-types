@@ -1,5 +1,4 @@
 local discord = require("@discord-types/apiTypes")
-local settings = require("@antiraid-core/settings")
 
 --- Get settings event
 export type GetSettingsEvent = {
@@ -13,7 +12,7 @@ export type SettingExecuteEvent = {
     --- The author of the event
     author: discord.Snowflake,
     --- The operation being performed on the setting
-    op: settings.OperationType,
+    op: string,
     --- The fields
     fields: {[string]: any},
 }

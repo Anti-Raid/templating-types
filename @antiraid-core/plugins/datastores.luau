@@ -2,6 +2,7 @@
 
 local khronosvalue = require "@antiraid-core/khronosvalue"
 local datetime = require("@antiraid/datetime")
+local lazy = require "@antiraid-core/lazy"
 
 --- A Base DataStore object.
 export type DataStore = {
@@ -135,7 +136,7 @@ export type Template = {
     --- The channel to send errors to
     error_channel: string?,
     --- The content of the template
-    content: { [string]: string },
+    content: LazyContent,
     --- The language of the template
     language: string,
     --- The capabilities allowed for this template
@@ -148,6 +149,9 @@ export type Template = {
     paused: boolean,
 }
 
+type Content = { [string]: string }
+type LazyContent = lazy.Lazy<Content>
+
 --- A CreateTemplate object.
 export type CreateTemplate = {
     --- The name of the template
@@ -157,7 +161,7 @@ export type CreateTemplate = {
     --- The channel to send errors to
     error_channel: string?,
     --- The content of the template
-    content: { [string]: string },
+    content: { [string]: string } | LazyContent,
     --- The language of the template
     language: string,
     --- The capabilities allowed for this template
