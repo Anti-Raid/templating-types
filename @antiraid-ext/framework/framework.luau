@@ -18,8 +18,13 @@ local function Framework(base: coretypes.BaseFramework): coretypes.Framework
         return nil
     end    
 
+    local function getButtonCallback(buttonId: string): ((bcd: coretypes.ButtonCallbackData) -> nil)?
+        return attachedButtonCallbacks[buttonId]
+    end
+
     self.attachButtonCallback = attachButtonCallback
     self.dropButtonCallback = dropButtonCallback
+    self.getButtonCallback = getButtonCallback
 
     return self
 end

@@ -27,6 +27,9 @@ export type Framework = {
     attachButtonCallback: (buttonId: string, callback: (bcd: ButtonCallbackData) -> nil) -> nil,
     --- Drops a button callback from the framework.
     dropButtonCallback: (buttonId: string) -> nil,
+    --- Gets a button callback from the framework.
+    getButtonCallback: (buttonId: string) -> ((bcd: ButtonCallbackData) -> nil)?,
+    --- The data that is being used by the framework.
     --- Base framework data. Will only be set on first dispatch
     data: BaseFrameworkData?,
 }

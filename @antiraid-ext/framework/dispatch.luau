@@ -63,15 +63,11 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
 
     InteractionCreate(evt, function(interaction: apiTypes.InteractionObject)              
         if interaction.type == Interaction.InteractionType.MessageComponent then 
-            if not _G.attachedButtonCallbacks then
-                return
-            end
-
             if not interaction.data or not interaction.data.custom_id then 
                 return
             end
 
-            local callback: (bcd: coretypes.ButtonCallbackData) -> nil = (_G.attachedButtonCallbacks :: any)[interaction.data.custom_id]
+            local callback: ((bcd: coretypes.ButtonCallbackData) -> nil)? = framework.getButtonCallback(interaction.data.custom_id)
             if not callback then
                 local comps = nil
                 local linksstore = ctx.DataStores.LinksStore 
@@ -107,7 +103,7 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
             end
 
             local function removeCallback(): nil
-                _G.attachedButtonCallbacks[interaction.data.custom_id] = nil
+                framework.dropButtonCallback(interaction.data.custom_id)
                 return nil
             end
 
