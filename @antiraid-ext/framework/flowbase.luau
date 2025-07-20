@@ -262,10 +262,15 @@ local function BaseFramework(strict_val: boolean?): coretypes.BaseFramework
         return nil
     end
 
+    local function getcommands(): {[string]: coretypes.Command}
+        return registered_commands
+    end
+
     self.registerCommand = registerCommand
     self._compileCommands = _compileCommands
     self.commands = commands
     self.getcommand = getcommand
+    self.getcommands = getcommands
 
     return self
 end

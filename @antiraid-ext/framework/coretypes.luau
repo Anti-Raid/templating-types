@@ -12,7 +12,12 @@ local commandBuilder = require "@discord-types/builders/interaction/interaction"
 --- Framework provides a simple abstraction for building custom scripts with
 --- command handling etc. done for you
 export type Framework = {
-    base: BaseFramework
+    --- The base framework that is being used.
+    base: BaseFramework,
+    --- Attaches a button callback to the framework.
+    attachButtonCallback: (buttonId: string, callback: (bcd: ButtonCallbackData) -> nil) -> nil,
+    --- Drops a button callback from the framework.
+    dropButtonCallback: (buttonId: string) -> nil,
 }
 
 --- BaseFramework provides a simple abstraction around command registration.
@@ -29,6 +34,8 @@ export type BaseFramework = {
     commands: () -> {discordRestTypes.CreateGuildApplicationCommandRequest},
     --- Returns the closest command given the name as a split string (by space)
     getcommand: (name: {string}) -> Command?,
+    --- Returns a list of all commands in the framework.
+    getcommands: () -> {[string]: Command},
 }
 
 --- A builder for creating commands in the framework.

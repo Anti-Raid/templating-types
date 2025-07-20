@@ -2,6 +2,8 @@
 
 AntiRaid provides a optional framework for easy command handling. A framework consists of a base (called a `FrameworkBase` internally) (such as `Simple` for normal use and `Flow` which was designed for AntiRaid's no-code Flow UI) as well as a set of basic/builtin structures for easy command handling which altogether make up a `Framework`.
 
+## Command Handling
+
 ## Pagination API
 
 Framework provides a simple pagination API for easy pagination of embeds. This is useful for commands that return a list of items, such as `urlblock list` and `backups list`.
