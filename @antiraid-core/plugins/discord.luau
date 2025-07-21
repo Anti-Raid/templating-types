@@ -143,6 +143,61 @@ export type CreateMessageOptions = {
     data: discordRest.CreateMessageRequest
 }
 
+export type ReactionType = {
+    type: "Unicode",
+    data: string
+} | {
+    type: "Custom",
+    animated: boolean,
+    id: discord.Snowflake,
+    name: string?
+}
+
+--- Options for creating a reaction in Discord
+export type CreateReactionOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The message ID
+    message_id: discord.Snowflake,
+    --- The reaction to add
+    reaction: ReactionType
+}
+
+--- Options for deleting the reaction AntiRaid has made on Discord
+export type DeleteOwnReactionOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The message ID
+    message_id: discord.Snowflake,
+    --- The reaction to add
+    reaction: ReactionType
+}
+
+--- Options for deleting the reaction of a user on Discord
+export type DeleteUserReactionOptions = {
+    --- The channel ID
+    channel_id: discord.Snowflake,
+    --- The message ID
+    message_id: discord.Snowflake,
+    --- The user ID
+    user_id: discord.Snowflake,
+    --- The reaction to add
+    reaction: ReactionType
+}
+
+--- Normal = normal reaction, burst is a super reaction
+export type ReactionTypeEnum = "Normal" | "Burst"
+
+--- Options for getting reactions on a message
+export type GetReactionsOptions = {
+    channel_id: discord.Snowflake,
+    message_id: discord.Snowflake,
+    reaction: ReactionType,
+    type: ReactionTypeEnum?, -- Normal or burst/super reaction
+    after: discord.Snowflake?, -- After which ID to use
+    limit: number?,
+}
+
 --- Options for creating a command in Discord
 export type CreateCommandOptions = {
     --- The data to create the command with
@@ -395,6 +450,15 @@ export type DeleteChannelPermissionOptions = {
     reason: string
 }
 
+export type FollowAnnouncementChannelOptions = {
+    --- The Channel ID
+    channel_id: discord.Snowflake,
+    --- Data
+    data: discordRest.FollowAnnouncementChannelRequest,
+    --- Reason
+    reason: string,
+}
+
 --[[
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct GetInviteOptions {
@@ -428,6 +492,8 @@ export type DeleteInviteOptions = {
     reason: string
 }
 
+--- Lazy<{discord.UserObject}>
+type LazyUsersObject = lazy.Lazy<discord.UserObject>
 -- Lazy<AntiraidFusedMember>
 type LazyAntiraidFusedMember = lazy.Lazy<AntiraidFusedMember>
 --- Lazy<discord.AuditLogObject>
@@ -581,6 +647,11 @@ export type DiscordExecutor = {
     --- Deletes a channel permission
     delete_channel_permission: (self: DiscordExecutor, data: DeleteChannelPermissionOptions) -> nil,
 
+    --- @yields
+    ---
+    --- Follows a announcement channel
+    follow_announcement_channel: (self: DiscordExecutor, data: FollowAnnouncementChannelOptions) -> LazyChannelObject,
+
     -- Guild
     
     --- @yields
@@ -731,7 +802,31 @@ export type DiscordExecutor = {
     ---
     --- Creates a message
     create_message: (self: DiscordExecutor, data: CreateMessageOptions) -> LazyMessageObject,
+
+    --- @yields
+    ---
+    --- Crossposts a message to an announcement channel
+    crosspost_message: (self: DiscordExecutor, channel_id: discord.Snowflake, message_id: discord.Snowflake) -> LazyMessageObject,
     
+    --- @yields
+    ---
+    --- Creates a reaction to a message
+    create_reaction: (self: DiscordExecutor, data: CreateReactionOptions) -> nil,
+
+    --- @yields
+    --- Deletes the reaction AntiRaid has made on a message
+    delete_own_reaction: (self: DiscordExecutor, data: DeleteOwnReactionOptions) -> nil,
+
+    --- @yields
+    --- Deletes a reaction another user has made on a message (see ``delete_own_reaction`` for AntiRaid's
+    --- reactions)
+    delete_user_reaction: (self: DiscordExecutor, data: DeleteUserReactionOptions) -> nil,
+
+    --- @yields
+    ---
+    --- Gets all users who have reacted to awith the provided reaction based on provided criteria
+    get_reactions: (self: DiscordExecutor, data: GetReactionsOptions) -> LazyUsersObject,
+
     -- Interactions
     
     --- @yields
