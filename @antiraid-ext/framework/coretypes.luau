@@ -11,6 +11,7 @@ local commandBuilder = require "@discord-types/builders/interaction/interaction"
 local settings = require "@antiraid-core/settings"
 
 export type BaseFrameworkData = {
+    templateName: string,
     stingManager: stingmanager.StingManager,
     punishmentmanager: punishmentmanager.PunishmentManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
@@ -21,6 +22,8 @@ export type BaseFrameworkData = {
 --- Framework provides a simple abstraction for building custom scripts with
 --- command handling etc. done for you
 export type Framework = {
+    --- The ID of the framework.
+    id: string,
     --- The base framework that is being used.
     base: BaseFramework,
     --- Attaches a button callback to the framework.

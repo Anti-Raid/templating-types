@@ -18,9 +18,12 @@ export type AutocompleteRunData = coretypes.AutocompleteRunData
 
 -- Export the framework here
 return {
+    -- Storage methods
     getFramework = storage.get,
     setFramework = storage.set,
     replaceFramework = storage.replace,
+    shareFramework = storage.share,
+    getSharedFrameworks = storage.getShared,
 
     CommandBuilder = commandbuilder,
 

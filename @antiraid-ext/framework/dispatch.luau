@@ -12,6 +12,7 @@ local ActionRowBuilder = require"@discord-types/builders/message/components/acti
 local ButtonBuilder = require"@discord-types/builders/message/components/button"
 local settings = require"@antiraid-core/settings"
 local getFramework = require"@antiraid-ext/framework/storage".get
+local shareFramework = require"@antiraid-ext/framework/storage".share
 
 local stingmanager = require"@antiraid-ext/utils/stingmanager"
 local punishmentmanager = require"@antiraid-ext/utils/punishmentmanager"
@@ -21,6 +22,7 @@ local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local function _setupFrameworkBaseData(ctx: Primitives.TemplateContext, framework: coretypes.Framework): ()
     -- Register builtins
     local data = {}
+    data.templateName = ctx.data.name
     data.stingManager = stingmanager(ctx:withlimits({capabilities = {"kv[builtins.stings]:*"}}))
     data.punishmentmanager = punishmentmanager(ctx, data.stingManager)
     data.builtinSettingsManager = builtinSettingsManager(ctx)
@@ -40,6 +42,9 @@ local function _setupFrameworkBaseData(ctx: Primitives.TemplateContext, framewor
     data.settings = settings
 
     framework.data = data 
+
+    -- Share the framework with all other templates
+    shareFramework(ctx, framework)
 end
 
 --- Dispatches an event to the framework.

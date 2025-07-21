@@ -1,4 +1,5 @@
 local coretypes = require"./coretypes"
+local Primitives = require"@antiraid-core/primitives"
 
 local FRAMEWORK_KEY = "__antiraid_ext_framework"
 
@@ -30,8 +31,28 @@ local function replace(newFramework: coretypes.Framework)
     _G[FRAMEWORK_KEY] = newFramework
 end
 
+--- Helper method to share a framework with all other templates.
+local function share(ctx: Primitives.TemplateContext, framework: coretypes.Framework)
+    if not framework then
+        error("Framework cannot be nil")
+    end
+    local storeTab = (ctx.store :: any)[FRAMEWORK_KEY] :: {[string]: coretypes.Framework}
+    if not storeTab then
+        storeTab = {[framework.id] = framework}
+    else
+        storeTab[framework.id] = framework
+    end
+end
+
+--- Helper method to return all shared frameworks.
+local function getShared(ctx: Primitives.TemplateContext): {[string]: coretypes.Framework}
+    return (ctx.store :: any)[FRAMEWORK_KEY] :: {[string]: coretypes.Framework} or {}
+end
+
 return {
     get = get,
     set = set,
-    replace = replace
+    replace = replace,
+    share = share,
+    getShared = getShared,
 }

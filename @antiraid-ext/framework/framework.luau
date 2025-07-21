@@ -1,7 +1,9 @@
 local coretypes = require"./coretypes"
+local typesext = require"@antiraid/typesext"
 
 local function Framework(base: coretypes.BaseFramework): coretypes.Framework 
     local self = {}
+    self.id = typesext.randstring(16)
     self.base = base
     self.data = nil :: coretypes.BaseFrameworkData?
 
