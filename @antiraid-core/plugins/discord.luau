@@ -47,12 +47,6 @@ export type DeleteAutoModerationRuleOptions = {
     reason: string
 }
 
---- Options for getting a channel in Discord
-export type GetChannelOptions = {
-    --- The channel ID
-    channel_id: discord.Snowflake
-}
-
 --- Options for editing a channel in Discord
 export type EditChannelOptions = {
     --- The channel ID
@@ -196,6 +190,19 @@ export type GetReactionsOptions = {
     type: ReactionTypeEnum?, -- Normal or burst/super reaction
     after: discord.Snowflake?, -- After which ID to use
     limit: number?,
+}
+
+--- Options for deleting all reactions on a message
+export type DeleteAllReactionsForEmojiOptions = {
+    channel_id: discord.Snowflake,
+    message_id: discord.Snowflake,
+    reaction: ReactionType,
+}
+
+export type EditMessageOptions = {
+    channel_id: discord.Snowflake,
+    message_id: discord.Snowflake,
+    data: discordRest.EditMessageRequest    
 }
 
 --- Options for creating a command in Discord
@@ -615,7 +622,7 @@ export type DiscordExecutor = {
     --- @yields
     ---
     --- Gets a channel
-    get_channel: (self: DiscordExecutor, data: GetChannelOptions) -> LazyChannelObject, 
+    get_channel: (self: DiscordExecutor, channel_id: string) -> LazyChannelObject, 
 
     --- @yields
     ---
@@ -826,6 +833,31 @@ export type DiscordExecutor = {
     ---
     --- Gets all users who have reacted to awith the provided reaction based on provided criteria
     get_reactions: (self: DiscordExecutor, data: GetReactionsOptions) -> LazyUsersObject,
+
+    --- @yields
+    ---
+    --- Deletes all reactions on a message
+    delete_all_reactions: (self: DiscordExecutor, channel_id: discord.Snowflake, message_id: discord.Snowflake) -> nil,
+
+    --- @yields
+    ---
+    --- Deletes all reactions for a specific emoji on a message
+    delete_all_reactions_for_emoji: (self: DiscordExecutor, data: DeleteAllReactionsForEmojiOptions) -> nil,
+
+    --- @yields
+    ---
+    --- Edits a message
+    edit_message: (self: DiscordExecutor, data: EditMessageOptions) -> LazyMessageObject,
+
+    --- @yields
+    ---
+    --- Deletes a message
+    delete_message: (self: DiscordExecutor, channel_id: discord.Snowflake, message_id: discord.Snowflake, reason: string) -> nil,
+
+    --- @yields
+    ---
+    --- Bulk deletes messages in a channel
+    bulk_delete_messages: (self: DiscordExecutor, channel_id: discord.Snowflake, message_ids: {discord.Snowflake}, reason: string) -> nil,
 
     -- Interactions
     

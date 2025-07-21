@@ -2,7 +2,7 @@ local coretypes = require"./coretypes"
 local Primitives = require"@antiraid-core/primitives"
 
 local SHARED_FRAMEWORK_KEY = "__antiraid-ext-sharedFrameworks"
-local globalFramework: coretypes.Framework?  = nil -- Upvalue to store the framework
+local globalFramework: coretypes.Framework? = nil -- Upvalue to store the framework
 
 --- Returns the current framework instance if it exists.
 --- If it does not exist, returns nil.
