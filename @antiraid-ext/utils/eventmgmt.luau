@@ -47,6 +47,7 @@ local function registerEvent(ctx: Primitives.TemplateContext, event: string): ()
             allowed_caps = ctx.data.allowed_caps,
             paused = false,
         })
+        return
     end
 
     assert(template, "Template not found in TemplateStore")
