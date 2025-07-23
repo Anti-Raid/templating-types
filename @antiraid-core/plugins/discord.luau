@@ -550,6 +550,24 @@ type LazyInviteObject = lazy.Lazy<discord.InviteObject>
 
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {
+    -- Bulk operations
+
+    --- When performing bulk operations, AntiRaid's standard GCRA based ratelimits might not work so well. 
+    ---
+    --- For this, AntiRaid provides a ``antiraid_bulk_op`` which will return a discord ``Plugin`` that allows performing bulk operations. 
+    ---
+    --- To do a bulk operation, your code must perform one operation at a time, and then call ``antiraid_bulk_op_wait`` to wait for the enforced wait period
+    --- between each operation (otherwise, AntiRaid will reject the operation).
+    ---
+    --- Note that the calls to ``antiraid_bulk_op`` and ``antiraid_bulk_op_wait`` will respect AntiRaid's standard GCRA 
+    --- ratelimits (with the exception that global bucket will not be hit) to ensure user code cannot just keep creating 
+    --- new bulk operations.
+    ---
+    --- A bulk operaction executor will expire 10 seconds after the last call to ``antiraid_bulk_op`` or ``antiraid_bulk_op_wait`` returns.
+    ---
+    --- Also note that a bulk operation executor can only be used by the thread that created it, and will error if used in another thread.
+    antiraid_bulk_op: () -> DiscordExecutor,
+
     -- Antiraid helpers
 
     --- @yields
