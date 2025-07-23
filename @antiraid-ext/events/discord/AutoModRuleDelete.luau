@@ -4,8 +4,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 
 --- AutoModRuleDelete
 local function onAutoModRuleDelete(event: Primitives.Event, callback: (rule: discord.AutomoderationRuleObject) -> ())
-    onEvent(event, "Discord.AutoModRuleDelete", function(event)
-        callback(event.data["AutoModRuleDelete"]["rule"])
+    onEvent(event, "Discord.AUTO_MODERATION_RULE_DELETE", function(event)
+        callback(event.data)
     end)
 end
 

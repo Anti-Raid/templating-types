@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when a scheduled event is deleted in a guild.
 local function onGuildScheduledEventDelete(event: Primitives.Event, callback: (event: discord.GuildScheduledEventObject) -> ())
-    onEvent(event, "Discord.GuildScheduledEventDelete", function(event)
-        callback(event.data["GuildScheduledEventDelete"]["event"])
+    onEvent(event, "Discord.GUILD_SCHEDULED_EVENT_DELETE", function(event)
+        callback(event.data)
     end)
 end
 

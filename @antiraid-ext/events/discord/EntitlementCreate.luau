@@ -4,8 +4,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
  
 --- EntitlementCreate
 local function onEntitlementCreate(event: Primitives.Event, callback: (entitlement: discord.EntitlementObject) -> ())
-    onEvent(event, "Discord.EntitlementCreate", function(event)
-        callback(event.data["EntitlementCreate"]["entitlement"])
+    onEvent(event, "Discord.ENTITLEMENT_CREATE", function(event)
+        callback(event.data)
     end)
 end
 

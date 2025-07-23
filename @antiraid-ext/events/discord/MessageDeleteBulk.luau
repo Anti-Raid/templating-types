@@ -1,12 +1,13 @@
 local Primitives = require("@antiraid-core/primitives")
+local discordgateway = require("@discord-types/gatewayTypes")
 local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 
 --- MessageDeleteBulk
 ---
 --- Dispatched when multiple messages are deleted at once.
-local function onMessageDeleteBulk(event: Primitives.Event, callback: (channelId: string, messageIds: {string}, guildId: string?) -> ())
-    onEvent(event, "Discord.MessageDeleteBulk", function(event)
-        callback(event.data["MessageDeleteBulk"]["channel_id"], event.data["MessageDeleteBulk"]["multiple_deleted_messages_ids"], event.data["MessageDeleteBulk"]["guild_id"])
+local function onMessageDeleteBulk(event: Primitives.Event, callback: (payload: discordgateway.MessageDeleteBulkPayload) -> ())
+    onEvent(event, "Discord.MESSAGE_DELETE_BULK", function(event)
+        callback(event.data)
     end)
 end
 

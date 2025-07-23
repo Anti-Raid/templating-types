@@ -1320,6 +1320,7 @@ export type AuditLogEntryObject = {
 	action_type: AuditLogEventType, -- Type of action that occurred
 	options: { OptionalAuditEntryInfoObject }?, -- Additional info for certain event types
 	reason: string?, -- Reason for the change (1-512 characters)
+	guild_id: Snowflake?, -- ID of the guild this entry is for (only in Guild Audit Log Entry Create event)
 }
 
 -- https://discord.com/developers/docs/resources/webhook#webhook-object

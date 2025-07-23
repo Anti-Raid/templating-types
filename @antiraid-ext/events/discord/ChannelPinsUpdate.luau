@@ -4,8 +4,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
  
 --- ChannelPinsUpdate
 local function onChannelPinsUpdate(event: Primitives.Event, callback: (pin: discordGateway.ChannelPinsUpdatePayload) -> ())
-    onEvent(event, "Discord.ChannelPinsUpdate", function(event)
-        callback(event.data["ChannelPinsUpdate"]["pin"])
+    onEvent(event, "Discord.CHANNEL_PINS_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when a scheduled event is updated in a guild.
 local function onGuildScheduledEventUpdate(event: Primitives.Event, callback: (event: discord.GuildScheduledEventObject) -> ())
-    onEvent(event, "Discord.GuildScheduledEventUpdate", function(event)
-        callback(event.data["GuildScheduledEventUpdate"]["event"])
+    onEvent(event, "Discord.GUILD_SCHEDULED_EVENT_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

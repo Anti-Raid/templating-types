@@ -8,8 +8,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Note that you usually won't get this event from AntiRaid unless you're self-hosting or unusual circumstances.
 local function onVoiceServerUpdate(event: Primitives.Event, callback: (data: discordGateway.VoiceServerUpdatePayload) -> ())
-    onEvent(event, "Discord.VoiceServerUpdate", function(event)
-        callback(event.data["VoiceServerUpdate"]["event"])
+    onEvent(event, "Discord.VOICE_SERVER_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

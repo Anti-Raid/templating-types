@@ -7,9 +7,9 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 --- Dispatched when the guild is updated.
 ---
 --- Note that the new data may be partial
-local function onGuildUpdate(event: Primitives.Event, callback: (old: discord.GuildObject?, new: discord.GuildObject) -> ())
-    onEvent(event, "Discord.GuildUpdate", function(event)
-        callback(event.data["GuildUpdate"]["old_data_if_available"], event.data["GuildUpdate"]["new_data"])
+local function onGuildUpdate(event: Primitives.Event, callback: (new: discord.GuildObject) -> ())
+    onEvent(event, "Discord.GUILD_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

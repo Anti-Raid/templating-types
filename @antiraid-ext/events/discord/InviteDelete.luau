@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when an invite is deleted.
 local function onInviteDelete(event: Primitives.Event, callback: (data: discordGateway.InviteDeletePayload) -> ())
-    onEvent(event, "Discord.InviteDelete", function(event)
-        callback(event.data["InviteDelete"]["data"])
+    onEvent(event, "Discord.INVITE_DELETE", function(event)
+        callback(event.data)
     end)
 end
 

@@ -1,12 +1,13 @@
 local Primitives = require("@antiraid-core/primitives")
+local discordgateway = require("@discord-types/gatewayTypes")
 local onEvent = require("@antiraid-ext/events/dispatch").onEvent
  
 --- MessageDelete
 ---
 --- Dispatched when a message is deleted.
-local function onMessageDelete(event: Primitives.Event, callback: (channelId: string, messageId: string, guildId: string?) -> ())
-    onEvent(event, "Discord.MessageDelete", function(event)
-        callback(event.data["MessageDelete"]["channel_id"], event.data["MessageDelete"]["deleted_message_id"], event.data["MessageDelete"]["guild_id"])
+local function onMessageDelete(event: Primitives.Event, callback: (payload: discordgateway.MessageDeletePayload) -> ())
+    onEvent(event, "Discord.MESSAGE_DELETE", function(event)
+        callback(event.data)
     end)
 end
 

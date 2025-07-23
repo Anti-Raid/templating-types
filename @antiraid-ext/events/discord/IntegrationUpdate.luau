@@ -1,11 +1,11 @@
 local Primitives = require("@antiraid-core/primitives")
-local discord = require("@discord-types/apiTypes")
+local discordgateway = require("@discord-types/gatewayTypes")
 local onEvent = require("@antiraid-ext/events/dispatch").onEvent
  
 --- IntegrationUpdate
-local function onIntegrationUpdate(event: Primitives.Event, callback: (integration: discord.IntegrationObject) -> ())
-    onEvent(event, "Discord.IntegrationUpdate", function(event)
-        callback(event.data["IntegrationUpdate"]["integration"])
+local function onIntegrationUpdate(event: Primitives.Event, callback: (integration: discordgateway.IntegrationUpdatePayload) -> ())
+    onEvent(event, "Discord.INTEGRATION_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

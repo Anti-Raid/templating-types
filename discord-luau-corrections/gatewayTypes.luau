@@ -10,12 +10,7 @@
 local objects = require("./apiTypes")
 
 -- [[ Base ]] --
-export type Payload<DATA> = {
-	op: number,
-	d: DATA,
-	s: number?,
-	t: string?,
-}
+export type Payload<DATA> = DATA
 
 -- [[ Send Events - https://discord.com/developers/docs/topics/gateway-events#send-events ]] --
 
@@ -129,13 +124,20 @@ export type ChannelPinsUpdatePayload = Payload<{
 }>
 
 -- https://discord.com/developers/docs/topics/gateway-events#thread-create
-export type CreateThreadPayload = Payload<objects.ChannelObject>
+export type CreateThreadPayload = Payload<objects.ChannelObject & {
+	newly_created: boolean?, -- Whether the thread was created by the current user
+}>
 
 -- https://discord.com/developers/docs/topics/gateway-events#thread-update
 export type UpdateThreadPayload = Payload<objects.ChannelObject>
 
 -- https://discord.com/developers/docs/topics/gateway-events#thread-delete
-export type DeleteThreadPayload = Payload<objects.ChannelObject>
+export type DeleteThreadPayload = Payload<{
+	id: objects.Snowflake, -- ID of the thread
+	guild_id: objects.Snowflake?, -- ID of the guild
+	parent_id: objects.Snowflake?, -- ID of the parent channel
+	type: objects.ChannelType, -- Type of the thread
+}>
 
 -- https://discord.com/developers/docs/topics/gateway-events#thread-list-sync
 export type ThreadListSyncPayload = Payload<{

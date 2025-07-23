@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when an invite is created.
 local function onInviteCreate(event: Primitives.Event, callback: (data: discordGateway.InviteCreatePayload) -> ())
-    onEvent(event, "Discord.InviteCreate", function(event)
-        callback(event.data["InviteCreate"]["data"])
+    onEvent(event, "Discord.INVITE_CREATE", function(event)
+        callback(event.data)
     end)
 end
 

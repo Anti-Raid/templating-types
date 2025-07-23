@@ -4,8 +4,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 
 --- ChannelCreate
 local function onChannelCreate(event: Primitives.Event, callback: (channel: discord.ChannelObject) -> ())
-    onEvent(event, "Discord.ChannelCreate", function(event)
-        callback(event.data["ChannelCreate"]["channel"])
+    onEvent(event, "Discord.CHANNEL_CREATE", function(event)
+        callback(event.data)
     end)
 end
 

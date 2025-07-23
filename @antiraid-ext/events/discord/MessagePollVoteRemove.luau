@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when a user removes their vote in a poll.
 local function onMessagePollVoteRemove(event: Primitives.Event, callback: (vote: discordGateway.MessagePollVoteRemove) -> ())
-    onEvent(event, "Discord.MessagePollVoteRemove", function(event)
-        callback(event.data["MessagePollVoteRemove"]["event"])
+    onEvent(event, "Discord.MESSAGE_POLL_VOTE_REMOVE", function(event)
+        callback(event.data)
     end)
 end
 

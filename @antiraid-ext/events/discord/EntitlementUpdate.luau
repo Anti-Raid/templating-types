@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Provides data abut the updated subscription. If the entitlement is renewed, the ``entitlement.ends_at`` field will have changed.
 local function onEntitlementUpdate(event: Primitives.Event, callback: (entitlement: discord.EntitlementObject) -> ())
-    onEvent(event, "Discord.EntitlementUpdate", function(event)
-        callback(event.data["EntitlementUpdate"]["entitlement"])
+    onEvent(event, "Discord.ENTITLEMENT_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

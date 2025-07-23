@@ -1,5 +1,5 @@
 local Primitives = require("@antiraid-core/primitives")
-local discord = require("@discord-types/apiTypes")
+local discordGateway = require("@discord-types/gatewayTypes")
 local onEvent = require("@antiraid-ext/events/dispatch").onEvent
  
 --- GuildBanRemoval
@@ -7,9 +7,9 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 --- Dispatched when a user is unbanned from a guild.
 ---
 --- Provides the user’s data and the id of the guild where the unban occurred.
-local function onGuildBanRemoval(event: Primitives.Event, callback: (user: discord.UserObject, guildId: string) -> ())
-    onEvent(event, "Discord.GuildBanRemoval", function(event)
-        callback(event.data["GuildBanRemoval"]["unbanned_user"], event.data["GuildBanRemoval"]["guild_id"])
+local function onGuildBanRemoval(event: Primitives.Event, callback: (user: discordGateway.GuildBanRemovePayload) -> ())
+    onEvent(event, "Discord.GUILD_BAN_REMOVE", function(event)
+        callback(event.data)
     end)
 end 
 

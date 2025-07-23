@@ -4,8 +4,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
  
 --- AutoModRuleUpdate
 local function onAutoModRuleUpdate(event: Primitives.Event, callback: (rule: discord.AutomoderationRuleObject) -> ())
-    onEvent(event, "Discord.AutoModRuleUpdate", function(event)
-        callback(event.data["AutoModRuleUpdate"]["rule"])
+    onEvent(event, "Discord.AUTO_MODERATION_RULE_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

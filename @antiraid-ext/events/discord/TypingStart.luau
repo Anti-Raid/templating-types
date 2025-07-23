@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when a user starts typing in a channel.
 local function onTypingStart(event: Primitives.Event, callback: (data: discordGateway.TypingStartPayload) -> ())
-    onEvent(event, "Discord.TypingStart", function(event)
-        callback(event.data["TypingStart"]["event"])
+    onEvent(event, "Discord.TYPING_START", function(event)
+        callback(event.data)
     end)
 end
 

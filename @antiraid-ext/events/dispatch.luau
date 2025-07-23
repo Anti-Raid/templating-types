@@ -12,7 +12,7 @@ local Primitives = require("@antiraid-core/primitives")
 --- @return boolean True if the event matches the name, false otherwise.
 local function doesEventMatch(pat: string, event: Primitives.Event)
     local baseName = string.lower(event.base_name)
-    local name = string.lower(event.name):gsub("_", "")
+    local name = string.lower(event.name)
     local pattern = string.lower(pat)
     
     return baseName == pattern or name == pattern or (baseName .. "." .. name) == pattern

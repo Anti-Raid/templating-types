@@ -5,9 +5,9 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 --- VoiceStateUpdate
 ---
 --- Dispatched when a user joins, leaves or moves to a voice channel.
-local function onVoiceStateUpdate(event: Primitives.Event, callback: (old: discord.VoiceStateObject?, new: discord.VoiceStateObject) -> ())
-    onEvent(event, "Discord.VoiceStateUpdate", function(event)
-        callback(event.data["VoiceStateUpdate"]["old"], event.data["VoiceStateUpdate"]["new"])
+local function onVoiceStateUpdate(event: Primitives.Event, callback: (new: discord.VoiceStateObject) -> ())
+    onEvent(event, "Discord.VOICE_STATE_UPDATE", function(event)
+        callback(event.data)
     end)
 end
 

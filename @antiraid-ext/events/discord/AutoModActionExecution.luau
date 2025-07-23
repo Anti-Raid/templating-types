@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Note that discord-luau calls it ApplicationCommandPermissionsExecutionPayload instead of AutoModActionExecution due to naming bug
 local function onAutoModActionExecution(event: Primitives.Event, callback: (action: discordGateway.ApplicationCommandPermissionsExecutionPayload) -> ())
-    onEvent(event, "Discord.AutoModActionExecution", function(event)
-        callback(event.data["AutoModActionExecution"]["execution"])
+    onEvent(event, "Discord.AUTO_MODERATION_ACTION_EXECUTION", function(event)
+        callback(event.data)
     end)
 end
 

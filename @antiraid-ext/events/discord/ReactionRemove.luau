@@ -1,13 +1,13 @@
 local Primitives = require("@antiraid-core/primitives")
-local discord = require("@discord-types/apiTypes")
+local discordGateway = require("@discord-types/gatewayTypes")
 local onEvent = require("@antiraid-ext/events/dispatch").onEvent
  
 --- ReactionRemove
 ---
 --- Dispatched when a reaction is removed from a message.
-local function onReactionRemove(event: Primitives.Event, callback: (reaction: discord.ReactionObject) -> ())
-    onEvent(event, "Discord.ReactionRemove", function(event)
-        callback(event.data["ReactionRemove"]["removed_reaction"])
+local function onReactionRemove(event: Primitives.Event, callback: (reaction: discordGateway.MessageReactionRemovePayload) -> ())
+    onEvent(event, "Discord.MESSAGE_REACTION_REMOVE", function(event)
+        callback(event.data)
     end)
 end
 

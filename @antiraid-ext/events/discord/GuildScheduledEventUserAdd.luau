@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when a user is added to a scheduled event in a guild.
 local function onGuildScheduledEventUserAdd(event: Primitives.Event, callback: (subscribed: discordGateway.GuildScheduledEventUserAddPayload) -> ())
-    onEvent(event, "Discord.GuildScheduledEventUserAdd", function(event)
-        callback(event.data["GuildScheduledEventUserAdd"]["subscribed"])
+    onEvent(event, "Discord.GUILD_SCHEDULED_EVENT_USER_ADD", function(event)
+        callback(event.data)
     end)
 end
 

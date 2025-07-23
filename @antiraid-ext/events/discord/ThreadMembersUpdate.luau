@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when anyone is added to or removed from a thread.
 local function onThreadMembersUpdate(event: Primitives.Event, callback: (data: discordGateway.ThreadMembersUpdatePayload) -> ())
-    onEvent(event, "Discord.ThreadMembersUpdate", function(event)
-        callback(event.data["ThreadMembersUpdate"]["thread_members_update"])
+    onEvent(event, "Discord.THREAD_MEMBERS_UPDATE", function(event)
+        callback(event.data)
     end)
 end 
 

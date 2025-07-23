@@ -6,8 +6,8 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Dispatched when a user is removed from a scheduled event in a guild.
 local function onGuildScheduledEventUserRemove(event: Primitives.Event, callback: (unsubscribed: discordGateway.GuildScheduledEventUserRemovePayload) -> ())
-    onEvent(event, "Discord.GuildScheduledEventUserRemove", function(event)
-        callback(event.data["GuildScheduledEventUserRemove"]["unsubscribed"])
+    onEvent(event, "Discord.GUILD_SCHEDULED_EVENT_USER_REMOVE", function(event)
+        callback(event.data)
     end)
 end
 
