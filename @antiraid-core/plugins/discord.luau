@@ -568,6 +568,14 @@ export type DiscordExecutor = {
     --- Also note that a bulk operation executor can only be used by the thread that created it, and will error if used in another thread.
     antiraid_bulk_op: () -> DiscordExecutor,
 
+    --- @yields
+    ---
+    --- Waits for the bulk operation executor to finish the enforced wait period
+    ---
+    --- Errors if the executor has expired or if the executor is used in a different thread than the one that created it
+    --- or if the executor is not a bulk operation executor (the executor returned by ``antiraid_bulk_op``).
+    antiraid_bulk_op_wait: (self: DiscordExecutor) -> nil,
+
     -- Antiraid helpers
 
     --- @yields
