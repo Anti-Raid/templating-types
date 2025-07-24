@@ -57,7 +57,7 @@ local function onEventGeneric<R>(event: Primitives.Event, pats: string | {string
     return nil
 end
 
-assert(doesEventMatch("Discord.InteractionCreate", {base_name = "Discord", name = "INTERACTION_CREATE"}))
+assert(doesEventMatch("Discord.INTERACTION_CREATE", {base_name = "Discord", name = "INTERACTION_CREATE"}))
 
 return {
     doesEventMatch = doesEventMatch,
