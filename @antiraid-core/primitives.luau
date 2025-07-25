@@ -4,6 +4,7 @@ local discordP = require("@antiraid-core/plugins/discord")
 local imgcaptchaP = require("@antiraid-core/plugins/img_captcha")
 local kvP = require("@antiraid-core/plugins/kv")
 local objectstorageP = require("@antiraid-core/plugins/objectstorage")
+local httpclientP = require("@antiraid-core/plugins/httpclient")
 
 -- AntiRaid primitives
 -- 
@@ -94,6 +95,8 @@ export type TemplateContext = {
     read UnscopedKV: kvP.Plugin, 
     --- Object Storage plugin
     read ObjectStorage: objectstorageP.Plugin,
+    --- HTTP Client plugin
+    read HTTPClient: httpclientP.Plugin,
 
     --- The public data associated with the script.
     read data: ScriptData,
