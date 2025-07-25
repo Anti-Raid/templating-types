@@ -1,4 +1,5 @@
 local dt = require("@antiraid/datetime")
+local blob = require("@antiraid-core/blob")
 
 export type Url = {
     host: string, -- The host of the URL
@@ -10,11 +11,11 @@ export type Url = {
 }
 
 export type Headers = {
-    get: (key: string) -> string?, -- Get a header by key
-    set: (key: string, value: string) -> (), -- Set a header
-    remove: (key: string) -> (), -- Remove a header by key
-    headers_bytes: () -> {[string]: {number}}, -- Get all headers as a table of strings to bytes
-    headers_str: () -> {[string]: string}, -- Get all headers as a table of strings to strings
+    get: (self: Headers, key: string) -> string?, -- Get a header by key
+    set: (self: Headers, key: string, value: string) -> (), -- Set a header
+    remove: (self: Headers, key: string) -> (), -- Remove a header by key
+    headers_bytes: (self: Headers) -> {[string]: {number}}, -- Get all headers as a table of strings to bytes
+    headers_str: (self: Headers) -> {[string]: string}, -- Get all headers as a table of strings to strings
 }
 
 export type Request = {
@@ -43,7 +44,7 @@ export type Request = {
     --- @yields
     ---
     --- Sends the request and returns a response object
-    send: () -> Response,
+    send: (self: Request) -> Response,
 }
 
 export type Response = {
@@ -60,19 +61,19 @@ export type Response = {
     --- Reads the response as text (but does not have to be UTF-8 encoded) 
     ---
     --- Note that this will destroy the Response object and cause all calls to it to fail after this.
-    text: () -> string,
+    text: (self: Headers) -> string,
     --- @yields
     ---
     --- Reads the response as JSON, will return a Lua table
     ---
     --- Note that this will destroy the Response object and cause all calls to it to fail after this.
-    json: () -> any,
+    json: (self: Headers) -> any,
     --- @yields
     ---
-    --- Reads the response as bytes, will return a buffer
+    --- Reads the response as bytes, will return a blob
     ---
     --- Note that this will destroy the Response object and cause all calls to it to fail after this.
-    bytes: () -> buffer
+    blob: (self: Headers) -> blob.Blob
 }
 
 export type Plugin = {

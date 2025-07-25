@@ -1,4 +1,5 @@
 local datetime = require("@antiraid/datetime")
+local blob = require("@antiraid-core/blob")
 
 --- An object storage bucket
 ---
@@ -27,7 +28,7 @@ export type Bucket = {
     --- @yields
     ---
     --- Downloads a file. The resulting file must fit into the VM's memory limit
-    download_file: (self: Bucket, path: string, opts: DownloadFileOpts?) -> buffer,
+    download_file: (self: Bucket, path: string, opts: DownloadFileOpts?) -> blob.Blob,
 
     --- @yields
     ---
@@ -37,7 +38,7 @@ export type Bucket = {
     --- @yields
     ---
     --- Upload a file to a bucket
-    upload_file: (self: Bucket, path: string, data: buffer) -> nil,
+    upload_file: (self: Bucket, path: string, data: blob.BlobTaker) -> nil,
 
     --- @yields
     ---
