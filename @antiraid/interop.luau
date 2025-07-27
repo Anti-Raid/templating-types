@@ -16,4 +16,7 @@ return {
     memusage = function()
         return 0
     end,
+    memory_limit = function()
+        return 0
+    end,
 }
