@@ -61,19 +61,19 @@ export type Response = {
     --- Reads the response as text (but does not have to be UTF-8 encoded) 
     ---
     --- Note that this will destroy the Response object and cause all calls to it to fail after this.
-    text: (self: Headers) -> string,
+    text: (self: Response) -> string,
     --- @yields
     ---
     --- Reads the response as JSON, will return a Lua table
     ---
     --- Note that this will destroy the Response object and cause all calls to it to fail after this.
-    json: (self: Headers) -> any,
+    json: (self: Response) -> any,
     --- @yields
     ---
     --- Reads the response as bytes, will return a blob
     ---
     --- Note that this will destroy the Response object and cause all calls to it to fail after this.
-    blob: (self: Headers) -> blob.Blob
+    blob: (self: Response) -> blob.Blob
 }
 
 export type Plugin = {
