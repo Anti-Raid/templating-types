@@ -2,7 +2,7 @@ local apiTypes = require("@discord-types/apiTypes")
 
 local reflect = require("@discord-types/utils/table/reflect")
 
-local ChannelTypes = table.freeze(reflect({
+local ChannelTypesMap = {
 	GuildText = 0,
 	DM = 1,
 	GuildVoice = 2,
@@ -16,7 +16,9 @@ local ChannelTypes = table.freeze(reflect({
 	GuildDirectory = 14,
 	GuildForum = 15,
 	GuildMedia = 16,
-}))
+}
+
+local ChannelTypes = table.freeze(reflect(ChannelTypesMap))
 
 local MediaSortOrder = table.freeze(reflect({
 	LatestActivity = 0,
@@ -110,6 +112,7 @@ export type AbstractChannel = {
 }
 
 return {
+	ChannelTypesMap = ChannelTypesMap,
 	ChannelTypes = ChannelTypes,
 	MediaSortOrder = MediaSortOrder,
 	ForumSortOrder = ForumSortOrder,

@@ -19,6 +19,6 @@ export type Blob = typeof(setmetatable({} :: {
     __len: (self: Blob) -> number, -- Returns the length of the blob in bytes
 }))
 
-export type BlobTaker = buffer | Blob 
+export type BlobTaker = buffer | string | Blob 
 
 return {}
