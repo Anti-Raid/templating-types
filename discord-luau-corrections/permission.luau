@@ -5,7 +5,7 @@ local bit = typesext.bitu64
 local fromBf = require("@discord-types/utils/frombf")
 local set = require("@antiraid-ext/set")
 
-local Permissions = table.freeze(reflect({
+local PermissionSet = {
 	CreateInstantInvite = bit.lshift(1, 0),
 	KickMembers = bit.lshift(1, 1),
 	BanMembers = bit.lshift(1, 2),
@@ -53,7 +53,14 @@ local Permissions = table.freeze(reflect({
 	SendVoiceMessages = bit.lshift(1, 46),
 	SendPolls = bit.lshift(1, 49),
 	UseExternalApps = bit.lshift(1, 50),
-}))
+}
+
+local Permissions = table.freeze(reflect(PermissionSet :: {[string]: typesext.U64Convertibles}))
+
+local PermissionsAll = typesext.U64("0")
+for _, perm in Permissions do
+	PermissionsAll = bit.bor(PermissionsAll, perm :: typesext.U64Convertibles)
+end
 
 export type Permissions =
 	"CreateInstantInvite"
@@ -163,6 +170,7 @@ local OverwriteObjectTypeMember = 1
 
 return {
 	Permissions = Permissions,
+	PermissionsAll = PermissionsAll,
 	fromBitFlag = fromBitflag,
 	fromBitFlagToSet = fromBitflagToSet,
 	toBitFlag = toBitflag,
