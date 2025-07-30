@@ -170,6 +170,7 @@ local OverwriteObjectTypeMember = 1
 
 return {
 	Permissions = Permissions,
+	PermissionSet = PermissionSet,
 	PermissionsAll = PermissionsAll,
 	fromBitFlag = fromBitflag,
 	fromBitFlagToSet = fromBitflagToSet,

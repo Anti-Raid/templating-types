@@ -19,6 +19,16 @@ local function newblob(data: blob.BlobTaker): blob.Blob
     error("Implemented internally in AntiRaid runtime!")
 end
 
+--- Encodes a Blob to a base64 string
+local function base64encode(data: blob.BlobTaker): string
+    error("Implemented internally in AntiRaid runtime!")
+end
+
+--- Decodes a base64 string to a Blob
+local function base64decode(str: string): blob.Blob
+    error("Implemented internally in AntiRaid runtime!")
+end
+
 --- Creates a new TarArchive with an optional initial data Blob to load the initial TarArchive's contents from
 local function TarArchive(buf: blob.BlobTaker?): TarArchive
     error("Implemented internally in AntiRaid runtime!")
@@ -44,6 +54,8 @@ end
 
 return {
     newblob = newblob,
+    base64encode = base64encode,
+    base64decode = base64decode,
     TarArchive = TarArchive,
     aes256encrypt = aes256encrypt,
     aes256decrypt = aes256decrypt,

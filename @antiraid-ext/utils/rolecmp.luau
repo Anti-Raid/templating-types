@@ -38,7 +38,7 @@ end
 --- @param a discord.GuildRoleObject Role A
 --- @param b discord.GuildRoleObject Role B
 --- @return boolean ``true`` if A is greater than or equal to B in hierarchy order, ``false`` otherwise.
-local IsRoleAGreaterThanRoleB = function(a: discord.GuildRoleObject, b: discord.GuildRoleObject): boolean
+local function IsRoleAGreaterThanRoleB(a: discord.GuildRoleObject, b: discord.GuildRoleObject): boolean
     assert(a.id, "Role A must have an ID")
     assert(b.id, "Role B must have an ID")
 
@@ -54,7 +54,7 @@ end
 --- @param a discord.GuildRoleObject Role A
 --- @param b discord.GuildRoleObject Role B
 --- @return boolean ``true`` if A is greater than or equal to B in hierarchy order, ``false`` otherwise.
-local IsRoleAGreaterThanOrEqualToRoleB = function(a: discord.GuildRoleObject, b: discord.GuildRoleObject): boolean
+local function IsRoleAGreaterThanOrEqualToRoleB(a: discord.GuildRoleObject, b: discord.GuildRoleObject): boolean
     assert(a.id, "Role A must have an ID")
     assert(b.id, "Role B must have an ID")
 
@@ -65,9 +65,17 @@ local IsRoleAGreaterThanOrEqualToRoleB = function(a: discord.GuildRoleObject, b:
     return a.position > b.position
 end
 
+local function SortRolesByHierarchy(roles: {discord.GuildRoleObject}): {discord.GuildRoleObject}
+    table.sort(roles, function(a, b)
+        return IsRoleALessThanRoleB(a, b)
+    end)
+    return roles
+end
+
 return {
     IsRoleALessThanRoleB = IsRoleALessThanRoleB,
     IsRoleALessThanOrEqualToRoleB = IsRoleALessThanOrEqualToRoleB,
     IsRoleAGreaterThanRoleB = IsRoleAGreaterThanRoleB,
     IsRoleAGreaterThanOrEqualToRoleB = IsRoleAGreaterThanOrEqualToRoleB,
+    SortRolesByHierarchy = SortRolesByHierarchy,
 }
