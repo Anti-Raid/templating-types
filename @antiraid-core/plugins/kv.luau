@@ -46,9 +46,6 @@ export type KvExecutor = {
     --- The originating guild ID (the guild ID of the template itself).
     read origin_guild_id: string,
 
-    --- Whether or not unscoped operations are allowed.
-    read unscoped_allowed: boolean,
-
     --- @yields
     ---
     --- Returns a list of all key-value scopes/
@@ -106,15 +103,18 @@ export type KvExecutor = {
     --- @param value any The value of the record.
     --- @param scopes {string} The scopes to set the record in. If not provided, the record will be set in the unscoped scope.
     --- @param expires_at datetime.DateTime? The expiration time of the record, if any
+    --- @param resume boolean? If set, dispatches a ``KeyResume`` event anytime the key is set and the template is reloaded or the worker process restarted. Defaults to false.
     --- @return The result of the set operation, containing whether the key previously existed and the ID of the record.
-    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scopes: {string}, expires_at: datetime.DateTime?) -> SetResult,
+    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scopes: {string}, expires_at: datetime.DateTime?, resume: boolean?) -> SetResult,
 
     --- @yields
     --- Sets a record in the key-value store by ID.
     --- @param id string The ID of the record.
     --- @param value any The value of the record.
     --- @param expires_at datetime.DateTime? The expiration time of the record, if any.
-    setbyid: (self: KvExecutor, id: string, value: khronosvalue.KhronosValue, expires_at: datetime.DateTime?) -> nil,
+    --- @param resume boolean? If set, dispatches a ``KeyResume`` event anytime the key is set and the template is reloaded or the worker process restarted. Defaults to false.
+    --- @return nil
+    setbyid: (self: KvExecutor, id: string, value: khronosvalue.KhronosValue, expires_at: datetime.DateTime?, resume: boolean?) -> nil,
 
     --- @yields
     ---

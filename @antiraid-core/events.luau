@@ -34,4 +34,13 @@ export type KeyExpiryEvent = {
     scopes: {string}
 }
 
+--- Data sent when a key is resumed.
+---
+--- A key is resumed when it is set with the `resume` flag and the template is reloaded or the worker process restarted.
+export type KeyResumeEvent = {
+    id: string,
+    key: string,
+    scopes: {string}
+}
+
 return {}
