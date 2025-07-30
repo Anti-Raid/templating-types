@@ -557,7 +557,8 @@ export type DiscordExecutor = {
     --- For this, AntiRaid provides a ``antiraid_bulk_op`` which will return a discord ``Plugin`` that allows performing bulk operations. 
     ---
     --- To do a bulk operation, your code must perform one operation at a time, and then call ``antiraid_bulk_op_wait`` to wait for the enforced wait period
-    --- between each operation (otherwise, AntiRaid will reject the operation).
+    --- between each operation (otherwise, AntiRaid will reject the operation). Note that AntiRaid will automatically no-op if you can still perform another 
+    --- operation.
     ---
     --- Note that the calls to ``antiraid_bulk_op`` and ``antiraid_bulk_op_wait`` will respect AntiRaid's standard GCRA 
     --- ratelimits (with the exception that global bucket will not be hit) to ensure user code cannot just keep creating 
@@ -565,8 +566,10 @@ export type DiscordExecutor = {
     ---
     --- A bulk operaction executor will expire 10 seconds after the last call to ``antiraid_bulk_op`` or ``antiraid_bulk_op_wait`` returns.
     ---
-    --- Also note that a bulk operation executor can only be used by the thread that created it, and will error if used in another thread.
-    antiraid_bulk_op: () -> DiscordExecutor,
+    --- An ``action`` can be specified to increase/improve the ratelimits+wait period at the cost of limiting the executor
+    --- to only the ``action`` specified. If no action is specified, the executor will be able to perform any action but with
+    --- harsher ratelimits and a longer enforced wait period.
+    antiraid_bulk_op: (action: string?) -> DiscordExecutor,
 
     --- @yields
     ---
