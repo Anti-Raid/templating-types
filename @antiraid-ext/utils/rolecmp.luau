@@ -65,9 +65,18 @@ local function IsRoleAGreaterThanOrEqualToRoleB(a: discord.GuildRoleObject, b: d
     return a.position > b.position
 end
 
-local function SortRolesByHierarchy(roles: {discord.GuildRoleObject}): {discord.GuildRoleObject}
+--- Sorts roles by hierarchy order in ascending order [lower roles first].
+local function SortRolesByHierarchyAsc(roles: {discord.GuildRoleObject}): {discord.GuildRoleObject}
     table.sort(roles, function(a, b)
         return IsRoleALessThanRoleB(a, b)
+    end)
+    return roles
+end
+
+--- Sorts roles by hierarchy order in descending order [roles higher in hierarchy first].
+local function SortRolesByHierarchyDesc(roles: {discord.GuildRoleObject}): {discord.GuildRoleObject}
+    table.sort(roles, function(a, b)
+        return IsRoleAGreaterThanRoleB(a, b)
     end)
     return roles
 end
@@ -77,5 +86,6 @@ return {
     IsRoleALessThanOrEqualToRoleB = IsRoleALessThanOrEqualToRoleB,
     IsRoleAGreaterThanRoleB = IsRoleAGreaterThanRoleB,
     IsRoleAGreaterThanOrEqualToRoleB = IsRoleAGreaterThanOrEqualToRoleB,
-    SortRolesByHierarchy = SortRolesByHierarchy,
+    SortRolesByHierarchyAsc = SortRolesByHierarchyAsc,
+    SortRolesByHierarchyDesc = SortRolesByHierarchyDesc,
 }
