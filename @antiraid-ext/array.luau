@@ -95,6 +95,8 @@ end
 --- If `from` is nil, it defaults to 1. If `to` is nil, it defaults to the length of the table.
 --- Returns a new table containing the sliced elements.
 ---
+--- Errors if ``to > #arr`` or ``from < 1``
+---
 ---@param arr table The table to slice
 ---@param from number? The starting index (1-based)
 ---@param to number? The ending index (1-based)
@@ -102,6 +104,11 @@ end
 local function slice<T>(arr: {T}, from: number?, to: number?): {T}
     local from_r = if from == nil then 1 else from
     local to_r = if to == nil then #arr else to
+
+    if to_r > #arr or from_r < 1 then 
+        error("slice out of bounds: to_r > #arr or from_r < 1 (" .. to_r .. ">" .. #arr .. " and " .. from_r .. "<1)")
+    end
+
     local copy: {T} = table.create(to_r - from_r + 1)
     table.move(arr, from_r, to_r, 1, copy)
     return copy
