@@ -90,8 +90,26 @@ local function toArray<T>(a: T): T
     end
 end
 
+--- Slices a table from `from` to `to`.
+---
+--- If `from` is nil, it defaults to 1. If `to` is nil, it defaults to the length of the table.
+--- Returns a new table containing the sliced elements.
+---
+---@param arr table The table to slice
+---@param from number? The starting index (1-based)
+---@param to number? The ending index (1-based)
+---@return table A new table containing the sliced elements
+local function slice<T>(arr: {T}, from: number?, to: number?): {T}
+    local from_r = if from == nil then 1 else from
+    local to_r = if to == nil then #arr else to
+    local copy: {T} = table.create(to_r - from_r + 1)
+    table.move(arr, from_r, to_r, 1, copy)
+    return copy
+end
+
 return {
     array = array,
     arraysEqual = arraysEqual,
     toArray = toArray,
+    slice = slice,
 }
