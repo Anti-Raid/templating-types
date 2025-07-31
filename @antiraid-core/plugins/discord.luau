@@ -569,7 +569,7 @@ export type DiscordExecutor = {
     --- An ``action`` can be specified to increase/improve the ratelimits+wait period at the cost of limiting the executor
     --- to only the ``action`` specified. If no action is specified, the executor will be able to perform any action but with
     --- harsher ratelimits and a longer enforced wait period.
-    antiraid_bulk_op: (action: string?) -> DiscordExecutor,
+    antiraid_bulk_op: (self: DiscordExecutor, action: string?) -> DiscordExecutor,
 
     --- @yields
     ---
