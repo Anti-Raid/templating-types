@@ -3,7 +3,7 @@ local FlowBase = require"./flowbase"
 local Framework = require"./framework"
 local coretypes = require"./coretypes"
 
-local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, commands: {coretypes.Command}) 
+local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, commands: {[string]: coretypes.Command}) 
     if not base or type(base) ~= "table" then
         error("Base framework must be a valid BaseFramework instance")
     end
@@ -26,11 +26,11 @@ local function CustomFramework(base: coretypes.BaseFramework, suffix: string?, c
     return self
 end
 
-local function SimpleFramework(strict_val: boolean, suffix: string?, commands: {coretypes.Command}) 
+local function SimpleFramework(strict_val: boolean, suffix: string?, commands: {[string]: coretypes.Command}) 
     return CustomFramework(SimpleBase.BaseFramework(strict_val), suffix, commands)
 end
 
-local function FlowFramework(strict_val: boolean, suffix: string?, commands: {coretypes.Command}) 
+local function FlowFramework(strict_val: boolean, suffix: string?, commands: {[string]: coretypes.Command}) 
     return CustomFramework(FlowBase.BaseFramework(strict_val), suffix, commands)
 end
 
