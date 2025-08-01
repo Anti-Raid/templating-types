@@ -531,8 +531,6 @@ type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
 type LazyRoleObject = lazy.Lazy<discord.GuildRoleObject>
 --- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
 type LazyRolesObject = lazy.Lazy<{discord.GuildRoleObject}>
---- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
-type LazyRolesMapObject = lazy.Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
 --- Lazy<discordRest.ListActiveGuildThreadsResponse>
 type LazyActiveGuildThreadsResponse = lazy.Lazy<discordRest.ListActiveGuildThreadsResponse>
 --- Lazy<discord.GuildObject>
@@ -780,7 +778,7 @@ export type DiscordExecutor = {
     --- @yields
     ---
     --- Returns the guild roles of a guild
-    get_guild_roles: (self: DiscordExecutor) -> LazyRolesMapObject,
+    get_guild_roles: (self: DiscordExecutor) -> LazyRolesObject,
 
     --- @yields
     ---

@@ -63,6 +63,13 @@ export type KvExecutor = {
 
     --- @yields
     ---
+    --- Returns if a key exists in this key-value scope.
+    --- @param key string The key to check for.
+    --- @return boolean True if the key exists, false otherwise.
+    exists: (self: KvExecutor, key: string, scopes: {string}) -> boolean,
+
+    --- @yields
+    ---
     --- Gets a value from this key-value scope.
     --- @param key string The key of the record.
     --- @return any The value of the record.
