@@ -5,7 +5,6 @@ local Primitives = require "@antiraid-core/primitives"
 local typesext = require "@antiraid/typesext"
 local builtinSettingsManager = require "./builtinsettingsmanager"
 local stingmanager = require "./stingmanager"
-local canModeratorAffectTarget = require "./modhierarchy".canModeratorAffectTarget
 local kv = require"@antiraid-core/plugins/kv"
 
 export type ResolutionReason = "reversed"
@@ -78,16 +77,6 @@ local punishmentActions: {[string]: PunishmentAction} = {
         name = "Ban",
         description = "Bans the user from the server",
         check = function(ctx: Primitives.TemplateContext, p: Punishment) 
-            if p.modId then
-                local storeTab = ctx.store :: any
-                canModeratorAffectTarget(
-                    ctx, 
-                    storeTab.userinfomanager.get(p.modId),
-                    p.userId, 
-                    "moderation.ban"
-                )
-            end
-            return
         end,
         apply = function(ctx: Primitives.TemplateContext, p: Punishment) 
             ctx.Discord:create_guild_ban({
@@ -111,16 +100,6 @@ local punishmentActions: {[string]: PunishmentAction} = {
             if p.delete_message_seconds then 
                 error("Kick punishments cannot have a delete_message_seconds value")
             end
-
-            if p.modId then
-                local storeTab = ctx.store :: any
-                canModeratorAffectTarget(
-                    ctx, 
-                    storeTab.userinfomanager.get(p.modId), 
-                    p.userId, 
-                    "moderation.kick"
-                )
-            end
         end,
         needsReversal = false,
         apply = function(ctx: Primitives.TemplateContext, p: Punishment) 
@@ -137,16 +116,6 @@ local punishmentActions: {[string]: PunishmentAction} = {
         check = function(ctx: Primitives.TemplateContext, p: Punishment) 
             if not p.expires_at then 
                 error("Timeout punishments must have a expires_at value")
-            end
-
-            if p.modId then
-                local storeTab = ctx.store :: any
-                canModeratorAffectTarget(
-                    ctx, 
-                    storeTab.userinfomanager.get(p.modId),
-                    p.userId, 
-                    "moderation.timeout"
-                )
             end
         end,
         needsReversal = false,
