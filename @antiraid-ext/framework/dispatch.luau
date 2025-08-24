@@ -245,6 +245,9 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
                 isResponseEphemeral,
                 comps
             )
+
+            -- Rethrow the error for logging
+            error(err)
         end
     end)
 
