@@ -11,6 +11,7 @@ local interactionutils = require"@antiraid-ext/utils/interaction"
 local ActionRowBuilder = require"@discord-types/builders/message/components/actionRow"
 local ButtonBuilder = require"@discord-types/builders/message/components/button"
 local settings = require"@antiraid-core/settings"
+local errorHandler = require"@antiraid-ext/utils/errorhandle"
 local getFramework = require"@antiraid-ext/framework/storage".get
 local shareFramework = require"@antiraid-ext/framework/storage".share
 
@@ -182,14 +183,8 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
             dropButtonCallback = framework.dropButtonCallback,
         }
 
-        local ok, err = xpcall(command.run, debug.traceback :: any, runData)
+        local ok, err: errorHandler.HandledError = xpcall(command.run, errorHandler.errorHandler, runData)
         if not ok then 
-            err = tostring(err) :: string
-            if #err > 2000 then 
-                -- Limit to 1997 chars and add a ... at the end
-                err = err:sub(1, 1997) .. "..."
-            end
-
             local comps = nil
             local linksstore = ctx.DataStores.LinksStore
             if linksstore then 
@@ -206,7 +201,7 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
                 }
             end
 
-            -- Check if ephemeral or nor
+            -- Check if ephemeral or not
             local isResponseEphemeral = false
 
             -- Parse options
@@ -218,20 +213,12 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
                 end
             end 
             
-            local embed = {
-                {
-                    title = "Something happened!",
-                    description = "Something happened while trying to process your request. If the problem persists, **please report it to our Support Server**\n```lua\n" .. err .. "\n```",
-                    color = 0xFF0000,
-                }
-            } :: {apiTypes.EmbedObject}
-
             if hasEdited then 
                 interactionutils.editSimple(
                     ctx,
                     interaction,
                     nil,
-                    embed,
+                    {err.embed},
                     comps
                 )
                 return
@@ -241,13 +228,15 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
                 ctx,
                 interaction,
                 nil,
-                embed,
+                {err.embed},
                 isResponseEphemeral,
                 comps
             )
 
             -- Rethrow the error for logging
-            error(err)
+            if err.traceback then
+                error(err.traceback)
+            end
         end
     end)
 

@@ -27,10 +27,17 @@ local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string)
         if SupportedAltPerms[cap] then
             local modPerms = permissionsFromBf(userinfo.discord_permissions)
             if not table.find(modPerms, SupportedAltPerms[cap]) then
-                error("Missing permission: ``" .. cap .. "`` or ``" .. SupportedAltPerms[cap] .. "``")
+                error({
+                    type = "MissingPermissions",
+                    perm = cap,
+                    altPerm = SupportedAltPerms[cap],
+                })
             end
         else
-            error("Missing permission: ``" .. cap .. "``")
+            error({
+                type = "MissingPermissions",
+                perm = cap,
+            })
         end
     end
 end
@@ -60,10 +67,17 @@ local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinf
         if SupportedAltPerms[cap] then
             local modPerms = permissionsFromBf(userinfo.discord_permissions)
             if not table.find(modPerms, SupportedAltPerms[cap]) then
-                error("Missing permission: ``" .. cap .. "`` or ``" .. SupportedAltPerms[cap] .. "``")
+                error({
+                    type = "MissingPermissions",
+                    perm = cap,
+                    altPerm = SupportedAltPerms[cap],
+                })
             end
         else
-            error("Missing permission: ``" .. cap .. "``")
+            error({
+                type = "MissingPermissions",
+                perm = cap,
+            })
         end
     end
 
