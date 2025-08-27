@@ -17,7 +17,7 @@ export type HandledError = {
 --- A function that takes in a custom error and returns a handled error.
 local function errorHandler(err: CustomError): HandledError
     if type(err) == "string" then
-        local tb = debug.traceback(tostring(err))
+        local tb = debug.traceback(tostring(err), 2)
         tb = tostring(tb) :: string
         if #tb > 2000 then 
             -- Limit to 1997 chars and add a ... at the end
@@ -42,6 +42,7 @@ local function errorHandler(err: CustomError): HandledError
                         {
                             name = "How to fix this?",
                             value = `Ask the server owner (or any administrator) to give you the **{err.perm}** permission on AntiRaid. Alternatively, ensure you have the **{err.altPerm}** permission in the server.`,
+                            inline = false
                         },
                     },
                     color = 0xFF0000,
@@ -56,6 +57,7 @@ local function errorHandler(err: CustomError): HandledError
                     {
                         name = "How to fix this?",
                         value = `Ask the server owner (or any administrator) to give you the **{err.perm}** permission on AntiRaid.`,
+                        inline = false
                     },
                 },
                 color = 0xFF0000,
