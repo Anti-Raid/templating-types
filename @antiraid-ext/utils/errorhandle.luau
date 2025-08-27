@@ -17,9 +17,10 @@ export type HandledError = {
 --- A function that takes in a custom error and returns a handled error.
 local function errorHandler(err: CustomError): HandledError
     if type(err) == "string" then
-        local tb = debug.traceback(tostring(err), 2)
+	local tb = debug.traceback(err, 2)
         tb = tostring(tb) :: string
-        if #tb > 2000 then 
+        --error(tb .. "\n\n\n")
+	if #tb > 2000 then 
             -- Limit to 1997 chars and add a ... at the end
             tb = tb:sub(1, 1997) .. "..."
         end
@@ -27,7 +28,7 @@ local function errorHandler(err: CustomError): HandledError
         return {
             embed = {
                 title = "Something happened!",
-                description = "Something happened while trying to process your request. If the problem persists, **please report it to our Support Server**\n```lua\n" .. err .. "\n```",
+                description = "Something happened while trying to process your request. If the problem persists, **please report it to our Support Server**\n```lua\n" .. tb .. "\n```",
                 color = 0xFF0000,
             },
             traceback = tb,

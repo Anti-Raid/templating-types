@@ -185,6 +185,7 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
 
         local ok, err: errorHandler.HandledError = xpcall(command.run, errorHandler.errorHandler, runData)
         if not ok then 
+	    if type(err) == "string" then error(err .. " test") end
             local comps = nil
             local linksstore = ctx.DataStores.LinksStore
             if linksstore then 
@@ -235,7 +236,7 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
 
             -- Rethrow the error for logging
             if err.traceback then
-                error(err.traceback)
+                error(err.traceback, 0)
             end
         end
     end)
