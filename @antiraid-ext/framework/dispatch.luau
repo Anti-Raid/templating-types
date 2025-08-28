@@ -75,36 +75,6 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
 
             local callback: ((bcd: coretypes.ButtonCallbackData) -> nil)? = framework.getButtonCallback(interaction.data.custom_id)
             if not callback then
-                local comps = nil
-                local linksstore = ctx.DataStores.LinksStore 
-                if linksstore then 
-                    comps = {
-                        ActionRowBuilder.new()
-                        :addComponent(
-                            ButtonBuilder.new()
-                            :setStyle("Blurple")
-                            :setLabel("Support Server")
-                            :setUrl(linksstore.links().support_server)
-                            :build()
-                        )
-                        :build() :: apiTypes.ComponentObjects
-                    }
-                end
-        
-                interactionutils.replySimple(
-                    ctx,
-                    interaction :: apiTypes.InteractionObject,
-                    nil,
-                    {
-                        {
-                            title = "Unknown button clicked!",
-                            description = "Make sure that the button hasn't expired! You probably waited too long! \nIf the problem persists, **please report it to our Support Server**",
-                            color = 0xFF0000,
-                        }
-                    } :: {apiTypes.EmbedObject},
-                    true,
-                    comps
-                )
                 return
             end
 
