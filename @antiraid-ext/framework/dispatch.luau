@@ -48,6 +48,17 @@ local function _setupFrameworkBaseData(ctx: Primitives.TemplateContext, framewor
     shareFramework(ctx, framework)
 end
 
+--- Returns the base data of the framework.
+local function getFrameworkBaseData(ctx: Primitives.TemplateContext): coretypes.BaseFrameworkData
+    local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.getFrameworkBaseData!")
+    
+    if not framework.data then
+        _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
+    end
+
+    return framework.data :: coretypes.BaseFrameworkData
+end
+
 --- Dispatches an event to the framework.
 ---
 --- This is the main entry point for the framework to handle events.
@@ -267,4 +278,5 @@ end
 
 return {
     dispatch = dispatch,
+    getFrameworkBaseData = getFrameworkBaseData,
 }
