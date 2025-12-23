@@ -3,7 +3,7 @@ local interop = require "@antiraid/interop"
 
 --- Returns the exact set of events that builtins has access to
 local function getSubscribedEvents(ctx: Primitives.TemplateContext): {string}
-    return ctx.data.events
+    return ctx.events
 end
 
 local function _cloneTableDespiteMetatable(t: {string}): {string} 
@@ -18,7 +18,7 @@ end
 --- Registers a event
 local function registerEvent(ctx: Primitives.TemplateContext, event: string): ()
     local found = false
-    for _, ev in ctx.data.events do
+    for _, ev in ctx.events do
         if ev == event then
             found = true
             break
@@ -32,19 +32,19 @@ local function registerEvent(ctx: Primitives.TemplateContext, event: string): ()
         error("TemplateStore not found in context data")
     end
 
-    local template = ts.get(ctx.data.name)
+    local template = ts.get(ctx.template_name)
 
-    if not template and ctx.data.name == "$builtins" then 
+    if not template and ctx.template_name == "$builtins" then 
         -- Builtins special case: The template may not be on DB
-        local events = _cloneTableDespiteMetatable(ctx.data.events)
+        local events = _cloneTableDespiteMetatable(ctx.events)
         table.insert(events, event)
         ts.create({
-            name = ctx.data.name,
+            name = ctx.template_name,
             events = events,
-            error_channel = ctx.data.error_channel,
+            error_channel = nil,
             content = {},
-            language = ctx.data.lang,
-            allowed_caps = ctx.data.allowed_caps,
+            language = "luau",
+            allowed_caps = ctx.allowed_caps,
             paused = false,
         })
         return
@@ -56,7 +56,7 @@ local function registerEvent(ctx: Primitives.TemplateContext, event: string): ()
     table.insert(events, event)
 
     ts.update({
-        name = ctx.data.name,
+        name = ctx.template_name,
         events = events,
         error_channel = template.error_channel,
         content = template.content,

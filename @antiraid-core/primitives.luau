@@ -39,39 +39,18 @@ export type Event = {
     author: string?
 }
 
---- Information about a script
-export type ScriptData = {
-    --- The guild ID the template is in.
-    guild_id: string,
-    --- The name of the template.
-    name: string,
-    --- The description of the template.
-    description: string?,
-    --- The name of the template as it appears on the template shop listing.
-    shop_name: string?,
-    --- The owner of the template on the template shop.
-    shop_owner: string?,
-    --- The events that this template listens to.
+export type ExtContextData = {
+    template_name: string,
     events: {string},
-    --- The channel to send errors to.
-    error_channel: string?,
-    --- The language of the template.
-    lang: string,
-    --- The allowed capabilities the template has access to.
-    allowed_caps: {string},
-    --- The user who created the template.
-    created_by: string,
-    --- The time the template was created.
-    created_at: string,
-    --- The user who last updated the template.
-    updated_by: string,
-    --- The time the template was last updated.
-    updated_at: string,
 }
 
-export type Limitations = {
+export type With = {
     --- Capabilities that the template has access to.
     capabilities: {string},
+    --- The TFlags to set
+    tflags: {string}?,
+    --- The extra context data to set
+    ext_data: ExtContextData?,
 }
 
 --- TemplateContext is a struct that represents the context of a template. 
@@ -94,17 +73,14 @@ export type TemplateContext = {
     --- HTTP Client plugin
     read HTTPClient: httpclientP.Plugin,
 
-    --- The public data associated with the script.
-    read data: ScriptData,
     --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
     read memory_limit: u64,
     --- The current guild ID the template is running on.
     read guild_id: string,
-    --- The owner guild ID of the template, if any. For shop templates, this will be the guild ID of the guild which owns the template on the shop
-    --- For guild-owned templates, this will be the guild ID of the guild which owns the template [the same as guild_id]
-    read owner_guild_id: string,
     --- The name of the template itself
     read template_name: string,
+    --- The events the template has access to
+    read events: {string},
     --- The capabilities the template has access to.   
     read allowed_caps: {string},
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
@@ -115,7 +91,9 @@ export type TemplateContext = {
     read has_any_cap: (self: TemplateContext, caps: {string}) -> boolean,
     --- Returns a new TemplateContext with the specified limits which must be a strict subset
     --- of the current context's limits.
-    read withlimits: (self: TemplateContext, limits: Limitations) -> TemplateContext,
+    read with: (self: TemplateContext, data: With) -> TemplateContext,
+    --- Returns the event present within the TemplateContext
+    read event: (self: TemplateContext) -> Event,
 
     --- The global/common store table shared across all templates within the same
     --- server
