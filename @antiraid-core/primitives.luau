@@ -33,6 +33,8 @@ export type Event = {
     base_name: string,
     --- The name of the event.
     name: string,
+    --- The scopes of the event or nil if no scopes are set.
+    scopes: {string}?,
     --- The data of the event.
     data: any,
     --- The author of the event, if any.
