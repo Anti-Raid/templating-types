@@ -1,3 +1,5 @@
+local lazy = require("@antiraid-core/lazy")
+
 --- A multi option is either T (Some(Some(T)), a empty table (Some(None)), or nil (None)
 export type MultiOption<T> = T | {} | nil
 
@@ -103,6 +105,13 @@ export type BitU64 = {
 
 local bitu64 = {} :: BitU64
 
+export type Vfs = {
+    --- Given a set of Vfs's (which may either be a existing vfs provided by rust or a lazy string map created using `newlazystringmap` or stored within key-value API), creates an overlay Vfs
+    newoverlay: (vfss: {Vfs | lazy.Lazy<{ [string]: string }>}) -> Vfs,
+    --- Creates a require function that can be used to require files from the Vfs
+    createrequirefunction: (self: Vfs, cacheprefix: string, global_table: {[any]: any}) -> (string) -> ...any,
+}
+
 --- Creates a U64 from a number or string
 ---
 --- If nil is passed, 0 is used as default
@@ -129,9 +138,19 @@ local function randstring(length: number): string
     return result
 end
 
+--- Given a value, returns a lazy string map (Lazy<{ [string]: string }>)
+local function newlazystringmap(value: { [string]: string }): lazy.Lazy<{ [string]: string }>
+    error("Implemented internally in AntiRaid runtime!")
+end
+
+--- Note: this is a proxy type and as such, only static methods can be called on it
+local Vfs = {} :: Vfs
+
 return {
     U64 = U64,
     I64 = I64,
     bitu64 = bitu64,
     randstring = randstring,
+    newlazystringmap = newlazystringmap,
+    Vfs = Vfs,
 }
