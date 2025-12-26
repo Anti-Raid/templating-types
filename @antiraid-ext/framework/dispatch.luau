@@ -23,7 +23,6 @@ local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local function _setupFrameworkBaseData(ctx: Primitives.TemplateContext, framework: coretypes.Framework): ()
     -- Register builtins
     local data = {}
-    data.templateName = ctx.template_name
     data.stingManager = stingmanager(ctx:with({capabilities = {"kv[builtins.stings]:*", "kv[builtins.settings]:*"}}))
     data.punishmentmanager = punishmentmanager(ctx, data.stingManager)
     data.builtinSettingsManager = builtinSettingsManager(ctx)

@@ -29,30 +29,15 @@ export type byte = number
 --- 
 --- In templates, this is ``arg``.
 export type Event = {
-    --- The base name of the event.
-    base_name: string,
     --- The name of the event.
     name: string,
-    --- The scopes of the event or nil if no scopes are set.
-    scopes: {string}?,
     --- The data of the event.
     data: any,
-    --- The author of the event, if any.
-    author: string?
-}
-
-export type ExtContextData = {
-    template_name: string,
-    events: {string},
 }
 
 export type With = {
     --- Capabilities that the template has access to.
     capabilities: {string},
-    --- The TFlags to set
-    tflags: {string}?,
-    --- The extra context data to set
-    ext_data: ExtContextData?,
 }
 
 --- TemplateContext is a struct that represents the context of a template. 
@@ -79,10 +64,6 @@ export type TemplateContext = {
     read memory_limit: u64,
     --- The current guild ID the template is running on.
     read guild_id: string,
-    --- The name of the template itself
-    read template_name: string,
-    --- The events the template has access to
-    read events: {string},
     --- The capabilities the template has access to.   
     read allowed_caps: {string},
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].

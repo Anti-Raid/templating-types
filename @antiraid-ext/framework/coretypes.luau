@@ -11,7 +11,6 @@ local commandBuilder = require "@discord-types/builders/interaction/interaction"
 local settings = require "@antiraid-core/settings"
 
 export type BaseFrameworkData = {
-    templateName: string,
     stingManager: stingmanager.StingManager,
     punishmentmanager: punishmentmanager.PunishmentManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,

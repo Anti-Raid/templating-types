@@ -138,13 +138,6 @@ local function randstring(length: number): string
     return result
 end
 
---- Given a value, returns a lazy string map (Lazy<{ [string]: string }>)
----
---- Only for advanced use-cases
-local function newlazystringmap(value: { [string]: string }): lazy.Lazy<{ [string]: string }>
-    error("Implemented internally in AntiRaid runtime!")
-end
-
 --- Creates a new global proxy table that forwards reads to the main Luau global table
 --- and writes to a separate table.
 ---
@@ -163,7 +156,6 @@ return {
     I64 = I64,
     bitu64 = bitu64,
     randstring = randstring,
-    newlazystringmap = newlazystringmap,
     createglobalproxy = createglobalproxy,
     Vfs = Vfs,
 }
