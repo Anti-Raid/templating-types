@@ -2,43 +2,79 @@
 
 local datetime = require("@antiraid/datetime")
 local lazy = require "@antiraid-core/lazy"
+local typesext = require"@antiraid/typesext"
 
 type Content = { [string]: string }
 type LazyContent = lazy.Lazy<Content>
 
+type TemplateOwner = {
+    type: "user",
+    id: string
+} | {
+    type: "guild",
+    id: string,
+}
+
+type TemplateSource = {
+    type: "shop",
+
+    --- The shop listing ID
+    shop_listing: string,
+} | {
+    type: "custom",
+
+    --- Name of the template
+    name: string,
+
+    --- Template language
+    language: "luau",
+
+    --- Template Content
+    content: LazyContent
+} | {
+    type: "builtin" -- This is a virtual source used to denote the 'builtins' core template
+}
+
 --- A Template object.
 export type Template = {
-    --- The name of the template
-    name: string,
-    --- The content of the template
-    content: LazyContent,
-    --- The language of the template
-    language: string,
-    --- The capabilities allowed for this template
-    allowed_caps: { string },
+    --- The ID of the template attachment
+    id: string,
+
+    --- The owner of the template, usage wise
+    owner: TemplateOwner,
+
+    --- The template attachment source
+    source: TemplateSource,
+
     --- The date and time when the template was created
     created_at: datetime.DateTime,
+
     --- The date and time when the template was last updated
-    updated_at: datetime.DateTime,
+    last_updated_at: datetime.DateTime,
+
+    --- The capabilities allowed for this template
+    allowed_caps: { string },
+
+    --- The precomputed VFS of the template
+    vfs: typesext.Vfs,
+
     --- Whether or not the template is paused
     paused: boolean,
 }
 
 --- A CreateTemplate object.
 export type CreateTemplate = {
-    --- The name of the template
-    name: string,
-    --- The content of the template
-    content: { [string]: string } | LazyContent,
-    --- The language of the template
-    language: string,
+    --- The template attachment source
+    source: TemplateSource,
+
     --- The capabilities allowed for this template
     allowed_caps: { string },
+
     --- Whether or not the template is paused
     paused: boolean,
 }
 
-type TenantState = {
+export type TenantState = {
     --- The list of events the guild is (globally) subscribed to
     events: {string},
     --- boolean flag dictating whether or not we’ve been banned
@@ -59,22 +95,28 @@ export type Plugin = {
     --- @yields
     ---
     --- Gets a template by name
-    gettemplate: (self: Plugin, name: string) -> Template?,
+    gettemplate: (self: Plugin, id: string) -> Template?,
 
     --- @yields
     ---
-    --- Creates or updates an existing template
-    settemplate: (self: Plugin, template: CreateTemplate) -> nil,
+    --- Creates an existing template
+    createtemplate: (self: Plugin, template: CreateTemplate) -> nil,
+
+    --- @yields
+    ---
+    --- Creates an existing template
+    updatetemplate: (self: Plugin, id: string, template: CreateTemplate) -> nil,
 
     --- @yields
     ---
     --- Deletes a template by name
-    deletetemplate: (self: Plugin, name: string) -> nil,
+    deletetemplate: (self: Plugin, id: string) -> nil,
 
     --- @yields
     ---
-    --- Fetches the TenantState
-    gettenantstate: (self: Plugin) -> TenantState?,
+    --- Fetches the TenantState or returns a suitable default
+    gettenantstate: (self: Plugin) -> TenantState,
+
     --- @yields
     ---
     --- Sets the TenantState

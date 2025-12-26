@@ -38,6 +38,8 @@ export type Event = {
 export type With = {
     --- Capabilities that the template has access to.
     capabilities: {string},
+    --- The event to set in the new TemplateContext.
+    event: Event?,
 }
 
 --- TemplateContext is a struct that represents the context of a template. 
@@ -80,7 +82,7 @@ export type TemplateContext = {
 
     --- The global/common store table shared across all templates within the same
     --- server
-    store: {},
+    store: {[any]: any},
 }
 
 return {}
