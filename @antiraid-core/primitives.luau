@@ -1,5 +1,5 @@
 local discord = require("@discord-types/apiTypes")
-local datastoresP = require("@antiraid-core/plugins/datastores")
+local runtimeP = require("@antiraid-core/plugins/runtime")
 local discordP = require("@antiraid-core/plugins/discord")
 local imgcaptchaP = require("@antiraid-core/plugins/img_captcha")
 local kvP = require("@antiraid-core/plugins/kv")
@@ -47,8 +47,8 @@ export type With = {
 --- Passing a TemplateContext is often required when using AntiRaid plugins for getting the inner context
 --- of a template.
 export type TemplateContext = {
-    --- DataStores plugin
-    read DataStores: datastoresP.Plugin,
+    --- Runtime plugin
+    read Runtime: runtimeP.Plugin,
     --- Discord plugin
     read Discord: discordP.Plugin,
     --- Image Captcha plugin

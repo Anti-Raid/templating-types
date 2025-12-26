@@ -3,6 +3,9 @@
 local datetime = require("@antiraid/datetime")
 local lazy = require "@antiraid-core/lazy"
 
+type Content = { [string]: string }
+type LazyContent = lazy.Lazy<Content>
+
 --- A Template object.
 export type Template = {
     --- The name of the template
@@ -20,9 +23,6 @@ export type Template = {
     --- Whether or not the template is paused
     paused: boolean,
 }
-
-type Content = { [string]: string }
-type LazyContent = lazy.Lazy<Content>
 
 --- A CreateTemplate object.
 export type CreateTemplate = {
@@ -49,41 +49,41 @@ type TenantState = {
     startup_events: boolean,
 }
 
---- A TemplateExecutor object.
-export type RuntimeService = {
+--- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime
+export type Plugin = {
     --- @yields
     ---
     --- Lists all templates
-    listtemplates: () -> { Template },
+    listtemplates: (self: Plugin) -> { Template },
 
     --- @yields
     ---
     --- Gets a template by name
-    gettemplate: (name: string) -> Template?,
+    gettemplate: (self: Plugin, name: string) -> Template?,
 
     --- @yields
     ---
     --- Creates or updates an existing template
-    settemplate: (template: CreateTemplate) -> nil,
+    settemplate: (self: Plugin, template: CreateTemplate) -> nil,
 
     --- @yields
     ---
     --- Deletes a template by name
-    deletetemplate: (name: string) -> nil,
+    deletetemplate: (self: Plugin, name: string) -> nil,
 
     --- @yields
     ---
     --- Fetches the TenantState
-    gettenantstate: () -> TenantState?,
+    gettenantstate: (self: Plugin) -> TenantState?,
     --- @yields
     ---
     --- Sets the TenantState
-    settenantstate: (state: TenantState) -> (),
+    settenantstate: (self: Plugin, state: TenantState) -> (),
 
     --- @yields
     ---
     --- Returns the statistics of the bot.
-    stats: () -> {
+    stats: (self: Plugin) -> {
         total_cached_guilds: number,
         total_guilds: number,
         total_users: number,
@@ -92,7 +92,7 @@ export type RuntimeService = {
 
     --- Returns various important links
     --- of the bot
-    links: () -> {
+    links: (self: Plugin) -> {
         support_server: string,
         api_url: string,
         frontend_url: string,
@@ -100,5 +100,7 @@ export type RuntimeService = {
     },
 
     --- Returns the list of events the bot can dispatch
-    event_list: () -> {string},
+    event_list: (self: Plugin) -> {string},
 }
+
+return {}

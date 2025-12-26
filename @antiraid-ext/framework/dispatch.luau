@@ -166,21 +166,17 @@ local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext):
         local ok, err: errorHandler.HandledError = xpcall(command.run, errorHandler.errorHandler, runData)
         if not ok then 
 	    if type(err) == "string" then error(err .. " test") end
-            local comps = nil
-            local linksstore = ctx.DataStores.LinksStore
-            if linksstore then 
-                comps = {
-                    ActionRowBuilder.new()
-                    :addComponent(
-                        ButtonBuilder.new()
-                        :setStyle("Blurple")
-                        :setLabel("Support Server")
-                        :setUrl(linksstore.links().support_server)
-                        :build()
-                    )
-                    :build() :: apiTypes.ComponentObjects
-                }
-            end
+            local comps = {
+                ActionRowBuilder.new()
+                :addComponent(
+                    ButtonBuilder.new()
+                    :setStyle("Blurple")
+                    :setLabel("Support Server")
+                    :setUrl(ctx.Runtime:links().support_server)
+                    :build()
+                )
+                :build() :: apiTypes.ComponentObjects
+            }
 
             -- Check if ephemeral or not
             local isResponseEphemeral = false
