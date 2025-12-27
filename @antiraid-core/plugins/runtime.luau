@@ -32,7 +32,7 @@ type TemplateSource = {
     --- Template Content
     content: LazyContent
 } | {
-    type: "builtin" -- This is a virtual source used to denote the 'builtins' core template
+    type: "builtins" -- This is a virtual source used to denote the 'builtins' core template
 }
 
 --- A Template object.
@@ -62,10 +62,28 @@ export type Template = {
     paused: boolean,
 }
 
+type CreateTemplateSource = {
+    type: "shop",
+
+    --- The shop listing ID
+    shop_listing: string,
+} | {
+    type: "custom",
+
+    --- Name of the template
+    name: string,
+
+    --- Template language
+    language: "luau",
+
+    --- Template Content
+    content: LazyContent
+}
+
 --- A CreateTemplate object.
 export type CreateTemplate = {
     --- The template attachment source
-    source: TemplateSource,
+    source: CreateTemplateSource,
 
     --- The capabilities allowed for this template
     allowed_caps: { string },
@@ -142,7 +160,7 @@ export type Plugin = {
     },
 
     --- Returns the list of events the bot can dispatch
-    event_list: (self: Plugin) -> {string},
+    eventlist: (self: Plugin) -> {string},
 }
 
 return {}
