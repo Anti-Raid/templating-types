@@ -499,6 +499,28 @@ export type DeleteInviteOptions = {
     reason: string
 }
 
+export type DeleteMessageOptions = {
+    channel_id: discord.Snowflake, 
+    message_id: discord.Snowflake, 
+    reason: string
+}
+
+export type BulkDeleteMessagesOptions = {
+    channel_id: discord.Snowflake, 
+    message_ids: {discord.Snowflake}, 
+    reason: string
+}
+
+export type CrosspostMessageOptions = {
+    channel_id: discord.Snowflake,
+    message_id: discord.Snowflake
+}
+
+export type DeleteAllReactionsOptions = {
+    channel_id: discord.Snowflake,
+    message_id: discord.Snowflake
+}
+
 --- Lazy<{discord.UserObject}>
 type LazyUsersObject = lazy.Lazy<discord.UserObject>
 -- Lazy<AntiraidFusedMember>
@@ -837,7 +859,7 @@ export type DiscordExecutor = {
     --- @yields
     ---
     --- Crossposts a message to an announcement channel
-    crosspost_message: (self: DiscordExecutor, channel_id: discord.Snowflake, message_id: discord.Snowflake) -> LazyMessageObject,
+    crosspost_message: (self: DiscordExecutor, data: CrosspostMessageOptions) -> LazyMessageObject,
     
     --- @yields
     ---
@@ -861,7 +883,7 @@ export type DiscordExecutor = {
     --- @yields
     ---
     --- Deletes all reactions on a message
-    delete_all_reactions: (self: DiscordExecutor, channel_id: discord.Snowflake, message_id: discord.Snowflake) -> nil,
+    delete_all_reactions: (self: DiscordExecutor, data: DeleteAllReactionsOptions) -> nil,
 
     --- @yields
     ---
@@ -876,12 +898,12 @@ export type DiscordExecutor = {
     --- @yields
     ---
     --- Deletes a message
-    delete_message: (self: DiscordExecutor, channel_id: discord.Snowflake, message_id: discord.Snowflake, reason: string) -> nil,
+    delete_message: (self: DiscordExecutor, data: DeleteMessageOptions) -> nil,
 
     --- @yields
     ---
     --- Bulk deletes messages in a channel
-    bulk_delete_messages: (self: DiscordExecutor, channel_id: discord.Snowflake, message_ids: {discord.Snowflake}, reason: string) -> nil,
+    bulk_delete_messages: (self: DiscordExecutor, data: BulkDeleteMessagesOptions) -> nil,
 
     -- Interactions
     
