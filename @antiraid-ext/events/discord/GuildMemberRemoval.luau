@@ -1,6 +1,6 @@
 local Primitives = require("@antiraid-core/primitives")
 local discordgateway = require("@discord-types/gatewayTypes")
-local onEvent = require("@antiraid-ext/events/dispatch").onEvent
+local createTab = require("@antiraid-ext/events/dispatch").createTab
 
 --- GuildMemberRemoval
 ---
@@ -8,7 +8,7 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Provides the guild’s id and the user’s data.
 local function onGuildMemberRemoval(event: Primitives.Event, callback: (payload: discordgateway.GuildMemberRemovePayload) -> ())
-    onEvent(event, "Discord.GUILD_MEMBER_REMOVE", function(event)
+    return createTab("GUILD_MEMBER_REMOVE", function(event)
         callback(event.data)
     end)
 end

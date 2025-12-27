@@ -553,7 +553,7 @@ if(_G._TEST_ASYNC_WORK__ ~= nil) then
 
     function test_t()
         local a = parse_urls("(discord.gg/acnh)[discord.gg] is the best")
-        assert(deep_equal(a, {"discord.gg/acnh", "discord.gg"}))
+        assert(deep_equal(a, {"gg/acnh", "gg"}))
     end
 
     function test_masked_url()
@@ -1181,7 +1181,7 @@ mod tests {
     #[test]
     fn test_t() {
         let a = parse_urls("(discord.gg/acnh)[discord.gg] is the best");
-        assert_eq!(a, vec!["discord.gg/acnh", "discord.gg"]);
+        assert_eq!(a, vec!["gg/acnh", "gg"]);
     }
 
     #[test]

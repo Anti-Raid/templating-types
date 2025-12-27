@@ -1,5 +1,5 @@
 local Primitives = require("@antiraid-core/primitives")
-local onEvent = require("@antiraid-ext/events/dispatch").onEvent
+local createTab = require("@antiraid-ext/events/dispatch").createTab
 local events = require("@antiraid-core/events")
 
 --- Run a callback when the `AntiRaid.KeyResume` event is triggered (a key is resumed).
@@ -8,7 +8,7 @@ local events = require("@antiraid-core/events")
 --- @param event The event to listen for.
 --- @param callback The callback to run when the event is triggered. The callback will receive a key resume event
 local function keyResume(event: Primitives.Event, callback: (events.KeyResumeEvent) -> ())
-    onEvent(event, "AntiRaid.KeyResume", function(event)
+    return createTab("KeyResume", function(event)
         callback(event.data)
     end)
 end

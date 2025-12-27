@@ -1,6 +1,6 @@
 local Primitives = require("@antiraid-core/primitives")
 local discordgateway = require("@discord-types/gatewayTypes")
-local onEvent = require("@antiraid-ext/events/dispatch").onEvent
+local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- GuildMemberAddition
 ---
@@ -8,7 +8,7 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Provides the guild’s id and the user’s member data.
 local function onGuildMemberAddition(event: Primitives.Event, callback: (member: discordgateway.GuildMemberAddPayload) -> ())
-    onEvent(event, "Discord.GUILD_MEMBER_ADD", function(event)
+    return createTab("GUILD_MEMBER_ADD", function(event)
         callback(event.data)
     end)
 end

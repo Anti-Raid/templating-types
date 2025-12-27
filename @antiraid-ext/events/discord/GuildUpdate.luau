@@ -1,6 +1,6 @@
 local Primitives = require("@antiraid-core/primitives")
 local discord = require("@discord-types/apiTypes")
-local onEvent = require("@antiraid-ext/events/dispatch").onEvent
+local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- GuildUpdate
 ---
@@ -8,7 +8,7 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Note that the new data may be partial
 local function onGuildUpdate(event: Primitives.Event, callback: (new: discord.GuildObject) -> ())
-    onEvent(event, "Discord.GUILD_UPDATE", function(event)
+    return createTab("GUILD_UPDATE", function(event)
         callback(event.data)
     end)
 end

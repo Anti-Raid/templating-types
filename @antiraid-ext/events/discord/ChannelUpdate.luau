@@ -1,10 +1,10 @@
 local Primitives = require("@antiraid-core/primitives")
 local discord = require("@discord-types/apiTypes")
-local onEvent = require("@antiraid-ext/events/dispatch").onEvent
+local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- ChannelUpdate
 local function onChannelUpdate(event: Primitives.Event, callback: (channel: discord.ChannelObject) -> ())
-    onEvent(event, "Discord.CHANNEL_UPDATE", function(event)
+    return createTab("CHANNEL_UPDATE", function(event)
         callback(event.data)
     end)
 end

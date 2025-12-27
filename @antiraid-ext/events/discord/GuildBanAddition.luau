@@ -1,6 +1,6 @@
 local Primitives = require("@antiraid-core/primitives")
 local discordGateway = require("@discord-types/gatewayTypes")
-local onEvent = require("@antiraid-ext/events/dispatch").onEvent
+local createTab = require("@antiraid-ext/events/dispatch").createTab
 
 --- GuildBanAddition
 ---
@@ -8,7 +8,7 @@ local onEvent = require("@antiraid-ext/events/dispatch").onEvent
 ---
 --- Provides the user’s data and the id of the guild where the ban occurred.
 local function onGuildBanAddition(event: Primitives.Event, callback: (data: discordGateway.GuildBanAddPayload) -> ())
-    onEvent(event, "Discord.GUILD_BAN_ADD", function(event)
+    return createTab("GUILD_BAN_ADD", function(event)
         callback(event.data)
     end)
 end

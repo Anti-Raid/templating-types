@@ -8,58 +8,58 @@ type Content = { [string]: string }
 type LazyContent = lazy.Lazy<Content>
 
 type TemplateOwner = {
-    type: "user",
-    id: string
+    read type: "user",
+    read id: string
 } | {
-    type: "guild",
-    id: string,
+    read type: "guild",
+    read id: string,
 }
 
 type TemplateSource = {
-    type: "shop",
+    read type: "shop",
 
     --- The shop listing ID
-    shop_listing: string,
+    read shop_listing: string,
 } | {
-    type: "custom",
+    read type: "custom",
 
     --- Name of the template
-    name: string,
+    read name: string,
 
     --- Template language
-    language: "luau",
+    read language: "luau",
 
     --- Template Content
-    content: LazyContent
+    read content: LazyContent
 } | {
-    type: "builtins" -- This is a virtual source used to denote the 'builtins' core template
+    read type: "builtins" -- This is a virtual source used to denote the 'builtins' core template
 }
 
 --- A Template object.
 export type Template = {
     --- The ID of the template attachment
-    id: string,
+    read id: string,
 
     --- The owner of the template, usage wise
-    owner: TemplateOwner,
+    read owner: TemplateOwner,
 
     --- The template attachment source
-    source: TemplateSource,
+    read source: TemplateSource,
 
     --- The date and time when the template was created
-    created_at: datetime.DateTime,
+    read created_at: datetime.DateTime,
 
     --- The date and time when the template was last updated
-    last_updated_at: datetime.DateTime,
+    read last_updated_at: datetime.DateTime,
 
     --- The capabilities allowed for this template
-    allowed_caps: { string },
+    read allowed_caps: { string },
 
     --- The precomputed VFS of the template
-    vfs: typesext.Vfs,
+    read vfs: typesext.Vfs,
 
     --- Whether or not the template is paused
-    paused: boolean,
+    read paused: boolean,
 }
 
 type CreateTemplateSource = {
