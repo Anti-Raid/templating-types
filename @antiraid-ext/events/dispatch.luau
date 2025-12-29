@@ -1,6 +1,6 @@
 local Primitives = require("@antiraid-core/primitives")
 
-type EventCall = {
+export type EventCall = {
     pat: string,
     cb: (Primitives.TemplateContext) -> any
 }
@@ -14,8 +14,8 @@ end
 
 local function eventList(...: EventCall): {[string]: (Primitives.TemplateContext) -> any}
     local tab = {}
-    for _, map in (... :: {EventCall}) do 
-        assert(map.pat, "map.pat not set")
+    local args = {...}
+    for _, map in args do 
         tab[map.pat] = map.cb
     end
     return tab

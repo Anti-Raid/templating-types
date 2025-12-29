@@ -121,7 +121,7 @@ export type Plugin = {
     --- @yields
     ---
     --- Creates an existing template
-    createtemplate: (self: Plugin, template: CreateTemplate) -> nil,
+    createtemplate: (self: Plugin, template: CreateTemplate) -> string,
 
     --- @yields
     ---

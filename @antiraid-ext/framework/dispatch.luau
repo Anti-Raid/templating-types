@@ -69,7 +69,7 @@ end
 --- @param ctx Primitives.TemplateContext The context to use for the event.
 --- @return nil
 --- @error If the framework is not set up before calling this function.
-local function setup(...: {[string]: (Primitives.TemplateContext) -> any}) 
+local function setup(...: dispatchutils.EventCall)
     return dispatchutils.eventList(
         InteractionCreate(function(ctx, interaction)       
             local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
