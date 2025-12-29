@@ -6,10 +6,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- @param event The event to listen for.
 --- @param callback The callback to run when the event is triggered. The callback will receive the `events.SettingExecuteEvent` data.
 --- @return data The data returned by the callback.
-local function onExecuteSetting(event: Primitives.Event, callback: (data: events.SettingExecuteEvent) -> any)
-    return createTab("ExecuteSetting", function(event)
-        return callback(event.data)
+local function ExecuteSetting(callback: (ctx: Primitives.TemplateContext, data: events.SettingExecuteEvent) -> any)
+    return createTab("ExecuteSetting", function(ctx)
+        return callback(ctx, ctx:event().data)
     end) 
 end
 
-return onExecuteSetting
+return ExecuteSetting

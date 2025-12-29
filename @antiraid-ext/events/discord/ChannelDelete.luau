@@ -3,10 +3,10 @@ local discord = require("@discord-types/apiTypes")
 local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- ChannelDelete
-local function onChannelDelete(event: Primitives.Event, callback: (channel: discord.ChannelObject) -> ())
-    return createTab("CHANNEL_DELETE", function(event)
-        callback(event.data)
+local function ChannelDelete(callback: (ctx: Primitives.TemplateContext, channel: discord.ChannelObject) -> ())
+    return createTab("CHANNEL_DELETE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onChannelDelete
+return ChannelDelete

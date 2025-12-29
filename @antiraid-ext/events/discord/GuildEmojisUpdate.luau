@@ -7,10 +7,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- Dispatched when the emojis in a guild are updated.
 ---
 --- Provides the guild’s id and the new state of the emojis in the guild.
-local function onGuildEmojisUpdate(event: Primitives.Event, callback: (payload: discordgateway.GuildEmojisUpdatePayload) -> ())
-    return createTab("GUILD_EMOJIS_UPDATE", function(event)
-        callback(event.data)
+local function GuildEmojisUpdate(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildEmojisUpdatePayload) -> ())
+    return createTab("GUILD_EMOJIS_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildEmojisUpdate
+return GuildEmojisUpdate

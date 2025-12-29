@@ -31,7 +31,7 @@ return {
     FlowBase = flowbase.BaseFramework,
     SimpleBase = simplebase.BaseFramework,
     Framework = framework.Framework,
-    dispatch = dispatch.dispatch,
+    setup = dispatch.setup,
 
     -- Utilities
     paginate = paginate.paginate,

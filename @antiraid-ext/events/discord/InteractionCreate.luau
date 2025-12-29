@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- InteractionCreate
 ---
 --- Run an event on interaction create (e.g a slash command was used or a button was clicked)
-local function onInteractionCreate(event: Primitives.Event, callback: (interaction: discord.InteractionObject) -> ())
-    return createTab("INTERACTION_CREATE", function(event)
-        callback(event.data)
+local function InteractionCreate(callback: (ctx: Primitives.TemplateContext, interaction: discord.InteractionObject) -> ())
+    return createTab("INTERACTION_CREATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onInteractionCreate
+return InteractionCreate

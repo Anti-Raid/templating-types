@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- EntitlementUpdate
 ---
 --- Provides data abut the updated subscription. If the entitlement is renewed, the ``entitlement.ends_at`` field will have changed.
-local function onEntitlementUpdate(event: Primitives.Event, callback: (entitlement: discord.EntitlementObject) -> ())
-    return createTab("ENTITLEMENT_UPDATE", function(event)
-        callback(event.data)
+local function EntitlementUpdate(callback: (ctx: Primitives.TemplateContext, entitlement: discord.EntitlementObject) -> ())
+    return createTab("ENTITLEMENT_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onEntitlementUpdate
+return EntitlementUpdate

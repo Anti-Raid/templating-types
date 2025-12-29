@@ -7,10 +7,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- Dispatched when a user’s membership ends by leaving, getting kicked, or being banned.
 ---
 --- Provides the guild’s id and the user’s data.
-local function onGuildMemberRemoval(event: Primitives.Event, callback: (payload: discordgateway.GuildMemberRemovePayload) -> ())
-    return createTab("GUILD_MEMBER_REMOVE", function(event)
-        callback(event.data)
+local function GuildMemberRemoval(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildMemberRemovePayload) -> ())
+    return createTab("GUILD_MEMBER_REMOVE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildMemberRemoval
+return GuildMemberRemoval

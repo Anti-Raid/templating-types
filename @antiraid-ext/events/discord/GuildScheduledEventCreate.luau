@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- GuildScheduledEventCreate
 ---
 --- Dispatched when a scheduled event is created in a guild.
-local function onGuildScheduledEventCreate(event: Primitives.Event, callback: (event: discord.GuildScheduledEventObject) -> ())
-    return createTab("GUILD_SCHEDULED_EVENT_CREATE", function(event)
-        callback(event.data)
+local function GuildScheduledEventCreate(callback: (ctx: Primitives.TemplateContext, event: discord.GuildScheduledEventObject) -> ())
+    return createTab("GUILD_SCHEDULED_EVENT_CREATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildScheduledEventCreate
+return GuildScheduledEventCreate

@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- GuildIntegrationsUpdate
 ---
 --- Dispatched when a guild’s integration is added, updated or removed.
-local function onGuildIntegrationsUpdate(event: Primitives.Event, callback: (payload: discordgateway.GuildIntegrationsUpdatePayload) -> ())
-    return createTab("GUILD_INTEGRATIONS_UPDATE", function(event)
-        callback(event.data)
+local function GuildIntegrationsUpdate(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildIntegrationsUpdatePayload) -> ())
+    return createTab("GUILD_INTEGRATIONS_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildIntegrationsUpdate
+return GuildIntegrationsUpdate

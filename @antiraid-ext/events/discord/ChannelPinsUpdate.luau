@@ -3,10 +3,10 @@ local discordGateway = require("@discord-types/gatewayTypes")
 local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- ChannelPinsUpdate
-local function onChannelPinsUpdate(event: Primitives.Event, callback: (pin: discordGateway.ChannelPinsUpdatePayload) -> ())
-    return createTab("CHANNEL_PINS_UPDATE", function(event)
-        callback(event.data)
+local function ChannelPinsUpdate(callback: (ctx: Primitives.TemplateContext, pin: discordGateway.ChannelPinsUpdatePayload) -> ())
+    return createTab("CHANNEL_PINS_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onChannelPinsUpdate
+return ChannelPinsUpdate

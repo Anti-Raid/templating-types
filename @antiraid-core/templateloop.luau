@@ -4,13 +4,9 @@ local Primitives = require"./primitives"
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
 
 export type DispatchResult = {
-    type: "ok",
+    type: "ok" | "err",
     id: string,
     value: any,
-} | {
-    type: "err",
-    id: string,
-    error: any,
 }
 
 --- A manager that handles template loops for a tenant

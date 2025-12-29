@@ -7,10 +7,10 @@ local settings = require("@antiraid-core/settings")
 --- @param event The event to listen for.
 --- @param callback The callback to run when the event is triggered. The callback will receive the `events.GetSettingsEvent` data and is expected to return a list of settings to be displayed to the user
 --- @return Result The result of the operation, containing a list of settings if successful
-local function onGetSettings(event: Primitives.Event, callback: (data: events.GetSettingsEvent) -> {settings.Setting})
-    return createTab("GetSettings", function(event)
-        return callback(event.data)
+local function GetSettings(callback: (ctx: Primitives.TemplateContext, data: events.GetSettingsEvent) -> {settings.Setting})
+    return createTab("GetSettings", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGetSettings
+return GetSettings

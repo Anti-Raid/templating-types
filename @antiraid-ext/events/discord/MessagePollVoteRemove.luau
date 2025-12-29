@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- MessagePollVoteRemove
 ---
 --- Dispatched when a user removes their vote in a poll.
-local function onMessagePollVoteRemove(event: Primitives.Event, callback: (vote: discordGateway.MessagePollVoteRemove) -> ())
-    return createTab("MESSAGE_POLL_VOTE_REMOVE", function(event)
-        callback(event.data)
+local function MessagePollVoteRemove(callback: (ctx: Primitives.TemplateContext, vote: discordGateway.MessagePollVoteRemove) -> ())
+    return createTab("MESSAGE_POLL_VOTE_REMOVE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onMessagePollVoteRemove
+return MessagePollVoteRemove

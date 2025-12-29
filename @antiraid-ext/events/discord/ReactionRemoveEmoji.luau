@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- ReactionRemoveEmoji
 ---
 --- Dispatched when all reactions of a specific emoji are removed from a message.
-local function onReactionRemoveEmoji(event: Primitives.Event, callback: (payload: discordGateway.MessageReactionRemoveEmojiPayload) -> ())
-    return createTab("MESSAGE_REACTION_REMOVE_EMOJI", function(event)
-        callback(event.data)
+local function ReactionRemoveEmoji(callback: (ctx: Primitives.TemplateContext, payload: discordGateway.MessageReactionRemoveEmojiPayload) -> ())
+    return createTab("MESSAGE_REACTION_REMOVE_EMOJI", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onReactionRemoveEmoji
+return ReactionRemoveEmoji

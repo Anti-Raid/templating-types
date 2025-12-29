@@ -5,11 +5,11 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- IntegrationCreate
 ---
 --- Dispatched when an integration is created in a guild.
-local function onIntegrationCreate(event: Primitives.Event, callback: (integration: discordgateway.IntegrationCreatePayload) -> ())
-    return createTab("INTEGRATION_CREATE", function(event)
-        callback(event.data)
+local function IntegrationCreate(callback: (ctx: Primitives.TemplateContext, integration: discordgateway.IntegrationCreatePayload) -> ())
+    return createTab("INTEGRATION_CREATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onIntegrationCreate
+return IntegrationCreate
  

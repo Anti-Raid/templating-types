@@ -7,9 +7,9 @@ local events = require("@antiraid-core/events")
 --- A key is resumed when it is set with the `resume` flag and the template is reloaded or the worker process restarted.
 --- @param event The event to listen for.
 --- @param callback The callback to run when the event is triggered. The callback will receive a key resume event
-local function keyResume(event: Primitives.Event, callback: (events.KeyResumeEvent) -> ())
-    return createTab("KeyResume", function(event)
-        callback(event.data)
+local function keyResume(callback: (ctx: Primitives.TemplateContext, events.KeyResumeEvent) -> ())
+    return createTab("KeyResume", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 

@@ -1,11 +1,14 @@
 local Primitives = require("@antiraid-core/primitives")
 local discord = require("@discord-types/apiTypes")
+local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- EntitlementDelete
 ---
 --- Provides data about the subscription. Specifically, the ``entitlement.deleted`` field will be set.
-local function onEntitlementDelete(event: Primitives.Event, callback: (entitlement: discord.EntitlementObject) -> ())
-    callback(event.data)
+local function EntitlementDelete(callback: (ctx: Primitives.TemplateContext, entitlement: discord.EntitlementObject) -> ())
+    return createTab("ENTITLEMENT_DELETE", function(ctx)
+        return callback(ctx, ctx:event().data)
+    end)
 end
 
-return onEntitlementDelete
+return EntitlementDelete

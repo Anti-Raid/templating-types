@@ -3,11 +3,11 @@ local discordgateway = require("@discord-types/gatewayTypes")
 local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- IntegrationUpdate
-local function onIntegrationUpdate(event: Primitives.Event, callback: (integration: discordgateway.IntegrationUpdatePayload) -> ())
-    return createTab("INTEGRATION_UPDATE", function(event)
-        callback(event.data)
+local function IntegrationUpdate(callback: (ctx: Primitives.TemplateContext, integration: discordgateway.IntegrationUpdatePayload) -> ())
+    return createTab("INTEGRATION_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onIntegrationUpdate
+return IntegrationUpdate
  

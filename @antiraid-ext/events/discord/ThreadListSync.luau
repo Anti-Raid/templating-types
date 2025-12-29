@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- ThreadListSync
 ---
 --- Dispatched when the current user gains access to a thread.
-local function onThreadListSync(event: Primitives.Event, callback: (data: discordGateway.ThreadListSyncPayload) -> ())
-    return createTab("THREAD_LIST_SYNC", function(event)
-        callback(event.data)
+local function ThreadListSync(callback: (ctx: Primitives.TemplateContext, data: discordGateway.ThreadListSyncPayload) -> ())
+    return createTab("THREAD_LIST_SYNC", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onThreadListSync
+return ThreadListSync

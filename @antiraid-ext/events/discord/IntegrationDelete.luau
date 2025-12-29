@@ -5,11 +5,11 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- IntegrationDelete
 ---
 --- Dispatched when an integration is deleted in a guild.
-local function onIntegrationDelete(event: Primitives.Event, callback: (payload: discordgateway.IntegrationDeletePayload) -> ())
-    return createTab("INTEGRATION_DELETE", function(event)
-        callback(event.data)
+local function IntegrationDelete(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.IntegrationDeletePayload) -> ())
+    return createTab("INTEGRATION_DELETE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onIntegrationDelete
+return IntegrationDelete
  

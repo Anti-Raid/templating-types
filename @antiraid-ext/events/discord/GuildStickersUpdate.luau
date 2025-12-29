@@ -5,11 +5,11 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- GuildStickersUpdate
 ---
 --- Dispatched when the stickers in a guild are updated.
-local function onGuildStickersUpdate(event: Primitives.Event, callback: (payload: discordgateway.GuildStickersUpdatePayload) -> ())
-    return createTab("GUILD_STICKERS_UPDATE", function(event)
-        callback(event.data)
+local function GuildStickersUpdate(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildStickersUpdatePayload) -> ())
+    return createTab("GUILD_STICKERS_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildStickersUpdate
+return GuildStickersUpdate
  

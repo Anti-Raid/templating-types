@@ -7,10 +7,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- Dispatched when a guild’s voice server was updated (or changed to another one).
 ---
 --- Note that you usually won't get this event from AntiRaid unless you're self-hosting or unusual circumstances.
-local function onVoiceServerUpdate(event: Primitives.Event, callback: (data: discordGateway.VoiceServerUpdatePayload) -> ())
-    return createTab("VOICE_SERVER_UPDATE", function(event)
-        callback(event.data)
+local function VoiceServerUpdate(callback: (ctx: Primitives.TemplateContext, data: discordGateway.VoiceServerUpdatePayload) -> ())
+    return createTab("VOICE_SERVER_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onVoiceServerUpdate
+return VoiceServerUpdate

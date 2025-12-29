@@ -103,7 +103,6 @@ export type Command = {
 
 export type KeyExpiryData = {
     ctx: primitives.TemplateContext, 
-    event: primitives.Event,
     data: events.KeyExpiryEvent,
     stingManager: stingmanager.StingManager,
     punishmentmanager: punishmentmanager.PunishmentManager,
@@ -115,12 +114,10 @@ export type ButtonCallbackData = {
     ctx: primitives.TemplateContext, 
     interaction: discord.InteractionObject, 
     removeCallback: () -> nil,
-    event: primitives.Event,
 }
 
 export type RunData = {
     ctx: primitives.TemplateContext, 
-    event: primitives.Event, 
     interaction: discord.InteractionObject,
     stingManager: stingmanager.StingManager,
     punishmentmanager: punishmentmanager.PunishmentManager,
@@ -134,7 +131,6 @@ export type RunData = {
 
 export type AutocompleteRunData = {
     ctx: primitives.TemplateContext, 
-    event: primitives.Event, 
     interaction: discord.InteractionObject,
     stingManager: stingmanager.StingManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager, 

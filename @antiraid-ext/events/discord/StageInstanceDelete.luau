@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- StageInstanceDelete
 ---
 --- Dispatched when a stage instance is deleted.
-local function onStageInstanceDelete(event: Primitives.Event, callback: (instance: discord.StageInstanceObject) -> ())
-    return createTab("STAGE_INSTANCE_DELETE", function(event)
-        callback(event.data)
+local function StageInstanceDelete(callback: (ctx: Primitives.TemplateContext, instance: discord.StageInstanceObject) -> ())
+    return createTab("STAGE_INSTANCE_DELETE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onStageInstanceDelete
+return StageInstanceDelete

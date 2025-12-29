@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- ThreadMemberUpdate
 ---
 --- Dispatched when a thread member is updated.
-local function onThreadMemberUpdate(event: Primitives.Event, callback: (event: discordGateway.ThreadMemberUpdatePayload) -> ())
-    return createTab("THREAD_MEMBER_UPDATE", function(event)
-        callback(event.data)
+local function ThreadMemberUpdate(callback: (ctx: Primitives.TemplateContext, event: discordGateway.ThreadMemberUpdatePayload) -> ())
+    return createTab("THREAD_MEMBER_UPDATE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onThreadMemberUpdate
+return ThreadMemberUpdate

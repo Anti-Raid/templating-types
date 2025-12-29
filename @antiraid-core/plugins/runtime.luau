@@ -99,8 +99,6 @@ export type TenantState = {
     banned: boolean,
     --- a Luau-defined set of additional flags (includes whether or not we need to fetch templates or not etc.
     flags: number,
-    --- boolean flag dictating whether we need to dispatch startup events for this guild or not
-    startup_events: boolean,
 }
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime

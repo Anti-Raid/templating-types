@@ -5,10 +5,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- GuildScheduledEventDelete
 ---
 --- Dispatched when a scheduled event is deleted in a guild.
-local function onGuildScheduledEventDelete(event: Primitives.Event, callback: (event: discord.GuildScheduledEventObject) -> ())
-    return createTab("GUILD_SCHEDULED_EVENT_DELETE", function(event)
-        callback(event.data)
+local function GuildScheduledEventDelete(callback: (ctx: Primitives.TemplateContext, event: discord.GuildScheduledEventObject) -> ())
+    return createTab("GUILD_SCHEDULED_EVENT_DELETE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildScheduledEventDelete
+return GuildScheduledEventDelete

@@ -7,10 +7,10 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- Dispatched when a user joins a guild.
 ---
 --- Provides the guild’s id and the user’s member data.
-local function onGuildMemberAddition(event: Primitives.Event, callback: (member: discordgateway.GuildMemberAddPayload) -> ())
-    return createTab("GUILD_MEMBER_ADD", function(event)
-        callback(event.data)
+local function GuildMemberAddition(callback: (ctx: Primitives.TemplateContext, member: discordgateway.GuildMemberAddPayload) -> ())
+    return createTab("GUILD_MEMBER_ADD", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildMemberAddition
+return GuildMemberAddition

@@ -5,11 +5,11 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- GuildScheduledEventUserAdd
 ---
 --- Dispatched when a user is added to a scheduled event in a guild.
-local function onGuildScheduledEventUserAdd(event: Primitives.Event, callback: (subscribed: discordGateway.GuildScheduledEventUserAddPayload) -> ())
-    return createTab("GUILD_SCHEDULED_EVENT_USER_ADD", function(event)
-        callback(event.data)
+local function GuildScheduledEventUserAdd(callback: (ctx: Primitives.TemplateContext, subscribed: discordGateway.GuildScheduledEventUserAddPayload) -> ())
+    return createTab("GUILD_SCHEDULED_EVENT_USER_ADD", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onGuildScheduledEventUserAdd
+return GuildScheduledEventUserAdd
  

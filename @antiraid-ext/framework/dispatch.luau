@@ -3,6 +3,7 @@ local InteractionCreate = require "@antiraid-ext/events/discord/InteractionCreat
 local KeyExpiry = require "@antiraid-ext/events/antiraid/KeyExpiry"
 local GetSettings = require "@antiraid-ext/events/antiraid/GetSettings"
 local ExecuteSetting = require "@antiraid-ext/events/antiraid/ExecuteSetting"
+local dispatchutils = require"@antiraid-ext/events/dispatch"
 local Primitives = require"@antiraid-core/primitives"
 local apiTypes = require"@discord-types/apiTypes"
 local coretypes = require"@antiraid-ext/framework/coretypes"
@@ -58,7 +59,7 @@ local function getFrameworkBaseData(ctx: Primitives.TemplateContext): coretypes.
     return framework.data :: coretypes.BaseFrameworkData
 end
 
---- Dispatches an event to the framework.
+--- Sets up the event dispatch table of to the framework.
 ---
 --- This is the main entry point for the framework to handle events.
 ---
@@ -68,210 +69,218 @@ end
 --- @param ctx Primitives.TemplateContext The context to use for the event.
 --- @return nil
 --- @error If the framework is not set up before calling this function.
-local function dispatch(evt: Primitives.Event, ctx: Primitives.TemplateContext): any 
-    local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.dispatch!")
+local function setup(...: {[string]: (Primitives.TemplateContext) -> any}): any 
+    return dispatchutils.eventList(
+        InteractionCreate(function(ctx, interaction)       
+            local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
 
-    if not framework.data then
-        _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
-    end
+            if not framework.data then
+                _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
+            end
 
-    local frameworkdata = framework.data :: coretypes.BaseFrameworkData
+            local frameworkdata = framework.data :: coretypes.BaseFrameworkData
+            
+            if interaction.type == Interaction.InteractionType.MessageComponent then 
+                if not interaction.data or not interaction.data.custom_id then 
+                    return
+                end
 
-    InteractionCreate(evt, function(interaction: apiTypes.InteractionObject)              
-        if interaction.type == Interaction.InteractionType.MessageComponent then 
-            if not interaction.data or not interaction.data.custom_id then 
+                local callback: ((bcd: coretypes.ButtonCallbackData) -> nil)? = framework.getButtonCallback(interaction.data.custom_id)
+                if not callback then
+                    return
+                end
+
+                local function removeCallback(): nil
+                    framework.dropButtonCallback(interaction.data.custom_id)
+                    return nil
+                end
+
+                callback(
+                    {
+                        ctx = ctx,
+                        interaction = interaction, 
+                        removeCallback = removeCallback,
+                    } :: coretypes.ButtonCallbackData
+                )
                 return
             end
 
-            local callback: ((bcd: coretypes.ButtonCallbackData) -> nil)? = framework.getButtonCallback(interaction.data.custom_id)
-            if not callback then
-                return
+            local parsedcmd = appcommands.parseApplicationCommand(interaction)
+            if not parsedcmd then return end
+
+            local command = framework.base.getcommand(parsedcmd.nameList)
+            if not command then -- Likely another template's command
+                return 
             end
 
-            local function removeCallback(): nil
-                framework.dropButtonCallback(interaction.data.custom_id)
-                return nil
-            end
+            if interaction.type == Interaction.InteractionType.ApplicationCommandAutocomplete then 
+                if not command.autocompleter then 
+                    return
+                end
 
-            callback(
-                {
+                local autocompleteData: coretypes.AutocompleteRunData = {
                     ctx = ctx,
-                    interaction = interaction, 
-                    removeCallback = removeCallback,
-                    event = evt,
-                } :: coretypes.ButtonCallbackData
-            )
-            return
-        end
+                    interaction = interaction,
+                    stingManager = frameworkdata.stingManager,
+                    builtinSettingsManager = frameworkdata.builtinSettingsManager,
+                    command = parsedcmd,
+                }
 
-        local parsedcmd = appcommands.parseApplicationCommand(interaction)
-        if not parsedcmd then return end
+                local results = command.autocompleter(autocompleteData) or ({} :: {apiTypes.ApplicationCommandOptionChoiceObject})
+                if #results > 25 then
+                    -- Results are limited to 25 so we need to trim the table
+                    local trimmedResults = {}
+                    for i = 1, 25 do
+                        trimmedResults[i] = results[i]
+                    end
+                    results = trimmedResults
+                end
 
-        local command = framework.base.getcommand(parsedcmd.nameList)
-        if not command then -- Likely another template's command
-            return 
-        end
-
-        if interaction.type == Interaction.InteractionType.ApplicationCommandAutocomplete then 
-            if not command.autocompleter then 
+                -- Send the results
+                interactionutils.replyAutocomplete(
+                    ctx,
+                    interaction,
+                    results
+                )
                 return
             end
 
-            local autocompleteData: coretypes.AutocompleteRunData = {
+            local hasEdited = false
+            local runData: coretypes.RunData = {
                 ctx = ctx,
-                event = evt,
+                command = parsedcmd,    
                 interaction = interaction,
                 stingManager = frameworkdata.stingManager,
+                punishmentmanager = frameworkdata.punishmentmanager,
                 builtinSettingsManager = frameworkdata.builtinSettingsManager,
-                command = parsedcmd,
+                userinfomanager = frameworkdata.userinfomanager,
+                attachButtonCallback = framework.attachButtonCallback,
+                sethasEdited = function(to: boolean): nil
+                    hasEdited = to
+                    return nil
+                end,
+                dropButtonCallback = framework.dropButtonCallback,
             }
 
-            local results = command.autocompleter(autocompleteData) or ({} :: {apiTypes.ApplicationCommandOptionChoiceObject})
-            if #results > 25 then
-                -- Results are limited to 25 so we need to trim the table
-                local trimmedResults = {}
-                for i = 1, 25 do
-                    trimmedResults[i] = results[i]
-                end
-                results = trimmedResults
-            end
+            local ok, err: errorHandler.HandledError = xpcall(command.run, errorHandler.errorHandler, runData)
+            if not ok then 
+            if type(err) == "string" then error(err .. " test") end
+                local comps = {
+                    ActionRowBuilder.new()
+                    :addComponent(
+                        ButtonBuilder.new()
+                        :setStyle("Blurple")
+                        :setLabel("Support Server")
+                        :setUrl(ctx.Runtime:links().support_server)
+                        :build()
+                    )
+                    :build() :: apiTypes.ComponentObjects
+                }
 
-            -- Send the results
-            interactionutils.replyAutocomplete(
-                ctx,
-                interaction,
-                results
-            )
-            return
-        end
+                -- Check if ephemeral or not
+                local isResponseEphemeral = false
 
-        local hasEdited = false
-        local runData: coretypes.RunData = {
-            ctx = ctx,
-            event = evt,
-            command = parsedcmd,    
-            interaction = interaction,
-            stingManager = frameworkdata.stingManager,
-            punishmentmanager = frameworkdata.punishmentmanager,
-            builtinSettingsManager = frameworkdata.builtinSettingsManager,
-            userinfomanager = frameworkdata.userinfomanager,
-            attachButtonCallback = framework.attachButtonCallback,
-            sethasEdited = function(to: boolean): nil
-                hasEdited = to
-                return nil
-            end,
-            dropButtonCallback = framework.dropButtonCallback,
-        }
-
-        local ok, err: errorHandler.HandledError = xpcall(command.run, errorHandler.errorHandler, runData)
-        if not ok then 
-	    if type(err) == "string" then error(err .. " test") end
-            local comps = {
-                ActionRowBuilder.new()
-                :addComponent(
-                    ButtonBuilder.new()
-                    :setStyle("Blurple")
-                    :setLabel("Support Server")
-                    :setUrl(ctx.Runtime:links().support_server)
-                    :build()
-                )
-                :build() :: apiTypes.ComponentObjects
-            }
-
-            -- Check if ephemeral or not
-            local isResponseEphemeral = false
-
-            -- Parse options
-            for _, opt in parsedcmd.options do 
-                if opt.name == "ephemeral" then
-                    if opt.value.kind == "Boolean" then
-                        isResponseEphemeral = opt.value.value
+                -- Parse options
+                for _, opt in parsedcmd.options do 
+                    if opt.name == "ephemeral" then
+                        if opt.value.kind == "Boolean" then
+                            isResponseEphemeral = opt.value.value
+                        end
                     end
+                end 
+                
+                if hasEdited then 
+                    interactionutils.editSimple(
+                        ctx,
+                        interaction,
+                        nil,
+                        {err.embed},
+                        comps
+                    )
+                    return
                 end
-            end 
-            
-            if hasEdited then 
-                interactionutils.editSimple(
+
+                interactionutils.replySimple(
                     ctx,
                     interaction,
                     nil,
                     {err.embed},
+                    isResponseEphemeral,
                     comps
                 )
-                return
-            end
 
-            interactionutils.replySimple(
-                ctx,
-                interaction,
-                nil,
-                {err.embed},
-                isResponseEphemeral,
-                comps
-            )
-
-            -- Rethrow the error for logging
-            if err.traceback then
-                error(err.traceback, 0)
-            end
-        end
-    end)
-
-    KeyExpiry(evt, function(data)
-        --error("KeyExpiry event triggered")
-        for _, scope in data.scopes do 
-            for _, cmd in framework.base.getcommands() do 
-                local cmdR = cmd
-                if cmdR.keyexpiries then
-                    local fn = cmdR.keyexpiries[scope]
-                    if fn then
-                        fn({
-                            ctx = ctx,
-                            event = evt,
-                            data = data,
-                            stingManager = frameworkdata.stingManager,
-                            punishmentmanager = frameworkdata.punishmentmanager,
-                            builtinSettingsManager = frameworkdata.builtinSettingsManager,
-                            userinfomanager = frameworkdata.userinfomanager,
-                        })
-                    end
+                -- Rethrow the error for logging
+                if err.traceback then
+                    error(err.traceback, 0)
                 end
-            end                
-        end
-    end)
+            end
+        end),
+        KeyExpiry(function(ctx, data)
+            local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
 
-    -- Handle GetSettings event
-    local res = GetSettings(evt, function(_) 
-        return frameworkdata.settings
-    end)
+            if not framework.data then
+                _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
+            end
 
-    if res.isGetSettings then 
-        return res.data 
-    end
+            local frameworkdata = framework.data :: coretypes.BaseFrameworkData
 
-    -- Handle ExecuteSetting event
-    res = ExecuteSetting(evt, function(data)
-        local setting = framework.base.getsettings()[data.id]
-        if not setting then
-            error("Setting not found: " .. data.id)
-        end
+            for _, scope in data.scopes do 
+                for _, cmd in framework.base.getcommands() do 
+                    local cmdR = cmd
+                    if cmdR.keyexpiries then
+                        local fn = cmdR.keyexpiries[scope]
+                        if fn then
+                            fn({
+                                ctx = ctx,
+                                data = data,
+                                stingManager = frameworkdata.stingManager,
+                                punishmentmanager = frameworkdata.punishmentmanager,
+                                builtinSettingsManager = frameworkdata.builtinSettingsManager,
+                                userinfomanager = frameworkdata.userinfomanager,
+                            })
+                        end
+                    end
+                end                
+            end
+        end),
+        GetSettings(function(ctx) 
+            local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
 
-        if not setting.execute then
-            error("Setting execute function not found: " .. data.id)
-        end
+            if not framework.data then
+                _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
+            end
 
-        return setting.execute(data, {
-            ctx = ctx,
-            userinfomanager = frameworkdata.userinfomanager,
-        })
-    end)
+            local frameworkdata = framework.data :: coretypes.BaseFrameworkData
 
-    if res then return res end
+            return frameworkdata.settings
+        end),
+        ExecuteSetting(function(ctx, data)
+            local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
 
-    return nil
+            if not framework.data then
+                _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
+            end
+
+            local frameworkdata = framework.data :: coretypes.BaseFrameworkData
+
+            local setting = framework.base.getsettings()[data.id]
+            if not setting then
+                return nil
+            end
+
+            if not setting.execute then
+                error("Setting execute function not found: " .. data.id)
+            end
+
+            return setting.execute(data, {
+                ctx = ctx,
+                userinfomanager = frameworkdata.userinfomanager,
+            })
+        end)
+    )
 end
 
 return {
-    dispatch = dispatch,
+    setup = setup,
     getFrameworkBaseData = getFrameworkBaseData,
 }

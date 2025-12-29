@@ -3,10 +3,10 @@ local discord = require("@discord-types/apiTypes")
 local createTab = require("@antiraid-ext/events/dispatch").createTab
 
 --- AutoModRuleDelete
-local function onAutoModRuleDelete(event: Primitives.Event, callback: (rule: discord.AutomoderationRuleObject) -> ())
-    return createTab("AUTO_MODERATION_RULE_DELETE", function(event)
-        callback(event.data)
+local function AutoModRuleDelete(callback: (ctx: Primitives.TemplateContext, rule: discord.AutomoderationRuleObject) -> ())
+    return createTab("AUTO_MODERATION_RULE_DELETE", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onAutoModRuleDelete
+return AutoModRuleDelete

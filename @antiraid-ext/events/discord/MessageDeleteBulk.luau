@@ -5,11 +5,11 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 --- MessageDeleteBulk
 ---
 --- Dispatched when multiple messages are deleted at once.
-local function onMessageDeleteBulk(event: Primitives.Event, callback: (payload: discordgateway.MessageDeleteBulkPayload) -> ())
-    return createTab("MESSAGE_DELETE_BULK", function(event)
-        callback(event.data)
+local function MessageDeleteBulk(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.MessageDeleteBulkPayload) -> ())
+    return createTab("MESSAGE_DELETE_BULK", function(ctx)
+        return callback(ctx, ctx:event().data)
     end)
 end
 
-return onMessageDeleteBulk
+return MessageDeleteBulk
  
