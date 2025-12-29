@@ -110,6 +110,11 @@ export type Plugin = {
 
     --- @yields
     ---
+    --- Returns the builtin template
+    builtintemplate: (self: Plugin) -> Template,
+
+    --- @yields
+    ---
     --- Gets a template by name
     gettemplate: (self: Plugin, id: string) -> Template?,
 

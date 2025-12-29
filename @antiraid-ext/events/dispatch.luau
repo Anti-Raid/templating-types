@@ -1,15 +1,22 @@
 local Primitives = require("@antiraid-core/primitives")
 
-local function createTab(pat: string, callback: (Primitives.TemplateContext) -> any): {[string]: (Primitives.TemplateContext) -> any}
-    return table.freeze{
-        [pat] = callback
+type EventCall = {
+    pat: string,
+    cb: (Primitives.TemplateContext) -> any
+}
+
+local function createTab(pat: string, callback: (Primitives.TemplateContext) -> any): EventCall
+    return {
+        pat = pat,
+        cb = callback
     }
 end
 
-local function eventList(...: {[string]: (Primitives.TemplateContext) -> any}): {[string]: (Primitives.TemplateContext) -> any}
+local function eventList(...: EventCall): {[string]: (Primitives.TemplateContext) -> any}
     local tab = {}
-    for pat, cb in ... do 
-        tab[pat] = cb
+    for _, map in (... :: {EventCall}) do 
+        assert(map.pat, "map.pat not set")
+        tab[map.pat] = map.cb
     end
     return tab
 end
