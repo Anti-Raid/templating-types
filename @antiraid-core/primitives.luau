@@ -31,6 +31,10 @@ export type byte = number
 export type Event = {
     --- The name of the event.
     name: string,
+    --- The authorized author of the event.
+    ---
+    --- Will be nil for events that are not explicitly user-authorized (e.g. using the website)
+    author: string?,
     --- The data of the event.
     data: any,
 }
