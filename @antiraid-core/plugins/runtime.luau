@@ -4,93 +4,8 @@ local datetime = require("@antiraid/datetime")
 local lazy = require "@antiraid-core/lazy"
 local typesext = require"@antiraid/typesext"
 
-type Content = { [string]: string }
-type LazyContent = lazy.Lazy<Content>
-
-type TemplateOwner = {
-    read type: "user",
-    read id: string
-} | {
-    read type: "guild",
-    read id: string,
-}
-
-type TemplateSource = {
-    read type: "shop",
-
-    --- The shop listing ID
-    read shop_listing: string,
-} | {
-    read type: "custom",
-
-    --- Name of the template
-    read name: string,
-
-    --- Template language
-    read language: "luau",
-
-    --- Template Content
-    read content: LazyContent
-} | {
-    read type: "builtins" -- This is a virtual source used to denote the 'builtins' core template
-}
-
---- A Template object.
-export type Template = {
-    --- The ID of the template attachment
-    read id: string,
-
-    --- The owner of the template, usage wise
-    read owner: TemplateOwner,
-
-    --- The template attachment source
-    read source: TemplateSource,
-
-    --- The date and time when the template was created
-    read created_at: datetime.DateTime,
-
-    --- The date and time when the template was last updated
-    read last_updated_at: datetime.DateTime,
-
-    --- The capabilities allowed for this template
-    read allowed_caps: { string },
-
-    --- The precomputed VFS of the template
-    read vfs: typesext.Vfs,
-
-    --- Whether or not the template is paused
-    read paused: boolean,
-}
-
-type CreateTemplateSource = {
-    type: "shop",
-
-    --- The shop listing ID
-    shop_listing: string,
-} | {
-    type: "custom",
-
-    --- Name of the template
-    name: string,
-
-    --- Template language
-    language: "luau",
-
-    --- Template Content
-    content: LazyContent
-}
-
---- A CreateTemplate object.
-export type CreateTemplate = {
-    --- The template attachment source
-    source: CreateTemplateSource,
-
-    --- The capabilities allowed for this template
-    allowed_caps: { string },
-
-    --- Whether or not the template is paused
-    paused: boolean,
-}
+export type Content = { [string]: string }
+export type LazyContent = lazy.Lazy<Content>
 
 export type TenantState = {
     --- The list of events the guild is (globally) subscribed to
@@ -103,35 +18,8 @@ export type TenantState = {
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime
 export type Plugin = {
-    --- @yields
-    ---
-    --- Lists all templates
-    listtemplates: (self: Plugin) -> { Template },
-
-    --- @yields
-    ---
-    --- Returns the builtin template
-    builtintemplate: (self: Plugin) -> Template,
-
-    --- @yields
-    ---
-    --- Gets a template by name
-    gettemplate: (self: Plugin, id: string) -> Template?,
-
-    --- @yields
-    ---
-    --- Creates an existing template
-    createtemplate: (self: Plugin, template: CreateTemplate) -> string,
-
-    --- @yields
-    ---
-    --- Creates an existing template
-    updatetemplate: (self: Plugin, id: string, template: CreateTemplate) -> nil,
-
-    --- @yields
-    ---
-    --- Deletes a template by name
-    deletetemplate: (self: Plugin, id: string) -> nil,
+    --- Returns a list of VFS's that the runtime exposes
+    getexposedvfs: (self: Plugin) -> { [string]: typesext.Vfs },
 
     --- @yields
     ---
