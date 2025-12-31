@@ -30,7 +30,14 @@ export type TemplateLoopManager = {
     --- If `event` is passed, the sub-context created for each template will have the event set to it.
     ---
     --- If `targetId` is passed, the event will only be sent to the targetted id
-    dispatchEvent: (ctx: Primitives.TemplateContext, event: Primitives.Event?, targetId: string?) -> {DispatchResult}
+    dispatchEvent: (ctx: Primitives.TemplateContext, event: Primitives.Event?, targetId: string?) -> {DispatchResult},
+
+    --- Subscribe to an event, adding the system to the event's refs
+    subscribeEvent: (event: string, system: string) -> (),
+
+    --- Unsubscribe from an event for a system, removing the system from the events ref
+    --- and automatically removing the event if no systems use it anymore
+    unsubscribeEvent: (event: string, system: string) -> (),
 }
 
 --- Returns a running templateloopmanager, errors if not found

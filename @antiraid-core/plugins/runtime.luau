@@ -12,8 +12,8 @@ export type TenantState = {
     events: {string},
     --- boolean flag dictating whether or not we’ve been banned
     banned: boolean,
-    --- a Luau-defined set of additional flags (includes whether or not we need to fetch templates or not etc.
-    flags: number,
+    --- Extra data (which could include flags such as whether or not we need to fetch templates or not etc.
+    data: {[any]: any} | nil,
 }
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime
