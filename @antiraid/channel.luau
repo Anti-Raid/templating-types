@@ -9,7 +9,7 @@ export type OneshotChannel<T> = {
     read recvtimeout: (self: OneshotChannel<T>, timeout: datetime.TimeDelta) -> T,
 }
 
-export type DelayChannel<T> = {
+export type DelayChannel<T> = typeof(setmetatable({} :: {
     --- Returns the maximum delay time supported by the delay channel
     read maxdelay: (self: DelayChannel<T>) -> datetime.TimeDelta,
     --- Adds a value to the delay queue, to be received after the specified delay
@@ -22,7 +22,9 @@ export type DelayChannel<T> = {
     --- Next should always only ever be called *once*. The exact behavior of calling next multiple times is undefined
     --- (and may result in either a error or the thread being perpetually yielded forever.)
     read next: (self: DelayChannel<T>) -> T,
-}
+}, {} :: {
+    __len: (self: DelayChannel<T>) -> number,
+}))
 
 export type KeyHandle<T> = typeof(setmetatable({} :: {
     --- Cancels the delayed message associated with this handle. Returns true if removed, else false
