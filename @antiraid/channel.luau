@@ -10,6 +10,8 @@ export type OneshotChannel<T> = {
 }
 
 export type DelayChannel<T> = {
+    --- Returns the maximum delay time supported by the delay channel
+    read maxdelay: (self: DelayChannel<T>) -> datetime.TimeDelta,
     --- Adds a value to the delay queue, to be received after the specified delay
     read add: (self: DelayChannel<T>, message: T, delay: datetime.TimeDelta) -> (),
     --- Adds a value to the delay queue, to be received after the specified delay

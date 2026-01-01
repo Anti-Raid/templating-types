@@ -1,4 +1,3 @@
-local runtime = require"./plugins/runtime"
 local Primitives = require"./primitives"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
@@ -16,15 +15,6 @@ export type TemplateLoopManager = {
     --- Returns the result from the templates startup code.
     updateTemplateCache: (id: string) -> {DispatchResult},
 
-    --- Returns a reference to the cached tenant state
-    ---
-    --- Mutating the reference from getTenantState will also mutate the reference in the 
-    --- template loop as well
-    getTenantState: () -> runtime.TenantState,
-
-    --- Update the tenantstate due to a change in the tenant state
-    setTenantState: (ts: runtime.TenantState) -> (),
-
     --- Dispatch an event to all cached templates, returning the result as desired
     ---
     --- If `event` is passed, the sub-context created for each template will have the event set to it.
@@ -33,11 +23,15 @@ export type TemplateLoopManager = {
     dispatchEvent: (ctx: Primitives.TemplateContext, event: Primitives.Event?, targetId: string?) -> {DispatchResult},
 
     --- Subscribe to an event, adding the system to the event's refs
-    subscribeEvent: (event: string, system: string) -> (),
+    ---
+    --- If `nosave` is set, the settenantstate call will not be made
+    subscribeEvent: (event: string, system: string, nosave: boolean?) -> (),
 
     --- Unsubscribe from an event for a system, removing the system from the events ref
     --- and automatically removing the event if no systems use it anymore
-    unsubscribeEvent: (event: string, system: string) -> (),
+    ---
+    --- If `nosave` is set, the settenantstate call will not be made
+    unsubscribeEvent: (event: string, system: string, nosave: boolean?) -> (),
 }
 
 --- Returns a running templateloopmanager, errors if not found
