@@ -26,8 +26,6 @@ export type KvRecord = {
     created_at: datetime.DateTime,
     --- The timestamp when the record was last updated, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
     last_updated_at: datetime.DateTime,
-    --- When the record will expire, if any
-    expires_at: datetime.DateTime?,
 } | {
     --- The key of the record.
     key: string,
@@ -41,11 +39,6 @@ export type KvRecordList = {KvRecord}
 --- KvExecutor allows templates to get, store and find persistent data within a server.
 ---@class KvExecutor
 export type KvExecutor = {
-    --- The guild ID the executor will perform key-value operations on.
-    read guild_id: string,
-    --- The originating guild ID (the guild ID of the template itself).
-    read origin_guild_id: string,
-
     --- @yields
     ---
     --- Returns a list of all key-value scopes/
@@ -108,34 +101,16 @@ export type KvExecutor = {
     --- Sets a record in the key-value store.
     --- @param key string The key of the record.
     --- @param value any The value of the record.
-    --- @param scopes {string} The scopes to set the record in. If not provided, the record will be set in the unscoped scope.
-    --- @param expires_at datetime.DateTime? The expiration time of the record, if any
-    --- @param resume boolean? If set, dispatches a ``KeyResume`` event anytime the key is set and the template is reloaded or the worker process restarted. Defaults to false.
-    --- @return The result of the set operation, containing whether the key previously existed and the ID of the record.
-    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scopes: {string}, expires_at: datetime.DateTime?, resume: boolean?) -> SetResult,
+    --- @param scopes {string} The scopes to set the record in.
+    --- @return The result of the set operation, containing whether the (key, scope) combo previously existed and the ID of the record.
+    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scopes: {string}) -> SetResult,
 
     --- @yields
     --- Sets a record in the key-value store by ID.
     --- @param id string The ID of the record.
     --- @param value any The value of the record.
-    --- @param expires_at datetime.DateTime? The expiration time of the record, if any.
-    --- @param resume boolean? If set, dispatches a ``KeyResume`` event anytime the key is set and the template is reloaded or the worker process restarted. Defaults to false.
     --- @return nil
-    setbyid: (self: KvExecutor, id: string, value: khronosvalue.KhronosValue, expires_at: datetime.DateTime?, resume: boolean?) -> nil,
-
-    --- @yields
-    ---
-    --- Sets the expiry time of a record.
-    --- @param key string The key of the record.
-    --- @param expires_at datetime.DateTime The new expiration time of the record.
-    setexpiry: (self: KvExecutor, key: string, scopes: {string}, expires_at: datetime.DateTime?) -> nil,
-
-    --- @yields
-    ---
-    --- Sets the expiry time of a record by ID.
-    --- @param id string The ID of the record.
-    --- @param expires_at datetime.DateTime The new expiration time of the record.
-    setexpirybyid: (self: KvExecutor, id: string, expires_at: datetime.DateTime?) -> nil,
+    setbyid: (self: KvExecutor, id: string, value: khronosvalue.KhronosValue) -> nil,
 
     --- @yields
     ---
