@@ -2,17 +2,16 @@ local discordRestTypes = require"@discord-types/restTypes"
 local discord = require"@discord-types/apiTypes"
 local primitives = require"@antiraid-core/primitives"
 local stingmanager = require"@antiraid-ext/utils/stingmanager"
-local punishmentmanager = require"@antiraid-ext/utils/punishmentmanager"
 local builtinSettingsManager = require"@antiraid-ext/utils/builtinsettingsmanager"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local appcommands = require"@antiraid-ext/appcommands"
 local events = require"@antiraid-core/events"
 local commandBuilder = require "@discord-types/builders/interaction/interaction"
 local settings = require "@antiraid-core/settings"
+local tloop = require "@antiraid-core/templateloop"
 
 export type BaseFrameworkData = {
     stingManager: stingmanager.StingManager,
-    punishmentmanager: punishmentmanager.PunishmentManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
     userinfomanager: userinfomanager.UserInfoManager,
     settings: {settings.Setting},
@@ -105,7 +104,6 @@ export type KeyExpiryData = {
     ctx: primitives.TemplateContext, 
     data: events.KeyExpiryEvent,
     stingManager: stingmanager.StingManager,
-    punishmentmanager: punishmentmanager.PunishmentManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
     userinfomanager: userinfomanager.UserInfoManager
 }
@@ -120,13 +118,13 @@ export type RunData = {
     ctx: primitives.TemplateContext, 
     interaction: discord.InteractionObject,
     stingManager: stingmanager.StingManager,
-    punishmentmanager: punishmentmanager.PunishmentManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager, 
     userinfomanager: userinfomanager.UserInfoManager,
     command: appcommands.ParsedApplicationCommand,
     attachButtonCallback: ((buttonId: string, callback: (bcd: ButtonCallbackData) -> nil) -> nil),
     dropButtonCallback: ((buttonId: string) -> nil),
     sethasEdited: (to: boolean) -> nil,
+    loop: tloop.TemplateLoopManager,
 }
 
 export type AutocompleteRunData = {

@@ -1,6 +1,5 @@
 local Interaction = require"@discord-types/interaction"
 local InteractionCreate = require "@antiraid-ext/events/discord/InteractionCreate"
-local KeyExpiry = require "@antiraid-ext/events/antiraid/KeyExpiry"
 local GetSettings = require "@antiraid-ext/events/antiraid/GetSettings"
 local ExecuteSetting = require "@antiraid-ext/events/antiraid/ExecuteSetting"
 local dispatchutils = require"@antiraid-ext/events/dispatch"
@@ -17,15 +16,14 @@ local getFramework = require"@antiraid-ext/framework/storage".get
 local shareFramework = require"@antiraid-ext/framework/storage".share
 
 local stingmanager = require"@antiraid-ext/utils/stingmanager"
-local punishmentmanager = require"@antiraid-ext/utils/punishmentmanager"
 local builtinSettingsManager = require"@antiraid-ext/utils/builtinsettingsmanager"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
+local tloop = require"@antiraid-core/templateloop"
 
 local function _setupFrameworkBaseData(ctx: Primitives.TemplateContext, framework: coretypes.Framework): ()
     -- Register builtins
     local data = {}
     data.stingManager = stingmanager(ctx:with({capabilities = {"kv[builtins.stings]:*", "kv[builtins.settings]:*"}}))
-    data.punishmentmanager = punishmentmanager(ctx, data.stingManager)
     data.builtinSettingsManager = builtinSettingsManager(ctx)
     data.userinfomanager = userinfomanager(ctx)
 
@@ -73,7 +71,8 @@ local function setup(...: dispatchutils.EventCall)
     return dispatchutils.eventList(
         InteractionCreate(function(ctx, interaction)       
             local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
-
+            local loop = tloop.getRunningLoop(ctx)
+            
             if not framework.data then
                 _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
             end
@@ -151,7 +150,6 @@ local function setup(...: dispatchutils.EventCall)
                 command = parsedcmd,    
                 interaction = interaction,
                 stingManager = frameworkdata.stingManager,
-                punishmentmanager = frameworkdata.punishmentmanager,
                 builtinSettingsManager = frameworkdata.builtinSettingsManager,
                 userinfomanager = frameworkdata.userinfomanager,
                 attachButtonCallback = framework.attachButtonCallback,
@@ -160,6 +158,7 @@ local function setup(...: dispatchutils.EventCall)
                     return nil
                 end,
                 dropButtonCallback = framework.dropButtonCallback,
+                loop = loop
             }
 
             local ok, err: errorHandler.HandledError = xpcall(command.run, errorHandler.errorHandler, runData)
@@ -213,34 +212,6 @@ local function setup(...: dispatchutils.EventCall)
                 if err.traceback then
                     error(err.traceback, 0)
                 end
-            end
-        end),
-        KeyExpiry(function(ctx, data)
-            local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
-
-            if not framework.data then
-                _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
-            end
-
-            local frameworkdata = framework.data :: coretypes.BaseFrameworkData
-
-            for _, scope in data.scopes do 
-                for _, cmd in framework.base.getcommands() do 
-                    local cmdR = cmd
-                    if cmdR.keyexpiries then
-                        local fn = cmdR.keyexpiries[scope]
-                        if fn then
-                            fn({
-                                ctx = ctx,
-                                data = data,
-                                stingManager = frameworkdata.stingManager,
-                                punishmentmanager = frameworkdata.punishmentmanager,
-                                builtinSettingsManager = frameworkdata.builtinSettingsManager,
-                                userinfomanager = frameworkdata.userinfomanager,
-                            })
-                        end
-                    end
-                end                
             end
         end),
         GetSettings(function(ctx) 

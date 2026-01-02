@@ -68,8 +68,16 @@ export type TemplateLoopManager = {
 --- When a key expires, a `KeyExpiry` event is dispatched to all templates with errors
 --- handled through a `Error` event with `keyexpiry` context.
 export type KeyExpiryManager = {
-    --- Adds a key with an expiry duration
-    read add: (key: string, expiresin: datetime.TimeDelta) -> (),
+    --- Makes a new key expiry, returning the generated key
+    ---
+    --- When the returned key expires after `expiresin`, a `KeyExpiry` event is dispatched to all templates with the key
+    --- as part of the event data.
+    ---
+    --- Any data to be associated with the key expiry should be stored separately using the returned key (e.g. in the key-value store).
+    read add: (expiresin: datetime.TimeDelta) -> string,
+
+    --- Same as ``add`` but takes in a expiresin as seconds instead of a TimeDelta
+    read addwithsecs: (expiresin: number) -> string,
 
     --- Removes a key
     read remove: (key: string) -> (),
