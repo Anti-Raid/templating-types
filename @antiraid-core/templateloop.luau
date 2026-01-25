@@ -32,6 +32,9 @@ export type WipTemplateLoopManager = {
     ---
     --- If `nosave` is set, the settenantstate call will not be made
     unsubscribeEvent: (event: string, system: string, nosave: boolean?) -> (),
+
+    --- Debug logging
+    debugmanager: DebugManager,
 }
 
 --- A manager that handles template loops for a tenant
@@ -61,6 +64,17 @@ export type TemplateLoopManager = {
 
     --- Holds a expiry manager for managing key expiries
     read keyExpiryManager: KeyExpiryManager,
+
+    --- Debug logging
+    read debugmanager: DebugManager,
+}
+
+--- Debug logging
+export type DebugManager = {
+    --- Logs a debug message
+    read print: (msg: any) -> (),
+    --- Retrieves the current stdout log as an array of timestamped messages
+    read stdout: () -> {string}
 }
 
 --- A key expiry manager provides methods to add, remove and check keys with expiries
