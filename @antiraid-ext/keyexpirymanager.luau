@@ -5,7 +5,6 @@ local datetime = require"@antiraid/datetime"
 local templateloopImpl = require"@antiraid-core/templateloop"
 local typesext = require"@antiraid/typesext"
 
-local MAX_KEYEXPIRY_KEY_LENGTH = 8 -- This sounds *small* but we have a-z, A-Z and 0-9 making for 62^8 combinations which is plenty
 local KEYEXPIRY_RANDSTRING_LENGTH = 8
 
 export type KeyExpiryData = {
@@ -38,13 +37,13 @@ export type KeyExpiryManager = {
     --- as part of the event data.
     ---
     --- Any data to be associated with the key expiry should be stored separately using the returned key (e.g. in the key-value store).
-    read add: (expiresin: datetime.TimeDelta, data: any?) -> string,
+    read add: (expiresin: datetime.TimeDelta, data: any?, key: string?) -> string,
 
     --- Same as ``add`` but takes in a DateTime expiresat instead of a TimeDelta
-    read addat: (expiresat: datetime.DateTime, data: any?) -> string,
+    read addat: (expiresat: datetime.DateTime, data: any?, key: string?) -> string,
 
     --- Same as ``add`` but takes in a expiresin as seconds instead of a TimeDelta
-    read addwithsecs: (expiresin: number, data: any?) -> string,
+    read addwithsecs: (expiresin: number, data: any?, key: string?) -> string,
 
     --- Removes a key
     read remove: (key: string) -> (),
@@ -90,7 +89,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         if kexs[key] then -- Remove associated key expiry + data
             loop.debugmanager.print("[KeyExpiryManager] Removing key expiry: "..key)
             kexs[key] = nil
-            ctx.KV:delete(systemscope.."/"..key, {systemscope})
+            ctx.KV:delete(key, {systemscope})
             if next(kexs) == nil and #delayqueue == 0 then 
                 loop.unsubscribeEvent("OnStartup", system) -- No more key expiries, unsubscribe
             end
@@ -155,10 +154,9 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         return key
     end
 
-    local function addat(expiresat: datetime.DateTime, data: any?)
-        local key = _createkey()
-        assert(#key <= MAX_KEYEXPIRY_KEY_LENGTH, "Generated key exceeds maximum key length")
-        assert(not exists(key), `Generated KeyExpiry key \`{key}\` already exists, this should be impossible`)
+    local function addat(expiresat: datetime.DateTime, data: any?, ckey: string?)
+        local key = ckey or _createkey()
+        assert(not exists(key), `Generated KeyExpiry key \`{key}\` already exists`)
         assert(expiresat.timezone == datetime.UTC, "expiresat must be in UTC timezone")
 
         -- Check if we've already expired either due to initial input or otherwise
@@ -175,7 +173,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         }
         kexs[key] = tdata
         loop.subscribeEvent("OnStartup", system)
-        ctx.KV:set(systemscope.."/"..key, tdata, {systemscope})
+        ctx.KV:set(key, tdata, {systemscope})
 
         handles[key] = delayqueue:add(key, expiresat:duration_since(datetime.UTC:now()))
         _ensureLoopRunning()
@@ -184,14 +182,14 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
     end
 
     -- Just calls addat with a TimeDelta
-    local function add(expiresin: datetime.TimeDelta, data: any?)
+    local function add(expiresin: datetime.TimeDelta, data: any?, key: string?)
         local expiresat = (datetime.UTC:now() + expiresin)
-        return addat(expiresat, data)
+        return addat(expiresat, data, key)
     end
 
-    local function addwithsecs(expiresin: number, data: any?)
+    local function addwithsecs(expiresin: number, data: any?, key: string?)
         local expiresat = (datetime.UTC:now() + datetime.timedelta_seconds(expiresin))
-        return addat(expiresat, data)
+        return addat(expiresat, data, key)
     end
 
     local function find(): {ExpiringKeyRecord}
@@ -217,13 +215,11 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
             if item.exists then
                 local record = item.value :: {
                     expiresat: datetime.DateTime,
-                    hd: {string}?,
                     data: any?,
                 }
                 kexs[item.key] = {
                     createdat = item.created_at,
                     expiresat = record.expiresat,
-                    hd = item.scopes,
                     data = record.data,
                 }
             end
