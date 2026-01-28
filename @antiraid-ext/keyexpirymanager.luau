@@ -11,8 +11,6 @@ local KEYEXPIRY_RANDSTRING_LENGTH = 8
 export type KeyExpiryData = {
     --- The data associated with this key expiry
     data: any?,
-    --- The user ID this key expiry is associated with, if any
-    userid: string?,
 }
 
 --- ExpiringKeyRecord represents a key-value that can record.
@@ -40,13 +38,13 @@ export type KeyExpiryManager = {
     --- as part of the event data.
     ---
     --- Any data to be associated with the key expiry should be stored separately using the returned key (e.g. in the key-value store).
-    read add: (expiresin: datetime.TimeDelta, data: KeyExpiryData) -> string,
+    read add: (expiresin: datetime.TimeDelta, data: any?) -> string,
 
     --- Same as ``add`` but takes in a DateTime expiresat instead of a TimeDelta
-    read addat: (expiresat: datetime.DateTime, data: KeyExpiryData) -> string,
+    read addat: (expiresat: datetime.DateTime, data: any?) -> string,
 
     --- Same as ``add`` but takes in a expiresin as seconds instead of a TimeDelta
-    read addwithsecs: (expiresin: number, data: KeyExpiryData) -> string,
+    read addwithsecs: (expiresin: number, data: any?) -> string,
 
     --- Removes a key
     read remove: (key: string) -> (),
@@ -157,7 +155,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         return key
     end
 
-    local function addat(expiresat: datetime.DateTime, data: KeyExpiryData)
+    local function addat(expiresat: datetime.DateTime, data: any?)
         local key = _createkey()
         assert(#key <= MAX_KEYEXPIRY_KEY_LENGTH, "Generated key exceeds maximum key length")
         assert(not exists(key), `Generated KeyExpiry key \`{key}\` already exists, this should be impossible`)
@@ -173,7 +171,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         local tdata = {
             createdat = datetime.UTC:now(),
             expiresat = expiresat,
-            data = data.data,
+            data = data,
         }
         kexs[key] = tdata
         loop.subscribeEvent("OnStartup", system)
@@ -186,12 +184,12 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
     end
 
     -- Just calls addat with a TimeDelta
-    local function add(expiresin: datetime.TimeDelta, data: KeyExpiryData)
+    local function add(expiresin: datetime.TimeDelta, data: any?)
         local expiresat = (datetime.UTC:now() + expiresin)
         return addat(expiresat, data)
     end
 
-    local function addwithsecs(expiresin: number, data: KeyExpiryData)
+    local function addwithsecs(expiresin: number, data: any?)
         local expiresat = (datetime.UTC:now() + datetime.timedelta_seconds(expiresin))
         return addat(expiresat, data)
     end
