@@ -58,6 +58,11 @@ export type KeyExpiryManager = {
     ---
     --- Analogous to `ctx.KV:find` in the normal key-value store API.
     read find: () -> {ExpiringKeyRecord},
+
+    --- Gets a specific key expiry's data
+    ---
+    --- Analogous to `ctx.KV:getrecord` in the normal key-value store API.
+    read get: (key: string) -> ExpiringKeyRecord?,
 }
 
 --- A key expiry manager
@@ -205,6 +210,19 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         return result
     end
 
+    local function get(key: string): ExpiringKeyRecord?
+        local record = kexs[key]
+        if not record then 
+            return nil
+        end
+        return {
+            key = key,
+            value = record.data,
+            created_at = record.createdat,
+            expires_at = record.expiresat,
+        }
+    end
+
     --- Synchronize key expiries from KV store
     local function sync() 
         if #delayqueue > 0 then delayqueue:clear() end -- Clear existing delayqueue entries
@@ -254,6 +272,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         exists = exists,
         sync = sync,
         find = find,
+        get = get,
     }
 end
 
