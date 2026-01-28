@@ -57,14 +57,13 @@ local function getFrameworkBaseData(ctx: Primitives.TemplateContext): coretypes.
     return framework.data :: coretypes.BaseFrameworkData
 end
 
--- keyexpiries
---- Sets up the event dispatch table of to the framework.
+--- Sets up the event dispatch table to the framework.
 ---
 --- This is the main entry point for the framework to handle events.
 ---
 --- Currently, ``dispatch`` handles app commands, button callbacks and commands key expiration events.
 ---
---- @param evt Primitives.Event The event to dispatch.
+--- @param evt Primitives.Event The event to dispatch. t
 --- @param ctx Primitives.TemplateContext The context to use for the event.
 --- @return nil
 --- @error If the framework is not set up before calling this function.

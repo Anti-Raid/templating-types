@@ -94,10 +94,6 @@ export type Command = {
     run: (data: RunData) -> (),
     --- The function that runs when the command is autocompleted.
     autocompleter: ((data: AutocompleteRunData) -> {discord.ApplicationCommandOptionChoiceObject})?,
-    --- The function that runs when a key expires.
-    keyexpiries: {
-        [string]: (data: KeyExpiryData) -> nil
-    }?,
 }
 
 export type KeyExpiryData = {

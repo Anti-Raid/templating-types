@@ -1,5 +1,4 @@
 local Primitives = require"./primitives"
-local datetime = require"@antiraid/datetime"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
 
@@ -23,15 +22,14 @@ export type WipTemplateLoopManager = {
     dispatchEvent: (ctx: Primitives.TemplateContext, event: Primitives.Event?, targetId: string?) -> {DispatchResult},
 
     --- Subscribe to an event, adding the system to the event's refs
-    ---
-    --- If `nosave` is set, the settenantstate call will not be made
-    subscribeEvent: (event: string, system: string, nosave: boolean?) -> (),
+    subscribeEvent: (event: string, system: string) -> (),
 
     --- Unsubscribe from an event for a system, removing the system from the events ref
     --- and automatically removing the event if no systems use it anymore
-    ---
-    --- If `nosave` is set, the settenantstate call will not be made
-    unsubscribeEvent: (event: string, system: string, nosave: boolean?) -> (),
+    unsubscribeEvent: (event: string, system: string) -> (),
+
+    --- Returns if a system is subscribed to an event
+    isSubscribed: (event: string, system: string) -> boolean,
 
     --- Debug logging
     debugmanager: DebugManager,
@@ -52,18 +50,14 @@ export type TemplateLoopManager = {
     dispatchEvent: (ctx: Primitives.TemplateContext, event: Primitives.Event?, targetId: string?) -> {DispatchResult},
 
     --- Subscribe to an event, adding the system to the event's refs
-    ---
-    --- If `nosave` is set, the settenantstate call will not be made
-    subscribeEvent: (event: string, system: string, nosave: boolean?) -> (),
+    subscribeEvent: (event: string, system: string) -> (),
 
     --- Unsubscribe from an event for a system, removing the system from the events ref
     --- and automatically removing the event if no systems use it anymore
-    ---
-    --- If `nosave` is set, the settenantstate call will not be made
-    unsubscribeEvent: (event: string, system: string, nosave: boolean?) -> (),
+    unsubscribeEvent: (event: string, system: string) -> (),
 
-    --- Holds a expiry manager for managing key expiries
-    read keyExpiryManager: KeyExpiryManager,
+    --- Returns if a system is subscribed to an event
+    isSubscribed: (event: string, system: string) -> boolean,
 
     --- Debug logging
     read debugmanager: DebugManager,
@@ -76,30 +70,6 @@ export type DebugManager = {
     --- Retrieves the current stdout log as an array of timestamped messages
     read stdout: () -> {string}
 }
-
---- A key expiry manager provides methods to add, remove and check keys with expiries
----
---- When a key expires, a `KeyExpiry` event is dispatched to all templates with errors
---- handled through a `Error` event with `keyexpiry` context.
-export type KeyExpiryManager = {
-    --- Makes a new key expiry, returning the generated key
-    ---
-    --- When the returned key expires after `expiresin`, a `KeyExpiry` event is dispatched to all templates with the key
-    --- as part of the event data.
-    ---
-    --- Any data to be associated with the key expiry should be stored separately using the returned key (e.g. in the key-value store).
-    read add: (expiresin: datetime.TimeDelta) -> string,
-
-    --- Same as ``add`` but takes in a expiresin as seconds instead of a TimeDelta
-    read addwithsecs: (expiresin: number) -> string,
-
-    --- Removes a key
-    read remove: (key: string) -> (),
-
-    --- Checks if a key exists and is not expired
-    read exists: (key: string) -> boolean,
-}
-
 --- Returns a running templateloopmanager, errors if not found
 local function getRunningLoop(ctx: Primitives.TemplateContext): TemplateLoopManager
     local tlm = ctx.store[TEMPLATE_LOOP_KEY] :: TemplateLoopManager?

@@ -14,9 +14,9 @@ export type KvRecord = {
     exists: true,
     --- The scopes the key has
     scopes: {string},
-    --- The timestamp when the record was created, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
+    --- The timestamp when the record was created, in ISO 8601 format.
     created_at: datetime.DateTime,
-    --- The timestamp when the record was last updated, in ISO 8601 format (e.g., "2023-10-01T12:00:00Z").
+    --- The timestamp when the record was last updated, in ISO 8601 format.
     last_updated_at: datetime.DateTime,
 } | {
     --- The key of the record.
