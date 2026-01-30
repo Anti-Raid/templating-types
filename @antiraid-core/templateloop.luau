@@ -8,33 +8,6 @@ export type DispatchResult = {
     value: any,
 }
 
---- Special type of template loop manager that is in the process of being constructed
----
---- For internal use only. Only documented here for brevity.
-export type WipTemplateLoopManager = {
-    read __wip: boolean, -- Flag to avoid directly passing `self` before construction is done
-
-    --- Dispatch an event to all cached templates, returning the result as desired
-    ---
-    --- If `event` is passed, the sub-context created for each template will have the event set to it.
-    ---
-    --- If `targetId` is passed, the event will only be sent to the targetted id
-    dispatchEvent: (ctx: Primitives.TemplateContext, event: Primitives.Event?, targetId: string?) -> {DispatchResult},
-
-    --- Subscribe to an event, adding the system to the event's refs
-    subscribeEvent: (event: string, system: string) -> (),
-
-    --- Unsubscribe from an event for a system, removing the system from the events ref
-    --- and automatically removing the event if no systems use it anymore
-    unsubscribeEvent: (event: string, system: string) -> (),
-
-    --- Returns if a system is subscribed to an event
-    isSubscribed: (event: string, system: string) -> boolean,
-
-    --- Debug logging
-    debugmanager: DebugManager,
-}
-
 --- A manager that handles template loops for a tenant
 export type TemplateLoopManager = {
     --- Update the template cache due to a modification of a template with the provided `id`.
@@ -47,7 +20,7 @@ export type TemplateLoopManager = {
     --- If `event` is passed, the sub-context created for each template will have the event set to it.
     ---
     --- If `targetId` is passed, the event will only be sent to the targetted id
-    dispatchEvent: (ctx: Primitives.TemplateContext, event: Primitives.Event?, targetId: string?) -> {DispatchResult},
+    dispatchEvent: (event: Primitives.Event, targetId: string?) -> {DispatchResult},
 
     --- Subscribe to an event, adding the system to the event's refs
     subscribeEvent: (event: string, system: string) -> (),

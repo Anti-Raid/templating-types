@@ -70,7 +70,6 @@ export type KeyExpiryManager = {
 --- A key expiry manager can be used to schedule events to be dispatched at a later time with associated data.
 local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: string, eventname: string): KeyExpiryManager
     local systemscope = "__kexs"..basescope -- System scope where kex's are stored
-    local system = "__kex-"..basescope -- System name for subscribing to events
 
     local loop = templateloopImpl.getRunningLoop(ctx)
     loop.debugmanager.print("[KeyExpiryManager] Initializing KeyExpiryManager")
@@ -96,11 +95,12 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
             kexs[key] = nil
             ctx.KV:delete(key, {systemscope})
             if next(kexs) == nil and #delayqueue == 0 then 
-                loop.unsubscribeEvent("OnStartup", system) -- No more key expiries, unsubscribe
+                loop.unsubscribeEvent("OnStartup", systemscope) -- No more key expiries, unsubscribe
             end
         end
     end
 
+    --- Dispatches the KeyExpiry event for a given key
     local function _dispatchEvent(key: string) 
         -- Dispatch event to templates
         loop.debugmanager.print("[KeyExpiryManager] Key expired: "..key)
@@ -117,6 +117,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         remove(key)
     end
 
+    --- The main loop that waits for key expiries
     local function _loop() 
         loop.debugmanager.print("[KeyExpiryManager] Key expiry loop started")
         while true do 
@@ -127,6 +128,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         end
     end
 
+    --- Loop wrapper to catch crashes and respawn the loop if needed
     local function _loopwhile() 
         while true do
                 local success, err = pcall(_loop)
@@ -177,7 +179,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
             data = data,
         }
         kexs[key] = tdata
-        loop.subscribeEvent("OnStartup", system)
+        loop.subscribeEvent("OnStartup", systemscope)
         ctx.KV:set(key, tdata, {systemscope})
 
         handles[key] = delayqueue:add(key, expiresat:duration_since(datetime.UTC:now()))
@@ -259,8 +261,8 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         end    
     end
 
-    -- Only sync if we're subscribed to OnStartup explicitly.
-    if loop.isSubscribed("OnStartup", system) then
+    -- Initially sync if we're subscribed to OnStartup explicitly.
+    if loop.isSubscribed("OnStartup", systemscope) then
         task.spawn(sync)
     end
 
