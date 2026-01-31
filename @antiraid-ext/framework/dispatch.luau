@@ -163,7 +163,6 @@ local function setup(...: dispatchutils.EventCall)
 
             local ok, err: errorHandler.HandledError = xpcall(command.run, errorHandler.errorHandler, runData)
             if not ok then 
-            if type(err) == "string" then error(err .. " test") end
                 local comps = {
                     ActionRowBuilder.new()
                     :addComponent(
