@@ -1,7 +1,6 @@
 local discordRestTypes = require"@discord-types/restTypes"
 local discord = require"@discord-types/apiTypes"
 local primitives = require"@antiraid-core/primitives"
-local stingmanager = require"@antiraid-ext/utils/stingmanager"
 local builtinSettingsManager = require"@antiraid-ext/utils/builtinsettingsmanager"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local appcommands = require"@antiraid-ext/appcommands"
@@ -11,7 +10,6 @@ local settings = require "@antiraid-core/settings"
 local tloop = require "@antiraid-core/templateloop"
 
 export type BaseFrameworkData = {
-    stingManager: stingmanager.StingManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
     userinfomanager: userinfomanager.UserInfoManager,
     settings: {settings.Setting},
@@ -99,7 +97,6 @@ export type Command = {
 export type KeyExpiryData = {
     ctx: primitives.TemplateContext, 
     data: events.KeyExpiryEvent,
-    stingManager: stingmanager.StingManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
     userinfomanager: userinfomanager.UserInfoManager
 }
@@ -113,7 +110,6 @@ export type ButtonCallbackData = {
 export type RunData = {
     ctx: primitives.TemplateContext, 
     interaction: discord.InteractionObject,
-    stingManager: stingmanager.StingManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager, 
     userinfomanager: userinfomanager.UserInfoManager,
     command: appcommands.ParsedApplicationCommand,
@@ -126,7 +122,6 @@ export type RunData = {
 export type AutocompleteRunData = {
     ctx: primitives.TemplateContext, 
     interaction: discord.InteractionObject,
-    stingManager: stingmanager.StingManager,
     builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager, 
     command: appcommands.ParsedApplicationCommand,
 }

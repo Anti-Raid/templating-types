@@ -15,7 +15,6 @@ local errorHandler = require"@antiraid-ext/utils/errorhandle"
 local getFramework = require"@antiraid-ext/framework/storage".get
 local shareFramework = require"@antiraid-ext/framework/storage".share
 
-local stingmanager = require"@antiraid-ext/utils/stingmanager"
 local builtinSettingsManager = require"@antiraid-ext/utils/builtinsettingsmanager"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local tloop = require"@antiraid-core/templateloop"
@@ -23,7 +22,6 @@ local tloop = require"@antiraid-core/templateloop"
 local function _setupFrameworkBaseData(ctx: Primitives.TemplateContext, framework: coretypes.Framework): ()
     -- Register builtins
     local data = {}
-    data.stingManager = stingmanager(ctx:with({capabilities = {"kv[builtins.stings]:*", "kv[builtins.settings]:*"}}))
     data.builtinSettingsManager = builtinSettingsManager(ctx)
     data.userinfomanager = userinfomanager(ctx)
 
@@ -120,7 +118,6 @@ local function setup(...: dispatchutils.EventCall)
                 local autocompleteData: coretypes.AutocompleteRunData = {
                     ctx = ctx,
                     interaction = interaction,
-                    stingManager = frameworkdata.stingManager,
                     builtinSettingsManager = frameworkdata.builtinSettingsManager,
                     command = parsedcmd,
                 }
@@ -149,7 +146,6 @@ local function setup(...: dispatchutils.EventCall)
                 ctx = ctx,
                 command = parsedcmd,    
                 interaction = interaction,
-                stingManager = frameworkdata.stingManager,
                 builtinSettingsManager = frameworkdata.builtinSettingsManager,
                 userinfomanager = frameworkdata.userinfomanager,
                 attachButtonCallback = framework.attachButtonCallback,
