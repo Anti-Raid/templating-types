@@ -16,13 +16,13 @@ export type KeyExpiryData = {
 ---@class KvRecord
 export type ExpiringKeyRecord = {
     --- The key of the record.
-    key: string,
+    read key: string,
     --- The value of the record. This can be any type, depending on what was stored.
-    value: khronosvalue.KhronosValue,
+    read value: khronosvalue.KhronosValue,
     --- The timestamp when the record was created
-    created_at: datetime.DateTime,
+    read createdat: datetime.DateTime,
     --- The timestamp when the record will expire, 
-    expires_at: datetime.DateTime,
+    read expiresat: datetime.DateTime,
 }
 
 --- A key expiry manager provides methods to add, remove and check keys with expiries
@@ -54,10 +54,13 @@ export type KeyExpiryManager = {
     --- Tries to synchronize key expiries from tenant state
 
 
-    --- Finds all keys with their data
+    --- Lists all keys with their data
     ---
-    --- Analogous to `ctx.KV:find` in the normal key-value store API.
-    read find: () -> {ExpiringKeyRecord},
+    --- Analogous to `ctx.KV:find` in the normal key-value store API but doesn't support pattern matching
+    ---
+    --- Note that the data returned is not cloned, so modifying it may modify actual stored data. This is for performance reasons since the data can be large, 
+    --- but be aware of this when using the list method.
+    read list: () -> {[string]: ExpiringKeyRecord},
 
     --- Gets a specific key expiry's data
     ---
@@ -68,17 +71,13 @@ export type KeyExpiryManager = {
 --- A key expiry manager
 ---
 --- A key expiry manager can be used to schedule events to be dispatched at a later time with associated data.
-local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: string, eventname: string): KeyExpiryManager
+local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: string, callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord) -> any): KeyExpiryManager
     local systemscope = "__kexs"..basescope -- System scope where kex's are stored
 
     local loop = templateloopImpl.getRunningLoop(ctx)
     loop.debugmanager.print("[KeyExpiryManager] Initializing KeyExpiryManager")
 
-    local kexs = {} :: {[string]: {
-        createdat: datetime.DateTime,
-        expiresat: datetime.DateTime,
-        data: any?,
-    }}
+    local kexs = {} :: {[string]: ExpiringKeyRecord}
 
     local handles: {[string]: channel.KeyHandle<string>} = {}
     local delayqueue = channel.DelayChannel() :: channel.DelayChannel<string> -- Delayqueue stores a queue of all the kvs we need to dispatch
@@ -100,14 +99,16 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         end
     end
 
-    --- Dispatches the KeyExpiry event for a given key
-    local function _dispatchEvent(key: string) 
+    --- Calls the callback with the expired key and its associated data, then removes the key expiry
+    local function _callcallback(key: string) 
         -- Dispatch event to templates
         loop.debugmanager.print("[KeyExpiryManager] Key expired: "..key)
 
         -- Fetch associated data if any
         local kex = kexs[key]
-        local ok, res = xpcall(loop.dispatchEvent, debug.traceback :: any, ctx, {name = eventname, data = { key = key, data = kex.data, created_at = kex.createdat, expires_at = kex.expiresat }, author = nil}, nil)
+
+        --local ok, res = xpcall(loop.dispatchEvent, debug.traceback :: any, ctx, {name = eventname, data = { key = key, data = kex.data, created_at = kex.createdat, expires_at = kex.expiresat }, author = nil}, nil)
+        local ok, res = xpcall(callback, debug.traceback :: any, loop, kex)
         if not ok then 
             loop.debugmanager.print("[KeyExpiryManager] Error dispatching KeyExpiry event for key "..key..": "..tostring(res))
         end
@@ -118,13 +119,13 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
     end
 
     --- The main loop that waits for key expiries
-    local function _loop() 
+    local function _loop(): any 
         loop.debugmanager.print("[KeyExpiryManager] Key expiry loop started")
         while true do 
             local item = delayqueue:next()
 
             -- Dispatch events in a seperate thread to avoid blocking the loop
-            task.spawn(_dispatchEvent, item)
+            task.spawn(_callcallback, item)
         end
     end
 
@@ -161,28 +162,34 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         return key
     end
 
+    --- Returns the duration to wait until a key expires, adding a random delay to avoid thundering herd if the expiry time has already passed
+    local function _getduration(expiry: datetime.DateTime): datetime.TimeDelta
+        local expiresat = expiry
+        if expiry <= datetime.UTC:now() then 
+            -- Already expired, add with a random delay > 20 seconds to avoid thundering herd
+            expiresat = datetime.UTC:now() + datetime.timedelta_seconds(20 + math.random(5, 120))
+        end
+        return expiresat:duration_since(datetime.UTC:now())
+    end
+
     local function addat(expiresat: datetime.DateTime, data: any?, ckey: string?)
         local key = ckey or _createkey()
         assert(not exists(key), `Generated KeyExpiry key \`{key}\` already exists`)
         assert(expiresat.timezone == datetime.UTC, "expiresat must be in UTC timezone")
 
-        -- Check if we've already expired either due to initial input or otherwise
-        if expiresat <= datetime.UTC:now() then 
-            -- Already expired, add with a random delay of 1-6s instead
-            expiresat = datetime.UTC:now() + datetime.timedelta_seconds((math.random() * 5) + 1)
-        end
-
         -- Record in kv store
-        local tdata = {
+        loop.subscribeEvent("OnStartup", systemscope)
+        ctx.KV:set(key, {
+            expiresat = expiresat,
+            data = data,
+        }, {systemscope})
+        kexs[key] = table.freeze{
+            key = key,
             createdat = datetime.UTC:now(),
             expiresat = expiresat,
             data = data,
         }
-        kexs[key] = tdata
-        loop.subscribeEvent("OnStartup", systemscope)
-        ctx.KV:set(key, tdata, {systemscope})
-
-        handles[key] = delayqueue:add(key, expiresat:duration_since(datetime.UTC:now()))
+        handles[key] = delayqueue:add(key, _getduration(expiresat))
         _ensureLoopRunning()
 
         return key
@@ -199,30 +206,14 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         return addat(expiresat, data, key)
     end
 
-    local function find(): {ExpiringKeyRecord}
-        local result = {} :: {ExpiringKeyRecord}
-        for key, record in kexs do
-            table.insert(result, {
-                key = key,
-                value = record.data,
-                created_at = record.createdat,
-                expires_at = record.expiresat,
-            })
-        end
-        return result
+    local function list(): {[string]: ExpiringKeyRecord}
+        return kexs :: {[string]: ExpiringKeyRecord}
     end
 
     local function get(key: string): ExpiringKeyRecord?
         local record = kexs[key]
-        if not record then 
-            return nil
-        end
-        return {
-            key = key,
-            value = record.data,
-            created_at = record.createdat,
-            expires_at = record.expiresat,
-        }
+        if not record then return nil end
+        return record
     end
 
     --- Synchronize key expiries from KV store
@@ -231,19 +222,22 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
         local kexdata = ctx.KV:find("%%", {systemscope})
+        local newkexs = {} :: {[string]: ExpiringKeyRecord}
         for _, item in kexdata do
             if item.exists then
                 local record = item.value :: {
                     expiresat: datetime.DateTime,
                     data: any?,
                 }
-                kexs[item.key] = {
+                newkexs[item.key] = table.freeze{
+                    key = item.key,
                     createdat = item.created_at,
                     expiresat = record.expiresat,
                     data = record.data,
                 }
             end
         end
+        kexs = newkexs -- Replace with new data
 
         -- Setup delayqueue
         _ensureLoopRunning()
@@ -253,11 +247,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
             if count % 200 == 0 then 
                 task.wait(0.1) -- Yield to avoid blocking too long
             end
-            if data.expiresat <= datetime.UTC:now() then 
-                -- Already expired, add with a random delay > 20 seconds to avoid thundering herd
-                data.expiresat = datetime.UTC:now() + datetime.timedelta_seconds(20 + math.random(5, 120))
-            end
-            handles[key] = delayqueue:add(key, data.expiresat:duration_since(datetime.UTC:now()))
+            handles[key] = delayqueue:add(key, _getduration(data.expiresat))
         end    
     end
 
@@ -273,7 +263,7 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
         remove = remove,
         exists = exists,
         sync = sync,
-        find = find,
+        list = list,
         get = get,
     }
 end
