@@ -192,7 +192,7 @@ local function KeyExpiryManager(
             key = key,
             createdat = datetime.UTC:now(),
             expiresat = expiresat,
-            data = data,
+            value = data,
         }
         handles[key] = delayqueue:add(key, _getduration(expiresat))
         _ensureLoopRunning()
