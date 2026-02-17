@@ -180,7 +180,7 @@ local function KeyExpiryManager(
     local function addat(expiresat: datetime.DateTime, data: any?, ckey: string?)
         local key = ckey or _createkey()
         assert(not exists(key), `Generated KeyExpiry key \`{key}\` already exists`)
-        assert(expiresat.timezone == datetime.UTC, "expiresat must be in UTC timezone")
+        assert(expiresat.timezone == datetime.UTC, "expiresat must be in UTC timezone, currently: "..tostring(expiresat.timezone))
 
         -- Record in kv store
         loop.subscribeEvent("OnStartup", systemscope)
