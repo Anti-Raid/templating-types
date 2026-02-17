@@ -227,7 +227,7 @@ local function KeyExpiryManager(
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
         local kexdata = ctx.KV:find("%%", {systemscope})
-        local newkexs = {} :: {[string]: ExpiringKeyRecord}
+        local newkexs: {[string]: ExpiringKeyRecord} = {}
         for _, item in kexdata do
             if item.exists then
                 local record = item.value :: {
@@ -236,9 +236,9 @@ local function KeyExpiryManager(
                 }
                 newkexs[item.key] = table.freeze{
                     key = item.key,
+                    value = record.data,
                     createdat = item.created_at,
                     expiresat = record.expiresat,
-                    data = record.data,
                 }
             end
         end
