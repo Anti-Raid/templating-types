@@ -71,7 +71,12 @@ export type KeyExpiryManager = {
 --- A key expiry manager
 ---
 --- A key expiry manager can be used to schedule events to be dispatched at a later time with associated data.
-local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: string, callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord) -> any): KeyExpiryManager
+local function KeyExpiryManager(
+    ctx: Primitives.TemplateContext, 
+    basescope: string, 
+    callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord) -> any, 
+    oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: ExpiringKeyRecord}) -> any)?
+): KeyExpiryManager
     local systemscope = "__kexs"..basescope -- System scope where kex's are stored
 
     local loop = templateloopImpl.getRunningLoop(ctx)
@@ -238,6 +243,17 @@ local function KeyExpiryManager(ctx: Primitives.TemplateContext, basescope: stri
             end
         end
         kexs = newkexs -- Replace with new data
+
+        -- Call oninit callback if provided
+        if oninit then 
+            task.spawn(function()
+                if not oninit then return end -- needed for luau new type solver
+                local ok, res = xpcall(oninit, debug.traceback :: any, loop, kexs)
+                if not ok then 
+                    loop.debugmanager.print("[KeyExpiryManager] Error in oninit callback: "..tostring(res))
+                end
+            end)
+        end
 
         -- Setup delayqueue
         _ensureLoopRunning()

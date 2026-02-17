@@ -39,9 +39,7 @@ export type TemplateLoopManager = {
 --- Debug logging
 export type DebugManager = {
     --- Logs a debug message
-    read print: (msg: any) -> (),
-    --- Retrieves the current stdout log as an array of timestamped messages
-    read stdout: () -> {string}
+    read print: (...any) -> (),
 }
 --- Returns a running templateloopmanager, errors if not found
 local function getRunningLoop(ctx: Primitives.TemplateContext): TemplateLoopManager
