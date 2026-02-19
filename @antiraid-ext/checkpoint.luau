@@ -8,6 +8,8 @@ local tloop = require"@antiraid-core/templateloop"
 export type CheckpointContext<Data> = {
     --- The ID of the checkpoint, used to identify the checkpoint when resuming
     id: string,
+    --- The template context
+    tctx: Primitives.TemplateContext,
     --- Returns if we are resuming from a checkpoint
     resumed: boolean,
     --- slate stores temporary data for the checkpoint step
@@ -51,6 +53,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
 
         local cctx: CheckpointContext<Data>
         cctx = {
+            tctx = ctx,
             data = function() return datawithstep.data end,
             id = id,
             resumed = resumed,
