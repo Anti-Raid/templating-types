@@ -68,8 +68,6 @@ export type TemplateContext = {
 
     --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
     read memory_limit: u64,
-    --- The current guild ID the template is running on.
-    read guild_id: string,
     --- The capabilities the template has access to.   
     read allowed_caps: {string},
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].

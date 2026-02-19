@@ -627,6 +627,12 @@ export type DiscordExecutor = {
     --- (also called a 'fused member' as it contains both the member and the resolved permissions)
     antiraid_get_fused_member: (self: DiscordExecutor, ids: {discord.Snowflake}) -> LazyAntiraidFusedMember,
 
+    --- Returns the guild id or `nil` if not in a guild context
+    guild_id: (self: DiscordExecutor) -> string?,
+    
+    --- Returns the user id or `nil` if not in a user context
+    user_id: (self: DiscordExecutor) -> string?,
+
     -- Discord API
 
     -- Audit Logs
