@@ -45,6 +45,9 @@ export type KeyExpiryManager = {
     --- Same as ``add`` but takes in a expiresin as seconds instead of a TimeDelta
     read addwithsecs: (expiresin: number, data: any?, key: string?) -> string,
 
+    --- Updates the data associated with a kex expiry. Does not affect anything but the data returned in the event when the key expires.
+    read updatedata: (key: string, data: any?) -> (),
+
     --- Removes a key
     read remove: (key: string) -> (),
 
@@ -75,7 +78,7 @@ local function KeyExpiryManager(
     ctx: Primitives.TemplateContext, 
     basescope: string, 
     callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord) -> any, 
-    oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: ExpiringKeyRecord}) -> any)?
+    oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: ExpiringKeyRecord}, kexm: KeyExpiryManager) -> any)?
 ): KeyExpiryManager
     local systemscope = "__kexs"..basescope -- System scope where kex's are stored
 
@@ -211,6 +214,26 @@ local function KeyExpiryManager(
         return addat(expiresat, data, key)
     end
 
+    local function updatedata(key: string, data: any?)
+        if not exists(key) then 
+            loop.debugmanager.print("[KeyExpiryManager] Attempted to update data for non-existent key expiry: "..key)
+            return
+        end
+
+        -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
+        local record = kexs[key]
+        ctx.KV:set(key, {
+            expiresat = record.expiresat,
+            data = data,
+        }, {systemscope})
+        kexs[key] = table.freeze{
+            key = key,
+            createdat = record.createdat,
+            expiresat = record.expiresat,
+            value = data,
+        }
+    end
+
     local function list(): {[string]: ExpiringKeyRecord}
         return kexs :: {[string]: ExpiringKeyRecord}
     end
@@ -220,6 +243,8 @@ local function KeyExpiryManager(
         if not record then return nil end
         return record
     end
+
+    local self = {} :: KeyExpiryManager
 
     --- Synchronize key expiries from KV store
     local function sync() 
@@ -248,7 +273,7 @@ local function KeyExpiryManager(
         if oninit then 
             task.spawn(function()
                 if not oninit then return end -- needed for luau new type solver
-                local ok, res = xpcall(oninit, debug.traceback :: any, loop, kexs)
+                local ok, res = xpcall(oninit, debug.traceback :: any, loop, kexs, self)
                 if not ok then 
                     loop.debugmanager.print("[KeyExpiryManager] Error in oninit callback: "..tostring(res))
                 end
@@ -267,12 +292,7 @@ local function KeyExpiryManager(
         end    
     end
 
-    -- Initially sync if we're subscribed to OnStartup explicitly.
-    if loop.isSubscribed("OnStartup", systemscope) then
-        task.spawn(sync)
-    end
-
-    return table.freeze{
+    local _self: KeyExpiryManager = table.freeze{
         add = add,
         addwithsecs = addwithsecs,
         addat = addat,
@@ -281,7 +301,16 @@ local function KeyExpiryManager(
         sync = sync,
         list = list,
         get = get,
+        updatedata = updatedata,
     }
+    self = _self -- For luau type reasons
+
+    -- Initially sync if we're subscribed to OnStartup explicitly.
+    if loop.isSubscribed("OnStartup", systemscope) then
+        task.spawn(sync)
+    end
+
+    return _self
 end
 
 return KeyExpiryManager
