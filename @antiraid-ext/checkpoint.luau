@@ -8,6 +8,8 @@ local tloop = require"@antiraid-core/templateloop"
 export type CheckpointContext<Data> = {
     --- The ID of the checkpoint, used to identify the checkpoint when resuming
     id: string,
+    --- Returns if we are resuming from a checkpoint
+    resumed: boolean,
     --- The intermediate data for the checkpoint. This will be passed to each step function and can be used to store any data needed to resume the task.
     data: () -> Data,
     --- Save the intermediate state of the checkpoint. This will be used to resume from in the event of an interruption/crash/etc.
@@ -39,7 +41,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
     if #steps == 0 then error("Checkpoint must have at least one step") end
     local loop = tloop.getRunningLoop(ctx)
 
-    local function loadinner(id: string, idatawithstep: DataWithStep<Data>, kexm: KeyExpiryManager.KeyExpiryManager) 
+    local function loadinner(id: string, idatawithstep: DataWithStep<Data>, resumed: boolean, kexm: KeyExpiryManager.KeyExpiryManager) 
         local atstep = false
         
         -- May be mutated in place
@@ -49,6 +51,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
         cctx = {
             data = function() return datawithstep.data end,
             id = id,
+            resumed = resumed,
             save = function(newdata: Data) 
                 datawithstep.data = newdata
                 kexm.updatedata(id, datawithstep)
@@ -86,7 +89,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
         for _, record in records do 
             local id = record.key
             local datawithstep = record.value :: DataWithStep<Data>
-            task.spawn(loadinner, id, datawithstep, kexm)
+            task.spawn(loadinner, id, datawithstep, true, kexm)
         end
         return nil
     end)
@@ -102,7 +105,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
 
         -- Store checkpoint and start the process
         kexm.add(expiry, data, id)
-        loadinner(id, data, kexm)
+        loadinner(id, data, false, kexm)
     end
 
     local self = {}
