@@ -10,6 +10,8 @@ export type CheckpointContext<Data> = {
     id: string,
     --- Returns if we are resuming from a checkpoint
     resumed: boolean,
+    --- slate stores temporary data for the checkpoint step
+    slate: {[string]: any},
     --- The intermediate data for the checkpoint. This will be passed to each step function and can be used to store any data needed to resume the task.
     data: () -> Data,
     --- Save the intermediate state of the checkpoint. This will be used to resume from in the event of an interruption/crash/etc.
@@ -52,6 +54,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
             data = function() return datawithstep.data end,
             id = id,
             resumed = resumed,
+            slate = {},
             save = function(newdata: Data) 
                 datawithstep.data = newdata
                 kexm.updatedata(id, datawithstep)
