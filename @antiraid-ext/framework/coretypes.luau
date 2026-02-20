@@ -1,7 +1,6 @@
 local discordRestTypes = require"@discord-types/restTypes"
 local discord = require"@discord-types/apiTypes"
 local primitives = require"@antiraid-core/primitives"
-local builtinSettingsManager = require"@antiraid-ext/utils/builtinsettingsmanager"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local appcommands = require"@antiraid-ext/appcommands"
 local events = require"@antiraid-core/events"
@@ -10,7 +9,6 @@ local settings = require "@antiraid-core/settings"
 local tloop = require "@antiraid-core/templateloop"
 
 export type BaseFrameworkData = {
-    builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
     userinfomanager: userinfomanager.UserInfoManager,
     settings: {settings.Setting},
 }
@@ -97,7 +95,6 @@ export type Command = {
 export type KeyExpiryData = {
     ctx: primitives.TemplateContext, 
     data: events.KeyExpiryEvent,
-    builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager,
     userinfomanager: userinfomanager.UserInfoManager
 }
 
@@ -110,7 +107,6 @@ export type ButtonCallbackData = {
 export type RunData = {
     ctx: primitives.TemplateContext, 
     interaction: discord.InteractionObject,
-    builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager, 
     userinfomanager: userinfomanager.UserInfoManager,
     command: appcommands.ParsedApplicationCommand,
     attachButtonCallback: ((buttonId: string, callback: (bcd: ButtonCallbackData) -> nil) -> nil),
@@ -122,7 +118,6 @@ export type RunData = {
 export type AutocompleteRunData = {
     ctx: primitives.TemplateContext, 
     interaction: discord.InteractionObject,
-    builtinSettingsManager: builtinSettingsManager.BuiltinSettingsManager, 
     command: appcommands.ParsedApplicationCommand,
 }
 

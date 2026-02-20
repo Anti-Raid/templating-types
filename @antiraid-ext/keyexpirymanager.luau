@@ -63,6 +63,9 @@ export type KeyExpiryManager<T> = {
     ---
     --- Analogous to `ctx.KV:getrecord` in the normal key-value store API.
     read get: (key: string) -> ExpiringKeyRecord<T>?,
+
+    --- Returns the number of keys currently stored (approximate)
+    read count: () -> number,
 }
 
 --- A key expiry manager
@@ -80,6 +83,7 @@ local function KeyExpiryManager<T>(
     loop.debugmanager.print("[KeyExpiryManager] Initializing KeyExpiryManager")
 
     local kexs = {} :: {[string]: ExpiringKeyRecord<T>}
+    local count = 0
 
     local handles: {[string]: channel.KeyHandle<string>} = {}
     local delayqueue = channel.DelayChannel() :: channel.DelayChannel<string> -- Delayqueue stores a queue of all the kvs we need to dispatch
@@ -95,6 +99,7 @@ local function KeyExpiryManager<T>(
             loop.debugmanager.print("[KeyExpiryManager] Removing key expiry: "..key)
             kexs[key] = nil
             ctx.KV:delete(key, {systemscope})
+            count = count - 1
             if next(kexs) == nil and #delayqueue == 0 then 
                 loop.unsubscribeEvent("OnStartup", systemscope) -- No more key expiries, unsubscribe
             end
@@ -185,6 +190,7 @@ local function KeyExpiryManager<T>(
             expiresat = expiresat,
             data = data,
         }, {systemscope})
+        count = count + 1
         kexs[key] = table.freeze{
             key = key,
             createdat = datetime.UTC:now(),
@@ -247,6 +253,7 @@ local function KeyExpiryManager<T>(
         loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
         local kexdata = ctx.KV:find("%%", {systemscope})
         local newkexs: {[string]: ExpiringKeyRecord<T>} = {}
+        local newcount = 0
         for _, item in kexdata do
             if item.exists then
                 local record = item.value :: {
@@ -259,9 +266,11 @@ local function KeyExpiryManager<T>(
                     createdat = item.created_at,
                     expiresat = record.expiresat,
                 }
+                newcount = newcount + 1
             end
         end
         kexs = newkexs -- Replace with new data
+        count = newcount
 
         -- Call oninit callback if provided
         if oninit then 
@@ -286,6 +295,10 @@ local function KeyExpiryManager<T>(
         end    
     end
 
+    local function countkeys(): number 
+        return count
+    end
+
     local _self: KeyExpiryManager<T> = table.freeze{
         add = add,
         addwithsecs = addwithsecs,
@@ -296,6 +309,7 @@ local function KeyExpiryManager<T>(
         list = list,
         get = get,
         updatedata = updatedata,
+        count = countkeys,
     }
     self = _self -- For luau type reasons
 

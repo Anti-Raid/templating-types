@@ -47,6 +47,9 @@ export type KeyManager<T> = {
     ---
     --- Analogous to `ctx.KV:getrecord` in the normal key-value store API.
     read get: (key: string) -> KeyRecord<T>?,
+
+    --- Returns the number of keys currently stored (approximate)
+    read count: () -> number,
 }
 
 --- A key manager
@@ -61,12 +64,14 @@ local function KeyManager<T>(
     loop.debugmanager.print("[KeyManager] Initializing KeyManager")
 
     local kexs = {} :: {[string]: KeyRecord<T>}
+    local count = 0
 
     local function remove(key: string) 
         if kexs[key] then -- Remove associated key + data
             loop.debugmanager.print("[KeyManager] Removing key: "..key)
             kexs[key] = nil
             ctx.KV:delete(key, {basescope})
+            count = count - 1
             if next(kexs) == nil then 
                 loop.unsubscribeEvent("@keym", basescope) -- No more keys, unsubscribe
             end
@@ -96,6 +101,7 @@ local function KeyManager<T>(
         -- Record in kv store
         loop.subscribeEvent("@keym", basescope)
         ctx.KV:set(key, data, {basescope})
+        count = count + 1
         kexs[key] = table.freeze{
             key = key,
             createdat = datetime.UTC:now(),
@@ -139,6 +145,7 @@ local function KeyManager<T>(
         loop.debugmanager.print("[KeyManager] Syncing keys from tenant state")
         local kexdata = ctx.KV:find("%%", {basescope})
         local newkexs: {[string]: KeyRecord<T>} = {}
+        local newcount = 0
         for _, item in kexdata do
             if item.exists then
                 local record = item.value :: T
@@ -147,9 +154,12 @@ local function KeyManager<T>(
                     value = record,
                     createdat = item.created_at,
                 }
+                newcount = newcount + 1
             end
         end
         kexs = newkexs -- Replace with new data
+        count = newcount
+        loop.debugmanager.print("[KeyManager] Synced keys. Count: "..count)
 
         -- Call oninit callback if provided
         if oninit then 
@@ -163,6 +173,10 @@ local function KeyManager<T>(
         end
     end
 
+    local function countkeys(): number 
+        return count
+    end
+
     local _self: KeyManager<T> = table.freeze{
         add = add,
         remove = remove,
@@ -171,6 +185,7 @@ local function KeyManager<T>(
         list = list,
         get = get,
         updatedata = updatedata,
+        count = countkeys,
     }
     self = _self -- For luau type reasons
 
