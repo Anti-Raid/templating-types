@@ -7,17 +7,17 @@ local tloop = require"@antiraid-core/templateloop"
 
 export type CheckpointContext<Data> = {
     --- The ID of the checkpoint, used to identify the checkpoint when resuming
-    id: string,
+    read id: string,
     --- The template context
-    tctx: Primitives.TemplateContext,
+    read tctx: Primitives.TemplateContext,
     --- Returns if we are resuming from a checkpoint
-    resumed: boolean,
+    read resumed: boolean,
     --- slate stores temporary data for the checkpoint step
-    slate: {[string]: any},
+    read slate: {[string]: any},
     --- The intermediate data for the checkpoint. This will be passed to each step function and can be used to store any data needed to resume the task.
-    data: () -> Data,
+    read data: () -> Data,
     --- Save the intermediate state of the checkpoint. This will be used to resume from in the event of an interruption/crash/etc.
-    save: (data: Data) -> (),
+    read save: (data: Data) -> (),
 }
 
 export type CheckpointStep<Data> = {
@@ -45,14 +45,14 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
     if #steps == 0 then error("Checkpoint must have at least one step") end
     local loop = tloop.getRunningLoop(ctx)
 
-    local function loadinner(id: string, idatawithstep: DataWithStep<Data>, resumed: boolean, kexm: KeyExpiryManager.KeyExpiryManager) 
+    local function loadinner(id: string, idatawithstep: DataWithStep<Data>, resumed: boolean, kexm: KeyExpiryManager.KeyExpiryManager<DataWithStep<Data>>) 
         local atstep = false
         
         -- May be mutated in place
         local datawithstep = idatawithstep
 
         local cctx: CheckpointContext<Data>
-        cctx = {
+        cctx = table.freeze{
             tctx = ctx,
             data = function() return datawithstep.data end,
             id = id,
@@ -86,7 +86,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
         kexm.remove(id) -- No more steps, remove checkpoint
     end
 
-    local kexm = KeyExpiryManager(ctx, "checkpoints/"..baseid, function(loop, record)
+    local kexm = KeyExpiryManager<<DataWithStep<Data>>>(ctx, "checkpoints/"..baseid, function(loop, record)
         return nil
     end, function(loop, records, kexm) 
         assert(kexm, "Internal error: kexm should not be nil in checkpoint manager callback")

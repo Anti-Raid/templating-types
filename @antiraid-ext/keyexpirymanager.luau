@@ -1,5 +1,4 @@
 local Primitives = require"@antiraid-core/primitives"
-local khronosvalue = require"@antiraid-core/khronosvalue"
 local channel = require"@antiraid/channel"
 local datetime = require"@antiraid/datetime"
 local templateloopImpl = require"@antiraid-core/templateloop"
@@ -7,18 +6,13 @@ local typesext = require"@antiraid/typesext"
 
 local KEYEXPIRY_RANDSTRING_LENGTH = 8
 
-export type KeyExpiryData = {
-    --- The data associated with this key expiry
-    data: any?,
-}
-
 --- ExpiringKeyRecord represents a key-value that can record.
 ---@class KvRecord
-export type ExpiringKeyRecord = {
+export type ExpiringKeyRecord<T> = {
     --- The key of the record.
     read key: string,
     --- The value of the record. This can be any type, depending on what was stored.
-    read value: khronosvalue.KhronosValue,
+    read value: T,
     --- The timestamp when the record was created
     read createdat: datetime.DateTime,
     --- The timestamp when the record will expire, 
@@ -30,23 +24,23 @@ export type ExpiringKeyRecord = {
 --- When a key expires, a key expiry event is dispatched to all templates.
 ---
 --- Note that the associated data present should be small in size as all keys are loaded into memory.
-export type KeyExpiryManager = {
+export type KeyExpiryManager<T> = {
     --- Makes a new key expiry, returning the generated key
     ---
     --- When the returned key expires after `expiresin`, a `KeyExpiry` event is dispatched to all templates with the key
     --- as part of the event data.
     ---
     --- Any data to be associated with the key expiry should be stored separately using the returned key (e.g. in the key-value store).
-    read add: (expiresin: datetime.TimeDelta, data: any?, key: string?) -> string,
+    read add: (expiresin: datetime.TimeDelta, data: T, key: string?) -> string,
 
     --- Same as ``add`` but takes in a DateTime expiresat instead of a TimeDelta
-    read addat: (expiresat: datetime.DateTime, data: any?, key: string?) -> string,
+    read addat: (expiresat: datetime.DateTime, data: T, key: string?) -> string,
 
     --- Same as ``add`` but takes in a expiresin as seconds instead of a TimeDelta
-    read addwithsecs: (expiresin: number, data: any?, key: string?) -> string,
+    read addwithsecs: (expiresin: number, data: T, key: string?) -> string,
 
     --- Updates the data associated with a kex expiry. Does not affect anything but the data returned in the event when the key expires.
-    read updatedata: (key: string, data: any?) -> (),
+    read updatedata: (key: string, data: T) -> (),
 
     --- Removes a key
     read remove: (key: string) -> (),
@@ -63,29 +57,29 @@ export type KeyExpiryManager = {
     ---
     --- Note that the data returned is not cloned, so modifying it may modify actual stored data. This is for performance reasons since the data can be large, 
     --- but be aware of this when using the list method.
-    read list: () -> {[string]: ExpiringKeyRecord},
+    read list: () -> {[string]: ExpiringKeyRecord<T>},
 
     --- Gets a specific key expiry's data
     ---
     --- Analogous to `ctx.KV:getrecord` in the normal key-value store API.
-    read get: (key: string) -> ExpiringKeyRecord?,
+    read get: (key: string) -> ExpiringKeyRecord<T>?,
 }
 
 --- A key expiry manager
 ---
 --- A key expiry manager can be used to schedule events to be dispatched at a later time with associated data.
-local function KeyExpiryManager(
+local function KeyExpiryManager<T>(
     ctx: Primitives.TemplateContext, 
     basescope: string, 
-    callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord) -> any, 
-    oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: ExpiringKeyRecord}, kexm: KeyExpiryManager) -> any)?
-): KeyExpiryManager
+    callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord<T>) -> any, 
+    oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: ExpiringKeyRecord<T>}, kexm: KeyExpiryManager<T>) -> any)?
+): KeyExpiryManager<T>
     local systemscope = "__kexs"..basescope -- System scope where kex's are stored
 
     local loop = templateloopImpl.getRunningLoop(ctx)
     loop.debugmanager.print("[KeyExpiryManager] Initializing KeyExpiryManager")
 
-    local kexs = {} :: {[string]: ExpiringKeyRecord}
+    local kexs = {} :: {[string]: ExpiringKeyRecord<T>}
 
     local handles: {[string]: channel.KeyHandle<string>} = {}
     local delayqueue = channel.DelayChannel() :: channel.DelayChannel<string> -- Delayqueue stores a queue of all the kvs we need to dispatch
@@ -180,7 +174,7 @@ local function KeyExpiryManager(
         return expiresat:duration_since(datetime.UTC:now())
     end
 
-    local function addat(expiresat: datetime.DateTime, data: any?, ckey: string?)
+    local function addat(expiresat: datetime.DateTime, data: T, ckey: string?)
         local key = ckey or _createkey()
         assert(not exists(key), `Generated KeyExpiry key \`{key}\` already exists`)
         assert(expiresat.timezone == datetime.UTC, "expiresat must be in UTC timezone, currently: "..tostring(expiresat.timezone))
@@ -204,17 +198,17 @@ local function KeyExpiryManager(
     end
 
     -- Just calls addat with a TimeDelta
-    local function add(expiresin: datetime.TimeDelta, data: any?, key: string?)
+    local function add(expiresin: datetime.TimeDelta, data: T, key: string?)
         local expiresat = (datetime.UTC:now() + expiresin)
         return addat(expiresat, data, key)
     end
 
-    local function addwithsecs(expiresin: number, data: any?, key: string?)
+    local function addwithsecs(expiresin: number, data: T, key: string?)
         local expiresat = (datetime.UTC:now() + datetime.timedelta_seconds(expiresin))
         return addat(expiresat, data, key)
     end
 
-    local function updatedata(key: string, data: any?)
+    local function updatedata(key: string, data: T)
         if not exists(key) then 
             loop.debugmanager.print("[KeyExpiryManager] Attempted to update data for non-existent key expiry: "..key)
             return
@@ -234,17 +228,17 @@ local function KeyExpiryManager(
         }
     end
 
-    local function list(): {[string]: ExpiringKeyRecord}
-        return kexs :: {[string]: ExpiringKeyRecord}
+    local function list(): {[string]: ExpiringKeyRecord<T>}
+        return kexs
     end
 
-    local function get(key: string): ExpiringKeyRecord?
+    local function get(key: string): ExpiringKeyRecord<T>?
         local record = kexs[key]
         if not record then return nil end
         return record
     end
 
-    local self = {} :: KeyExpiryManager
+    local self = {} :: KeyExpiryManager<T>
 
     --- Synchronize key expiries from KV store
     local function sync() 
@@ -252,12 +246,12 @@ local function KeyExpiryManager(
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
         local kexdata = ctx.KV:find("%%", {systemscope})
-        local newkexs: {[string]: ExpiringKeyRecord} = {}
+        local newkexs: {[string]: ExpiringKeyRecord<T>} = {}
         for _, item in kexdata do
             if item.exists then
                 local record = item.value :: {
                     expiresat: datetime.DateTime,
-                    data: any?,
+                    data: T,
                 }
                 newkexs[item.key] = table.freeze{
                     key = item.key,
@@ -292,7 +286,7 @@ local function KeyExpiryManager(
         end    
     end
 
-    local _self: KeyExpiryManager = table.freeze{
+    local _self: KeyExpiryManager<T> = table.freeze{
         add = add,
         addwithsecs = addwithsecs,
         addat = addat,
