@@ -6,7 +6,7 @@ local typesext = require"@antiraid/typesext"
 
 local KEYEXPIRY_RANDSTRING_LENGTH = 8
 
---- ExpiringKeyRecord represents a key-value that can record.
+--- ExpiringKeyRecord represents a key-value of the record.
 ---@class KvRecord
 export type ExpiringKeyRecord<T> = {
     --- The key of the record.
