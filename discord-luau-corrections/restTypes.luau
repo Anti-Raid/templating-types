@@ -256,7 +256,7 @@ export type CreateGuildChannelRequest = Request<
 		rtc_region: string?, -- channel voice region id of the voice or stage channel, automatic when set to null
 		video_quality_mode: objects.VideoQualityMode?, -- the camera video quality mode of the voice channel
 		default_auto_archive_duration: number?, -- the default duration that the clients use (not the API) for newly created threads in the channel, in minutes, to automatically archive the thread after recent activity
-		default_reaction_emoji: objects.EmojiObject?, -- emoji to show in the add reaction button on a thread in a GUILD_FORUM or a GUILD_MEDIA channel
+		default_reaction_emoji: objects.DefaultReactionObject?, -- emoji to show in the add reaction button on a thread in a GUILD_FORUM or a GUILD_MEDIA channel
 		available_tags: { objects.ForumTagObject }?, -- set of tags that can be used in a GUILD_FORUM or a GUILD_MEDIA channel
 		default_sort_order: objects.SortOrderType?, -- the default sort order type used to order posts in GUILD_FORUM and GUILD_MEDIA channels
 		default_forum_layout: objects.ForumLayoutType?, -- the default forum layout view used to display posts in GUILD_FORUM channels
