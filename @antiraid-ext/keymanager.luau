@@ -101,12 +101,12 @@ local function KeyManager<T>(
         -- Record in kv store
         loop.subscribeEvent("@keym", basescope)
         ctx.KV:set(key, data, {basescope})
-        count = count + 1
         kexs[key] = table.freeze{
             key = key,
             createdat = datetime.UTC:now(),
             value = data,
         }
+        count = count + 1
 
         return key
     end
