@@ -1,3 +1,4 @@
+--!strict
 type State = "Pending" | "Running" | "Completed" | "Failed"
 
 export type LazyLoader<T> = {

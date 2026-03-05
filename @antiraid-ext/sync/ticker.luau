@@ -1,8 +1,10 @@
+--!strict
+
 export type Ticker = {
     --- Cancel the ticker
     ---
     --- Note that callback will continue to run to completion if it's currently running, but will not run again after that
-    cancel: () -> (),
+    read cancel: () -> (),
 }
 
 local function Ticker(interval: number, callback: () -> ()): Ticker
@@ -14,7 +16,7 @@ local function Ticker(interval: number, callback: () -> ()): Ticker
         end
     end)
 
-    return {
+    return table.freeze{
         cancel = function()
             if not active then return end 
             active = false
