@@ -39,10 +39,17 @@ export type Event = {
     data: any,
 }
 
-export type With = {
-    --- Capabilities that the template has access to.
+export type Limitations = {
+    --- The capabilities the template has access to.
     capabilities: {string},
-    --- The event to set in the new TemplateContext.
+    --- The reserved key scopes the template has. These are key scopes that the template cannot use when using the key-value API
+    reserved_key_scopes: {string},
+}
+
+export type With = {
+    --- Limitations of the sub-context
+    limitations: Limitations,
+    --- The event to set in the sub-context.
     event: Event?,
 }
 
@@ -72,15 +79,13 @@ export type TemplateContext = {
     read allowed_caps: {string},
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
     read current_user: discord.UserObject,
-    --- Returns if a template has a specific capability.
-    read has_cap: (self: TemplateContext, cap: string) -> boolean,
-    --- Returns if a template has any of the specified capabilities.
-    read has_any_cap: (self: TemplateContext, caps: {string}) -> boolean,
     --- Returns a new TemplateContext with the specified limits which must be a strict subset
     --- of the current context's limits.
     read with: (self: TemplateContext, data: With) -> TemplateContext,
     --- Returns the event present within the TemplateContext
     read event: (self: TemplateContext) -> Event,
+    --- Returns the templates limitations
+    read limitations: (self: TemplateContext) -> Limitations,
 
     --- The global/common store table shared across all templates within the same
     --- server
