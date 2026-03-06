@@ -15,6 +15,7 @@ export type KhronosValue = string -- Text
     | datetime.DateTime -- Timestamptz
     | datetime.TimeDelta -- Interval
     | datetime.TimeZone -- TimeZone
+    | typesext.MemoryVfs -- Memory VFS
     | nil -- Null
     | any
 

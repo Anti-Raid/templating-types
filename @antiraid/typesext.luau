@@ -105,9 +105,17 @@ export type BitU64 = {
 
 local bitu64 = {} :: BitU64
 
+--- Opaque object that cannot be read by Luau
+export type Opaque = { __phantom: "opaque" }
+
+--- A MemoryVfs type that can be made into a real Vfs using Vfs.newoverlay
+export type MemoryVfs = {
+    data: {[string]: string},
+}
+
 export type Vfs = {
     --- Given a set of Vfs's (which may either be a existing vfs provided by rust or a lazy string map created using `newlazystringmap` or stored within key-value API), creates an overlay Vfs
-    newoverlay: (vfss: {Vfs | lazy.Lazy<{ [string]: string }>}) -> Vfs,
+    newoverlay: (vfss: {Vfs | MemoryVfs | Opaque}) -> Vfs,
     --- Creates a require function that can be used to require files from the Vfs
     createrequirefunction: (self: Vfs, cacheprefix: string, global_table: {[any]: any}) -> (string) -> ...any,
 }
@@ -141,7 +149,7 @@ end
 --- Given a value, returns a lazy string map (Lazy<{ [string]: string }>)
 ---
 --- The result of this can be passed to APIs like Vfs.newoverlay or ctx.Runtime:create/updatetemplate.
-local function newlazystringmap(value: { [string]: string }): lazy.Lazy<{ [string]: string }>
+local function createvfs(value: { [string]: string }): lazy.Lazy<MemoryVfs>
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -164,6 +172,6 @@ return {
     bitu64 = bitu64,
     randstring = randstring,
     createglobalproxy = createglobalproxy,
-    newlazystringmap = newlazystringmap,
+    createvfs = createvfs,
     Vfs = Vfs,
 }

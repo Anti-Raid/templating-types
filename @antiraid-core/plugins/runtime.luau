@@ -1,11 +1,7 @@
 --- Proposed interface (not yet implemented)
 
 local datetime = require("@antiraid/datetime")
-local lazy = require "@antiraid-core/lazy"
 local typesext = require"@antiraid/typesext"
-
-export type Content = { [string]: string }
-export type LazyContent = lazy.Lazy<Content>
 
 export type TenantState = {
     --- The list of events the guild is (globally) subscribed to

@@ -1,5 +1,4 @@
 local datetime = require "@antiraid/datetime"
-local runtime = require"@antiraid-core/plugins/runtime"
 local typesext = require"@antiraid/typesext"
 
 export type TemplateSource = {
@@ -15,7 +14,7 @@ export type TemplateSource = {
     read language: "luau",
 
     --- Template Content
-    read content: runtime.LazyContent,
+    read content: typesext.MemoryVfs,
 
     --- The date and time when the template was created
     read created_at: datetime.DateTime,
@@ -53,7 +52,7 @@ export type CreateTemplate = {
     read language: "luau",
 
     --- Template Content
-    read content: runtime.LazyContent,
+    read content: typesext.MemoryVfs,
 
     --- The capabilities allowed for this template
     allowed_caps: { string },
