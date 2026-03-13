@@ -522,51 +522,51 @@ export type DeleteAllReactionsOptions = {
 }
 
 --- Lazy<{discord.UserObject}>
-type LazyUsersObject = lazy.Lazy<discord.UserObject>
+export type LazyUsersObject = lazy.Lazy<discord.UserObject>
 -- Lazy<AntiraidFusedMember>
-type LazyAntiraidFusedMember = lazy.Lazy<AntiraidFusedMember>
+export type LazyAntiraidFusedMember = lazy.Lazy<AntiraidFusedMember>
 --- Lazy<discord.AuditLogObject>
-type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
+export type LazyAuditLogObject = lazy.Lazy<discord.AuditLogObject>
 --- Lazy<discord.ChannelObject>
-type LazyChannelObject = lazy.Lazy<discord.ChannelObject>
+export type LazyChannelObject = lazy.Lazy<discord.ChannelObject>
 --- Lazy<{discord.ChannelObject}>
-type LazyChannelsObject = lazy.Lazy<{discord.ChannelObject}>
+export type LazyChannelsObject = lazy.Lazy<{discord.ChannelObject}>
 --- Lazy<discord.MessageObject> 
-type LazyMessageObject = lazy.Lazy<discord.MessageObject>
+export type LazyMessageObject = lazy.Lazy<discord.MessageObject>
 --- Lazy<{discord.MessageObject}>
-type LazyMessagesObject = lazy.Lazy<{discord.MessageObject}>
+export type LazyMessagesObject = lazy.Lazy<{discord.MessageObject}>
 --- Lazy<discord.ApplicationCommandObject>
-type LazyApplicationCommandObject = lazy.Lazy<discord.ApplicationCommandObject>
+export type LazyApplicationCommandObject = lazy.Lazy<discord.ApplicationCommandObject>
 --- Lazy<{discord.ApplicationCommandObject}>
-type LazyApplicationCommandsObject = lazy.Lazy<{discord.ApplicationCommandObject}>
+export type LazyApplicationCommandsObject = lazy.Lazy<{discord.ApplicationCommandObject}>
 --- Lazy<{discord.AutomoderationRuleObject}>
-type LazyAutomoderationRuleObjectList = lazy.Lazy<{discord.AutomoderationRuleObject}>
+export type LazyAutomoderationRuleObjectList = lazy.Lazy<{discord.AutomoderationRuleObject}>
 --- Lazy<discord.AutomoderationRuleObject>
-type LazyAutomoderationRuleObject = lazy.Lazy<discord.AutomoderationRuleObject>
+export type LazyAutomoderationRuleObject = lazy.Lazy<discord.AutomoderationRuleObject>
 
 --- Lazy<discord.GuildBanObject?>
-type LazyBanOptionalObject = lazy.Lazy<discord.BanObject?>
+export type LazyBanOptionalObject = lazy.Lazy<discord.BanObject?>
 --- Lazy<{discord.GuildBanObject}>
-type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
+export type LazyBanObjectList = lazy.Lazy<{discord.BanObject}>
 
 --- Lazy<discord.GuildRoleObject>
-type LazyRoleObject = lazy.Lazy<discord.GuildRoleObject>
+export type LazyRoleObject = lazy.Lazy<discord.GuildRoleObject>
 --- Lazy<{[discord.Snowflake]: discord.GuildRoleObject}>
-type LazyRolesObject = lazy.Lazy<{discord.GuildRoleObject}>
+export type LazyRolesObject = lazy.Lazy<{discord.GuildRoleObject}>
 --- Lazy<discordRest.ListActiveGuildThreadsResponse>
-type LazyActiveGuildThreadsResponse = lazy.Lazy<discordRest.ListActiveGuildThreadsResponse>
+export type LazyActiveGuildThreadsResponse = lazy.Lazy<discordRest.ListActiveGuildThreadsResponse>
 --- Lazy<discord.GuildObject>
-type LazyGuildObject = lazy.Lazy<discord.GuildObject>
+export type LazyGuildObject = lazy.Lazy<discord.GuildObject>
 --- Lazy<discord.GuildPreviewObject>
-type LazyGuildPreviewObject = lazy.Lazy<discord.GuildPreviewObject>
+export type LazyGuildPreviewObject = lazy.Lazy<discord.GuildPreviewObject>
 --- Lazy<discord.GuildMemberObject>
-type LazyGuildMemberObject = lazy.Lazy<discord.GuildMemberObject>
+export type LazyGuildMemberObject = lazy.Lazy<discord.GuildMemberObject>
 --- Lazy<{discord.GuildMemberObject}>
-type LazyGuildMembersObject = lazy.Lazy<{discord.GuildMemberObject}>
+export type LazyGuildMembersObject = lazy.Lazy<{discord.GuildMemberObject}>
 --- Lazy<{discord.InviteObject}>
-type LazyInviteObjectList = lazy.Lazy<{discord.InviteObject}>
+export type LazyInviteObjectList = lazy.Lazy<{discord.InviteObject}>
 --- Lazy<discord.InviteObject>
-type LazyInviteObject = lazy.Lazy<discord.InviteObject>
+export type LazyInviteObject = lazy.Lazy<discord.InviteObject>
 
 --- DiscordExecutor allows templates to access/use the Discord API in a sandboxed form.
 export type DiscordExecutor = {

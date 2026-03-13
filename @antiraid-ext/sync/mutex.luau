@@ -1,6 +1,9 @@
 --!strict
 export type MutexFn = {
-    read call: <T>(fn: () -> T) -> T
+    --- Calls a function `fn`, waiting if the MutexFn is already in the middle of calling another `fn` currently
+    read call: <T>(fn: () -> T) -> T,
+    --- Returns true if the mutex is calling `fn`
+    read locked: () -> boolean
 }
 
 local function MutexFn(): MutexFn
@@ -43,8 +46,13 @@ local function MutexFn(): MutexFn
         end
     end
 
+    local function locked()
+        return islocked
+    end
+
     return table.freeze{
-        call = call
+        call = call,
+        locked = locked
     }
 end
 

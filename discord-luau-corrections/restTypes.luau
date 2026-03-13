@@ -30,7 +30,7 @@ export type CreateInteractionRequest = Request<objects.InteractionResponseObject
 export type EditOriginalInteractionRequest = Request<objects.Partial<objects.MessageObject>>
 
 -- https://discord.com/developers/docs/interactions/receiving-and-responding#create-followup-message
-export type CreateFollowupMessageRequest = Request<objects.Partial<objects.MessageObject>>
+export type CreateFollowupMessageRequest = ExecuteWebhookRequest
 
 -- https://discord.com/developers/docs/interactions/receiving-and-responding#edit-followup-message
 export type EditFollowupMessageRequest = Request<objects.Partial<objects.MessageObject>>
