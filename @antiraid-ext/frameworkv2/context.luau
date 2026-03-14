@@ -18,8 +18,6 @@ local array_metatable = require"@antiraid/interop".array_metatable
 export type Command = {
     --- Discord command definition.
     command: discordRestTypes.CreateGuildApplicationCommandRequest,
-    --- A register command to return the command definition at runtime.
-    register: (() -> discordRestTypes.CreateGuildApplicationCommandRequest)?,
     --- The function that runs when the command is executed.
     run: (data: CommandContext) -> nil,
     --- The function that runs when the command is autocompleted.
@@ -119,6 +117,7 @@ export type InteractionReplyData = {
     allowed_mentions: discord.AllowedMentionObject?,
     flags: number?,
     tts: boolean?,
+    ephemeral: boolean?
 }
 
 --- Holds a interaction and provides methods for simple manipulation of a interaction
@@ -153,7 +152,9 @@ export type InteractionManager = {
     --- Returns if the user has responded to the interaction ever.
     read responded: () -> boolean,
     --- Returns the underlying user id
-    read userid: () -> string
+    read userid: () -> string,
+    --- Returns the underlying user
+    read user: () -> discord.UserObject
 }
 
 --- Creates a new InteractionManager, if `inithasresponded` is true, then the InteractionManager will consider the interaction
@@ -214,6 +215,12 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
     end
 
     local function reply(data: InteractionReplyData): discordP.LazyMessageObject?
+        local finalFlags = data.flags or 0
+        if data.ephemeral then
+            finalFlags = bit32.bor(finalFlags, bit32.lshift(1, 6)) -- Ephemeral
+        end
+        if finalFlags ~= 0 then data.flags = finalFlags end
+        
         if not hasresponded then
             return createoriginalresponse({
                 type = InteractionCallbackType.ChannelMessageWithSource,
@@ -273,6 +280,9 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
     local function userid(): string
         return if interaction.user then interaction.user.id elseif (interaction.member and interaction.member.user) then interaction.member.user.id else error("No user found")
     end
+    local function user(): discord.UserObject 
+        return if interaction.user then interaction.user elseif (interaction.member and interaction.member.user) then interaction.member.user else error("No user found")
+    end
 
     return table.freeze{
         ctx = ctx,
@@ -288,12 +298,167 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         customid = customid,
         replyautocomplete = replyautocomplete,
         responded = responded,
-        userid = userid
+        userid = userid,
+        user = user
     }
 end
 
+export type CommandArgs = {
+    -- string
+    read string: (name: string) -> string?,
+    -- integer
+    read integer: (name: string) -> number?,
+    -- boolean
+    read boolean: (name: string) -> boolean?,
+    -- user
+    read user: (name: string) -> discord.UserObject?,
+    read member: (name: string) -> discord.GuildMemberObject?,
+    read userid: (name: string) -> string?,
+    -- channel
+    read channel: (name: string) -> discord.ChannelObject?,
+    read channelid: (name: string) -> string?,
+    -- role
+    read role: (name: string) -> discord.GuildRoleObject?,
+    read roleid: (name: string) -> string?,
+    -- number
+    read number: (name: string) -> number?,
+    -- attachment
+    read attachment: (name: string) -> discord.AttachmentObject?,
+    -- get option
+    read get: (name: string) -> appcommands.ResolvedOption?
+}
+
+local function CommandArgs(cmd: appcommands.ParsedApplicationCommand): CommandArgs
+    local mapped: {[string]: appcommands.ResolvedOption}? = nil
+
+    local function get(name: string): appcommands.ResolvedOption?
+        if mapped == nil then 
+            -- Create map of all opts lazily
+            local map = {}
+            for _, opt in cmd.options do
+                map[opt.name] = opt
+            end
+            mapped = map
+        end
+        assert(mapped, "mapped is now not nil here")
+        return mapped[name]
+    end
+
+    return table.freeze{
+        string = function(name: string): string? 
+            local opt = get(name)
+            if opt and opt.value.kind == "String" then 
+                return opt.value.value
+            end
+            return nil
+        end,
+        integer = function(name: string): number? 
+            local opt = get(name)
+            if opt and opt.value.kind == "Integer" then 
+                return opt.value.value
+            end
+            return nil
+        end,
+        boolean = function(name: string): boolean? 
+            local opt = get(name)
+            if opt and opt.value.kind == "Boolean" then 
+                return opt.value.value
+            end
+            return nil
+        end,
+        user = function(name: string): discord.UserObject? 
+            local opt = get(name)
+            if opt and opt.value.kind == "User" then 
+                return opt.value.user
+            end
+            return nil
+        end,
+        member = function(name: string): discord.GuildMemberObject? 
+            local opt = get(name)
+            if opt and opt.value.kind == "User" then 
+                return opt.value.member
+            end
+            return nil
+        end,
+        userid = function(name: string): string? 
+            local opt = get(name)
+            if opt then
+                if opt.value.kind == "User" then return opt.value.user.id 
+                elseif opt.value.kind == "Unresolved" and opt.value.type == "User" then return opt.value.id 
+                end
+            end
+            return nil
+        end,
+        channel = function(name: string): discord.ChannelObject? 
+            local opt = get(name)
+            if opt and opt.value.kind == "Channel" then 
+                return opt.value.channel
+            end
+            return nil
+        end,
+        channelid = function(name: string): string? 
+            local opt = get(name)
+            if opt then 
+                if opt.value.kind == "Channel" then return opt.value.channel.id 
+                elseif opt.value.kind == "Unresolved" and opt.value.type == "Channel" then return opt.value.id 
+                end
+            end
+            return nil
+        end,
+        role = function(name: string): discord.GuildRoleObject? 
+            local opt = get(name)
+            if opt and opt.value.kind == "Role" then 
+                return opt.value.role
+            end
+            return nil
+        end,
+        roleid = function(name: string): string? 
+            local opt = get(name)
+            if opt then 
+                if opt.value.kind == "Role" then return opt.value.role.id 
+                elseif opt.value.kind == "Unresolved" and opt.value.type == "Role" then return opt.value.id 
+                end
+            end
+            return nil
+        end,
+        number = function(name: string): number? 
+            local opt = get(name)
+            if opt and opt.value.kind == "Number" then 
+                return opt.value.value
+            end
+            return nil
+        end,
+        attachment = function(name: string): discord.AttachmentObject? 
+            local opt = get(name)
+            if opt and opt.value.kind == "Attachment" then 
+                return opt.value.attachment
+            end
+            return nil
+        end,
+        attachmentid = function(name: string): string? 
+            local opt = get(name)
+            if opt then 
+                if opt.value.kind == "Attachment" then return opt.value.attachment.id 
+                elseif opt.value.kind == "Unresolved" and opt.value.type == "Attachment" then return opt.value.id 
+                end
+            end
+            return nil
+        end,
+        get = get
+    }
+end
+
+export type BaseContext = {
+    --- The base framework
+    read framework: Framework,
+    --- The underlying context
+    read ctx: Primitives.TemplateContext,
+    --- The underlying template loop
+    read loop: tloop.TemplateLoopManager,
+}
+
 --- Context for a message component interaction
-export type MessageComponentContext = {
+export type MessageComponentContext = BaseContext & {
     --- The base framework
     read framework: Framework,
     --- The interaction
@@ -304,45 +469,53 @@ local function MessageComponentContext(framework: Framework, interaction: discor
     assert(interaction.type == InteractionType.MessageComponent, "interaction must be a message component")
     return table.freeze{
         framework = framework,
+        ctx = framework.ctx,
+        loop = framework.loop,
         interaction = InteractionManager(framework.ctx, interaction)
     }
 end
 
 --- Context for a command invokation
-export type CommandContext = {
-    --- The base framework
-    read framework: Framework,
+export type CommandContext = BaseContext & {
     --- The interaction
     read interaction: InteractionManager,
     --- The parsed command data
     read command: appcommands.ParsedApplicationCommand,
+    --- The command arguments
+    read args: CommandArgs,
 }
 
 local function CommandContext(framework: Framework, interaction: discord.InteractionObject, command: appcommands.ParsedApplicationCommand): CommandContext
     assert(interaction.type == InteractionType.ApplicationCommand, "interaction must be a command")
     return table.freeze{
         framework = framework,
+        ctx = framework.ctx,
+        loop = framework.loop,
         interaction = InteractionManager(framework.ctx, interaction),
-        command = command
+        command = command,
+        args = CommandArgs(command)
     }
 end
 
 --- Context for a command invokation
-export type CommandAutocompleteContext = {
-    --- The base framework
-    read framework: Framework,
+export type CommandAutocompleteContext = BaseContext & {
     --- The interaction
     read interaction: InteractionManager,
     --- The parsed command data
     read command: appcommands.ParsedApplicationCommand,
+    --- The command arguments
+    read args: CommandArgs,
 }
 
-local function CommandAutocompleteContext(framework: Framework, interaction: discord.InteractionObject, command: appcommands.ParsedApplicationCommand): CommandContext
+local function CommandAutocompleteContext(framework: Framework, interaction: discord.InteractionObject, command: appcommands.ParsedApplicationCommand): CommandAutocompleteContext
     assert(interaction.type == InteractionType.ApplicationCommand, "interaction must be a message component")
     return table.freeze{
         framework = framework,
+        ctx = framework.ctx,
+        loop = framework.loop,
         interaction = InteractionManager(framework.ctx, interaction),
-        command = command
+        command = command,
+        args = CommandArgs(command)
     }
 end
 

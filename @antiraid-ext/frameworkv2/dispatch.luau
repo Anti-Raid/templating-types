@@ -1,3 +1,4 @@
+--!strict
 local dispatchutils = require"@antiraid-ext/events/dispatch"
 local context = require"./context"
 local LazyLoader = require"@antiraid-ext/sync/lazyload"
@@ -9,7 +10,7 @@ local errorHandler = require"@antiraid-ext/utils/errorhandle"
 
 type LdrType = {
     ctx: Primitives.TemplateContext,
-    commands: {context.Command}
+    commands: {[string]: context.Command} | {context.Command}
 }
 
 local frameworkldr = LazyLoader<<context.Framework, LdrType>>(function(ldr) 
@@ -29,7 +30,7 @@ end)
 --- @param evt Primitives.Event The event to dispatch to
 --- @param ctx Primitives.TemplateContext The context to use for the event.
 --- @return nil
-local function setup(commands: {context.Command}, ...: dispatchutils.EventCall)
+local function setup(commands: {[string]: context.Command} | {context.Command}, ...: dispatchutils.EventCall)
     return dispatchutils.eventList(
         InteractionCreate(function(ctx, interaction) 
             local framework = frameworkldr.get({ctx=ctx, commands=commands})
