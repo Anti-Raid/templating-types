@@ -78,7 +78,7 @@ local function setup(commands: {[string]: context.Command} | {context.Command}, 
 
                 local results = cerr 
                 if not cctx.interaction.responded() then 
-                    cctx.interaction.replyautocomplete(results)
+                    cctx.interaction.autocomplete(results)
                 end
 
             end

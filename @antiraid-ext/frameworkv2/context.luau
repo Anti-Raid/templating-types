@@ -14,6 +14,7 @@ local errorHandler = require"@antiraid-ext/utils/errorhandle"
 local ActionRowBuilder = require"@discord-types/builders/message/components/actionRow"
 local ButtonBuilder = require"@discord-types/builders/message/components/button"
 local array_metatable = require"@antiraid/interop".array_metatable
+local unit = require"./unit"
 
 export type Command = {
     --- Discord command definition.
@@ -143,10 +144,14 @@ export type InteractionManager = {
     read createfollowup: (data: discordRestTypes.CreateFollowupMessageRequest) -> discordP.LazyMessageObject,
     --- Replies to an interaction. Either responds directly or creates a followup message as desired
     read reply: (data: InteractionReplyData) -> discordP.LazyMessageObject?,
+    --- Replies to an interaction. Either responds directly or creates a followup message as desired
+    read replyedit: (data: InteractionReplyData) -> discordP.LazyMessageObject?,
     --- Replies to an interaction with an error
     read replyerror: (err: errorHandler.HandledError) -> discordP.LazyMessageObject?,
+    --- Helper method to create a simple embed reply
+    read replysimpleembed: (title: string, description: string, color: number) -> nil,
     --- Replies to a autocomplete with a set of choices
-    read replyautocomplete: (choices: {discord.ApplicationCommandOptionChoiceObject}) -> nil,
+    read autocomplete: (choices: {discord.ApplicationCommandOptionChoiceObject}) -> nil,
     --- Returns the custom id in the interaction if any
     read customid: () -> string?,
     --- Returns if the user has responded to the interaction ever.
@@ -231,6 +236,36 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         end
     end
 
+    local function replyedit(data: InteractionReplyData): discordP.LazyMessageObject?
+        local finalFlags = data.flags or 0
+        if data.ephemeral then
+            finalFlags = bit32.bor(finalFlags, bit32.lshift(1, 6)) -- Ephemeral
+        end
+        if finalFlags ~= 0 then data.flags = finalFlags end
+        
+        if not hasresponded then
+            return createoriginalresponse({
+                type = InteractionCallbackType.ChannelMessageWithSource,
+                data = data,
+            } :: discordRestTypes.CreateInteractionRequest)
+        else
+            return editoriginalresponse(data :: discordRestTypes.EditWebhookMessageRequest)
+        end
+    end
+
+    local function replysimpleembed(title: string, description: string, color: number): nil
+        reply({
+            embeds = {
+                {
+                    title = title,
+                    description = description,
+                    color = color
+                }
+            }
+        })
+        return nil
+    end
+
     local function replyerror(err: errorHandler.HandledError) 
         local comps = {
             ActionRowBuilder.new()
@@ -247,16 +282,13 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         local res = reply({
             embeds = {err.embed},
             components = comps :: any,
+            ephemeral = true
         })
-
-        if err.traceback then
-            error(err.traceback, 1)
-        end
 
         return res
     end
 
-    local function replyautocomplete(choices: {discord.ApplicationCommandOptionChoiceObject})
+    local function autocomplete(choices: {discord.ApplicationCommandOptionChoiceObject})
         if #choices > 25 then
             -- Results are limited to 25 so we need to trim the table
             local trimmedResults = {}
@@ -294,9 +326,11 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         deferupdatemessage = deferupdatemessage,
         createfollowup = createfollowup,
         reply = reply,
+        replyedit = replyedit,
         replyerror = replyerror,
+        replysimpleembed = replysimpleembed,
         customid = customid,
-        replyautocomplete = replyautocomplete,
+        autocomplete = autocomplete,
         responded = responded,
         userid = userid,
         user = user
@@ -325,7 +359,9 @@ export type CommandArgs = {
     -- attachment
     read attachment: (name: string) -> discord.AttachmentObject?,
     -- get option
-    read get: (name: string) -> appcommands.ResolvedOption?
+    read get: (name: string) -> appcommands.ResolvedOption?,
+    --- time in seconds (nname -> name of option with number of `unit`, unitname -> unit (seconds/minutes/hours/days))
+    read time: (nname: string, unitname: string) -> number?,
 }
 
 local function CommandArgs(cmd: appcommands.ParsedApplicationCommand): CommandArgs
@@ -423,8 +459,10 @@ local function CommandArgs(cmd: appcommands.ParsedApplicationCommand): CommandAr
         end,
         number = function(name: string): number? 
             local opt = get(name)
-            if opt and opt.value.kind == "Number" then 
-                return opt.value.value
+            if opt then 
+                if opt.value.kind == "Number" then return opt.value.value
+                elseif opt.value.kind == "Integer" then return opt.value.value
+                end
             end
             return nil
         end,
@@ -444,7 +482,23 @@ local function CommandArgs(cmd: appcommands.ParsedApplicationCommand): CommandAr
             end
             return nil
         end,
-        get = get
+        get = get,
+        time = function(nname: string, unitname: string): number? 
+            local nopt = get(nname)
+            local nvalue = nil
+            if nopt then 
+                if nopt.value.kind == "Number" then nvalue = nopt.value.value
+                elseif nopt.value.kind == "Integer" then nvalue = nopt.value.value
+                end
+            end
+            if not nvalue then return nil end
+
+            local unitopt = get(unitname)
+            local unitvalue = if unitopt and unitopt.value.kind == "String" then unitopt.value.value else nil
+            if not unitvalue then return nil end
+
+            return unit.toseconds(nvalue, unitvalue)
+        end
     }
 end
 

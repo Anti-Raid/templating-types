@@ -1,3 +1,4 @@
+--!nocheck
 -- -- Does not type under new type solver yet
 
 --[[
