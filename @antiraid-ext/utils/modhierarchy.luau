@@ -3,7 +3,6 @@ local permissionsFromBf = permissions.fromBitFlag
 local kc = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local typesext = require "@antiraid/typesext"  
-local apitypes = require "@discord-types/apiTypes" 
 local userinfo = require "./userinfo"
 
 local SupportedAltPerms: {[string]: permissions.Permissions} = {
@@ -89,13 +88,8 @@ local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinf
     })
 end
 
-local function extractUserIdFromInteraction(interaction: apitypes.InteractionObject): string 
-    return if interaction.user then interaction.user.id elseif (interaction.member and interaction.member.user) then interaction.member.user.id else error("No user found")
-end
-
 return {
     canModeratorAffectTarget = canModeratorAffectTarget,
     canModeratorDo = canModeratorDo,
     canBotDoInChannel = canBotDoInChannel,
-    extractUserIdFromInteraction = extractUserIdFromInteraction,
 }

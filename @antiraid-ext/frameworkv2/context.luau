@@ -1,3 +1,4 @@
+--!strict
 local discord = require"@discord-types/apiTypes"
 local discordRestTypes = require "@discord-types/restTypes"
 local Primitives = require"@antiraid-core/primitives"
@@ -9,23 +10,36 @@ local datetime = require"@antiraid/datetime"
 local discordP = require"@antiraid-core/plugins/discord"
 local InteractionCallbackType = require "@discord-types/interaction".InteractionCallbackType
 local InteractionType = require "@discord-types/interaction".InteractionType
+local errorHandler = require"@antiraid-ext/utils/errorhandle"
+local ActionRowBuilder = require"@discord-types/builders/message/components/actionRow"
+local ButtonBuilder = require"@discord-types/builders/message/components/button"
+local array_metatable = require"@antiraid/interop".array_metatable
+
+export type Command = {
+    --- Discord command definition.
+    command: discordRestTypes.CreateGuildApplicationCommandRequest,
+    --- A register command to return the command definition at runtime.
+    register: (() -> discordRestTypes.CreateGuildApplicationCommandRequest)?,
+    --- The function that runs when the command is executed.
+    run: (data: CommandContext) -> nil,
+    --- The function that runs when the command is autocompleted.
+    autocompleter: ((ctx: CommandAutocompleteContext) -> {discord.ApplicationCommandOptionChoiceObject})?,
+}
 
 --- A set of ID'd callbacks that can be attached (with optional expiry)
 export type Callbacks<T> = {
-    --- Attaches a message component callback to the framework.
-    ---
-    --- Note: prefer using `addwithexpiry` instead.
-    read add: (id: string, callback: (ctx: T) -> ()) -> (),
-    --- Attaches a message component callback to the framework with a expiry at which the callback is automatically removed
-    read addwithexpiry: (id: string, callback: (ctx: T) -> (), expirein: datetime.TimeDelta) -> (),
-    --- Drops a message component callback from the framework.
+    --- Adds to the callback list
+    read add: (id: string, callback: T) -> (),
+    --- Adds to the callback list with a expiry at which the callback is automatically removed
+    read addwithexpiry: (id: string, callback: T, expirein: datetime.TimeDelta) -> (),
+    --- Drops a callback.
     read remove: (id: string) -> (),
-    --- Gets a message component callback from the framework.
-    read get: (id: string) -> ((ctx: T) -> ())?,
+    --- Gets a callback from the framework.
+    read get: (id: string) -> T?,
 }
 
 local function Callbacks<T>(): Callbacks<T> 
-    local callbacks: {[string]: (ctx: T) -> ()} = {}
+    local callbacks: {[string]: T} = {}
 
     local expiryhandles: {[string]: channel.KeyHandle<string>} = {}
     local delayqueue = channel.DelayChannel<<string>>()
@@ -46,11 +60,11 @@ local function Callbacks<T>(): Callbacks<T>
 
 
     return table.freeze{
-        add = function(id: string, cb: (ctx: T) -> ()) 
+        add = function(id: string, cb: T) 
             assert(not callbacks[id], "Callback with this ID has already been registered")
             callbacks[id] = cb 
         end,
-        addwithexpiry = function(id: string, cb: (ctx: T) -> (), expirein: datetime.TimeDelta)
+        addwithexpiry = function(id: string, cb: T, expirein: datetime.TimeDelta)
             assert(not callbacks[id], "Callback with this ID has already been registered")
             assert(not expiryhandles[id], "Callback with this ID has already been registered")
             _expireifneeded() -- Spin up expiry loop to clean out expired callbacks
@@ -77,20 +91,24 @@ export type Framework = {
     --- The underlying template loop manager
     read loop: tloop.TemplateLoopManager,
     --- Message component callbacks
-    read components: Callbacks<MessageComponentContext>
+    read components: Callbacks<(MessageComponentContext) -> nil>,
+    --- Command callbacks
+    read commands: Callbacks<Command>,
 }
 
 --- Creates a base framework
 local function Framework(ctx: Primitives.TemplateContext): Framework
     local loop = tloop.getRunningLoop(ctx)
     local userinfomanager = userinfomanager(ctx)
-    local componentcbs = Callbacks<<MessageComponentContext>>()
+    local componentcbs = Callbacks<<(MessageComponentContext) -> nil>>()
+    local commandcbs = Callbacks<<Command>>()
 
     return table.freeze{
         ctx = ctx,
         userinfomanager = userinfomanager,
         loop = loop,
-        components = componentcbs
+        components = componentcbs,
+        commands = commandcbs
     }
 end
 
@@ -119,13 +137,23 @@ export type InteractionManager = {
     --- Acks the original interaction response (for interactions that take a bit more time to make initial response with)
     read ack: () -> nil,
     --- If the interaction is a message component, update the message the component was attached to
-    read updatemessage: (data: discord.InteractionCallbackData) -> nil,
+    read updatemessage: (data: discord.InteractionCallbackDataEx) -> nil,
     --- If the interaction is a message component, defer updating of the message the component was attached to (for interactions that take a bit more time to make initial response with)
     read deferupdatemessage: () -> nil,
     --- Sends a followup message after the interaction has already been responded to
     read createfollowup: (data: discordRestTypes.CreateFollowupMessageRequest) -> discordP.LazyMessageObject,
     --- Replies to an interaction. Either responds directly or creates a followup message as desired
-    read reply: (data: InteractionReplyData) -> discordP.LazyMessageObject?
+    read reply: (data: InteractionReplyData) -> discordP.LazyMessageObject?,
+    --- Replies to an interaction with an error
+    read replyerror: (err: errorHandler.HandledError) -> discordP.LazyMessageObject?,
+    --- Replies to a autocomplete with a set of choices
+    read replyautocomplete: (choices: {discord.ApplicationCommandOptionChoiceObject}) -> nil,
+    --- Returns the custom id in the interaction if any
+    read customid: () -> string?,
+    --- Returns if the user has responded to the interaction ever.
+    read responded: () -> boolean,
+    --- Returns the underlying user id
+    read userid: () -> string
 }
 
 --- Creates a new InteractionManager, if `inithasresponded` is true, then the InteractionManager will consider the interaction
@@ -196,6 +224,56 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         end
     end
 
+    local function replyerror(err: errorHandler.HandledError) 
+        local comps = {
+            ActionRowBuilder.new()
+            :addComponent(
+                ButtonBuilder.new()
+                :setStyle("Blurple")
+                :setLabel("Support Server")
+                :setUrl(ctx.Runtime:links().support_server)
+                :build()
+            )
+            :build()
+        }
+        
+        local res = reply({
+            embeds = {err.embed},
+            components = comps :: any,
+        })
+
+        if err.traceback then
+            error(err.traceback, 1)
+        end
+
+        return res
+    end
+
+    local function replyautocomplete(choices: {discord.ApplicationCommandOptionChoiceObject})
+        if #choices > 25 then
+            -- Results are limited to 25 so we need to trim the table
+            local trimmedResults = {}
+            for i = 1, 25 do
+                trimmedResults[i] = choices[i]
+            end
+            choices = trimmedResults
+        end
+        
+        return createoriginalresponse({
+            type = InteractionCallbackType.ApplicationCommandAutocompleteResult,
+            data = {
+                choices = if choices then setmetatable(choices, array_metatable) else nil,
+            },
+        } :: discordRestTypes.CreateInteractionRequest)
+    end
+
+    local function customid() return interaction.data and interaction.data.custom_id end
+    local function responded() return hasresponded end
+
+    local function userid(): string
+        return if interaction.user then interaction.user.id elseif (interaction.member and interaction.member.user) then interaction.member.user.id else error("No user found")
+    end
+
     return table.freeze{
         ctx = ctx,
         interaction = interaction,
@@ -205,7 +283,12 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         updatemessage = updatemessage,
         deferupdatemessage = deferupdatemessage,
         createfollowup = createfollowup,
-        reply = reply
+        reply = reply,
+        replyerror = replyerror,
+        customid = customid,
+        replyautocomplete = replyautocomplete,
+        responded = responded,
+        userid = userid
     }
 end
 
@@ -217,6 +300,14 @@ export type MessageComponentContext = {
     read interaction: InteractionManager,
 }
 
+local function MessageComponentContext(framework: Framework, interaction: discord.InteractionObject): MessageComponentContext
+    assert(interaction.type == InteractionType.MessageComponent, "interaction must be a message component")
+    return table.freeze{
+        framework = framework,
+        interaction = InteractionManager(framework.ctx, interaction)
+    }
+end
+
 --- Context for a command invokation
 export type CommandContext = {
     --- The base framework
@@ -227,8 +318,39 @@ export type CommandContext = {
     read command: appcommands.ParsedApplicationCommand,
 }
 
+local function CommandContext(framework: Framework, interaction: discord.InteractionObject, command: appcommands.ParsedApplicationCommand): CommandContext
+    assert(interaction.type == InteractionType.ApplicationCommand, "interaction must be a command")
+    return table.freeze{
+        framework = framework,
+        interaction = InteractionManager(framework.ctx, interaction),
+        command = command
+    }
+end
+
+--- Context for a command invokation
+export type CommandAutocompleteContext = {
+    --- The base framework
+    read framework: Framework,
+    --- The interaction
+    read interaction: InteractionManager,
+    --- The parsed command data
+    read command: appcommands.ParsedApplicationCommand,
+}
+
+local function CommandAutocompleteContext(framework: Framework, interaction: discord.InteractionObject, command: appcommands.ParsedApplicationCommand): CommandContext
+    assert(interaction.type == InteractionType.ApplicationCommand, "interaction must be a message component")
+    return table.freeze{
+        framework = framework,
+        interaction = InteractionManager(framework.ctx, interaction),
+        command = command
+    }
+end
+
 return {
     Callbacks = Callbacks,
     Framework = Framework,
-    InteractionManager = InteractionManager
+    InteractionManager = InteractionManager,
+    MessageComponentContext = MessageComponentContext,
+    CommandContext = CommandContext,
+    CommandAutocompleteContext = CommandAutocompleteContext
 }

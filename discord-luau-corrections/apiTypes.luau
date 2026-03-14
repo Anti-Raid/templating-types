@@ -1570,6 +1570,7 @@ export type InteractionCallbackModalObject = {
 	components: { ComponentObjects }, -- Between 1 and 5 (inclusive) components that make up the modal
 }
 
+export type InteractionCallbackDataEx = (Partial<MessageObject>) -- an optional response message
 export type InteractionCallbackData = (Partial<MessageObject> | InteractionCallbackAutocompleteObject | InteractionCallbackModalObject) -- an optional response message
 
 -- https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-interaction-callback-type

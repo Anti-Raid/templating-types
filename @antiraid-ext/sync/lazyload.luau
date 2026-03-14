@@ -1,11 +1,11 @@
 --!strict
 type State = "Pending" | "Running" | "Completed" | "Failed"
 
-export type LazyLoader<T> = {
-    get: () -> T
+export type LazyLoader<T, Args> = {
+    get: (Args) -> T
 }
 
-local function LazyLoader<T>(fn: () -> T): LazyLoader<T>
+local function LazyLoader<T, Args>(fn: (Args) -> T): LazyLoader<T, Args>
     local state: State = "Pending"
     local results: T? = nil
     local err: any? = nil
@@ -14,7 +14,7 @@ local function LazyLoader<T>(fn: () -> T): LazyLoader<T>
     -- To avoid re-entrancy, track the currently executing thread
     local runningThread: thread? = nil
 
-    local function get(): T
+    local function get(args: Args): T
         -- Fast path: already completed or failed
         if state == "Completed" then
             return results :: T
@@ -38,7 +38,7 @@ local function LazyLoader<T>(fn: () -> T): LazyLoader<T>
         -- Running the function for the first time
         state = "Running"
         runningThread = coroutine.running()
-        local success, res = pcall(fn)
+        local success, res = pcall(fn, args)
 
         if success then
             state = "Completed"

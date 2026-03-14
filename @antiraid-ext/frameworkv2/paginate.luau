@@ -1,10 +1,10 @@
+--!strict
 local typesext = require "@antiraid/typesext"
 local ButtonBuilder = require"@discord-types/builders/message/components/button"
 local ActionRowBuilder = require "@discord-types/builders/message/components/actionRow"
 local apitypes = require "@discord-types/apiTypes"
-local interactionutils = require "@antiraid-ext/utils/interaction"
-local frameworktypes = require "@antiraid-ext/framework/coretypes"
-local extractUserIdFromInteraction = require "@antiraid-ext/utils/modhierarchy".extractUserIdFromInteraction
+local context = require"./context"
+local datetime = require"@antiraid/datetime"
 
 export type PaginationOpts = {
     id: string,
@@ -13,9 +13,10 @@ export type PaginationOpts = {
     timeToExpiry: number? -- Optional, defaults to 120 seconds
 }
 
-local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
+local TIME_TO_EXPIRY = datetime.timedelta_seconds(120)
+local function paginate(ctx: context.CommandContext, opts: PaginationOpts): ()
     local currentIdx = 1
-    local timeToExpiry = opts.timeToExpiry or 120 -- Default to 120 seconds if not provided
+    local timeToExpiry = if opts.timeToExpiry then datetime.timedelta_seconds(opts.timeToExpiry ) else TIME_TO_EXPIRY -- Default to 120 seconds if not provided
 
     local jlPrevId = `{opts.id}:${typesext.randstring(16)}`
     local jlNextId = `{opts.id}:${typesext.randstring(16)}`
@@ -30,14 +31,9 @@ local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
     :setLabel("Next Page")
     :setCustomId(jlNextId)
     
-    task.delay(timeToExpiry, function() 
-        data.dropButtonCallback(jlPrevId) -- Make sure to remove the callback so it doesn't get called again
-        data.dropButtonCallback(jlNextId) -- Make sure to remove the callback so it doesn't get called again
-    end)  
-
-    local userid = extractUserIdFromInteraction(data.interaction) -- Current user id who invoked pagination
-    data.attachButtonCallback(jlPrevId, function(data: frameworktypes.ButtonCallbackData): nil 
-        local interactor = extractUserIdFromInteraction(data.interaction)
+    local userid = ctx.interaction.userid() -- Current user id who invoked pagination
+    ctx.framework.components.addwithexpiry(jlPrevId, function(ctx: context.MessageComponentContext) 
+        local interactor = ctx.interaction.userid()
         if userid ~= interactor then return nil end
         
         currentIdx -= 1
@@ -56,12 +52,9 @@ local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
             embed.title ..= string.format(" (%d/%d)", currentIdx, opts.numPages)
         end
 
-        interactionutils.replyUpdate(
-            data.ctx,
-            data.interaction,
-            nil,
-            {embed},
-            {
+        ctx.interaction.updatemessage({
+            embeds = {embed},
+            components = {
                 ActionRowBuilder.new()
                 :addComponent(
                     prevButton:build()
@@ -71,13 +64,13 @@ local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
                 )
                 :build() :: apitypes.ComponentObjects
             }
-        )
+        })
 
         return nil
-    end)
+    end, timeToExpiry)
 
-    data.attachButtonCallback(jlNextId, function(data: frameworktypes.ButtonCallbackData): nil 
-        local interactor = extractUserIdFromInteraction(data.interaction)
+    ctx.framework.components.addwithexpiry(jlNextId, function(ctx: context.MessageComponentContext): nil 
+        local interactor = ctx.interaction.userid()
         if userid ~= interactor then return nil end
         currentIdx += 1
         if currentIdx > opts.numPages then
@@ -92,12 +85,9 @@ local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
             embed.title ..= string.format(" (%d/%d)", currentIdx, opts.numPages)
         end
 
-        interactionutils.replyUpdate(
-            data.ctx,
-            data.interaction,
-            nil,
-            {embed},
-            {
+        ctx.interaction.updatemessage({
+            embeds = {embed},
+            components = {
                 ActionRowBuilder.new()
                 :addComponent(
                     prevButton:build()
@@ -107,10 +97,10 @@ local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
                 )
                 :build() :: apitypes.ComponentObjects
             }
-        )
+        })
 
         return nil    
-    end)
+    end, timeToExpiry)
 
     local embed = opts.embed(
         currentIdx
@@ -120,13 +110,9 @@ local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
         embed.title ..= string.format(" (%d/%d)", currentIdx, opts.numPages)
     end
 
-    interactionutils.replySimple(
-        data.ctx, 
-        data.interaction,
-        nil, 
-        {embed},
-        true,
-        {
+    ctx.interaction.reply({
+        embeds = {embed},
+        components = {
             ActionRowBuilder.new()
             :addComponent(
                 prevButton:build()
@@ -136,11 +122,7 @@ local function paginate(data: frameworktypes.RunData, opts: PaginationOpts): ()
             )
             :build() :: apitypes.ComponentObjects
         }
-    )
-
-    -- Mark the data as edited so further processing can know to use a followup
-    -- message etc instead of an initial reply
-    data.sethasEdited(true)
+    })
 end
 
 return {
