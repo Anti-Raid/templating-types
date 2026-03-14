@@ -66,7 +66,7 @@ function Choice.Prototype.setValue(self: Choice, value: string | number): Choice
 end
 
 --[[
-	Responsible for buillding the default reaction object that the Discord API can understand.
+	Responsible for buillding the choice object that the Discord API can understand.
 ]]
 function Choice.Prototype.build(self: Choice): JSON
 	assert(self.name, `Missing name for choice: {self.name}`)
@@ -80,7 +80,7 @@ function Choice.Prototype.build(self: Choice): JSON
 end
 
 --[[
-	Constructor for the Discord Default Reaction Builder.
+	Constructor for the Discord Interaction Choice builder.
 
 	```lua
 	local defaultReaction = Choice.new({

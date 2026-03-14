@@ -1,4 +1,3 @@
---!nocheck
 -- -- Does not type under new type solver yet
 
 --[[
@@ -100,6 +99,17 @@ function Option.Prototype.setRequired(self: Option, isRequired: boolean): Option
 	)
 
 	self.required = isRequired
+
+	return self
+end
+
+function Option.Prototype.choice(self: Option, fn: (interactionChoice.Choice) -> interactionChoice.JSON): Option
+	assert(
+		self.type == "String" or self.type == "Integer" or self.type == "Number",
+		"Choices can only be added to String, Integer, or Number options"
+	)
+
+	table.insert(self.choices, fn(interactionChoice.new({})))
 
 	return self
 end
