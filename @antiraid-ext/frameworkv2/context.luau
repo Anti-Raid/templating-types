@@ -3,6 +3,7 @@ local discord = require"@discord-types/apiTypes"
 local discordRestTypes = require "@discord-types/restTypes"
 local Primitives = require"@antiraid-core/primitives"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
+local canModeratorDo = require "@antiraid-ext/utils/modhierarchy".canModeratorDo
 local appcommands = require"@antiraid-ext/appcommands"
 local tloop = require "@antiraid-core/templateloop"
 local channel = require"@antiraid/channel"
@@ -159,12 +160,16 @@ export type InteractionManager = {
     --- Returns the underlying user id
     read userid: () -> string,
     --- Returns the underlying user
-    read user: () -> discord.UserObject
+    read user: () -> discord.UserObject,
+    --- Returns the userinfo of the interacted-with user
+    read userinfo: () -> userinfomanager.UserInfo,
+    --- Assert that the user `u` has permission `p` erroring if not
+    read assertpermission: (perm: string) -> userinfomanager.UserInfo,
 }
 
 --- Creates a new InteractionManager, if `inithasresponded` is true, then the InteractionManager will consider the interaction
 --- as already being responded to
-local function InteractionManager(ctx: Primitives.TemplateContext, interaction: discord.InteractionObject, inithasresponded: boolean?): InteractionManager 
+local function InteractionManager(ctx: Primitives.TemplateContext, framework: Framework, interaction: discord.InteractionObject, inithasresponded: boolean?): InteractionManager 
     local hasresponded = inithasresponded or false
 
     local function editoriginalresponse(data: discordRestTypes.EditWebhookMessageRequest)
@@ -316,6 +321,14 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
     local function user(): discord.UserObject 
         return if interaction.user then interaction.user elseif (interaction.member and interaction.member.user) then interaction.member.user else error("No user found")
     end
+    local function userinfo(): userinfomanager.UserInfo 
+        return framework.userinfomanager.get(userid(), interaction)
+    end
+    local function assertpermission(cap: string) 
+        local userinfo = userinfo()
+        canModeratorDo(userinfo, cap)
+        return userinfo
+    end
 
     return table.freeze{
         ctx = ctx,
@@ -334,7 +347,9 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         autocomplete = autocomplete,
         responded = responded,
         userid = userid,
-        user = user
+        user = user,
+        userinfo = userinfo,
+        assertpermission = assertpermission
     }
 end
 
@@ -526,7 +541,7 @@ local function MessageComponentContext(framework: Framework, interaction: discor
         framework = framework,
         ctx = framework.ctx,
         loop = framework.loop,
-        interaction = InteractionManager(framework.ctx, interaction)
+        interaction = InteractionManager(framework.ctx, framework, interaction)
     }
 end
 
@@ -546,7 +561,7 @@ local function CommandContext(framework: Framework, interaction: discord.Interac
         framework = framework,
         ctx = framework.ctx,
         loop = framework.loop,
-        interaction = InteractionManager(framework.ctx, interaction),
+        interaction = InteractionManager(framework.ctx, framework, interaction),
         command = command,
         args = CommandArgs(command)
     }
@@ -568,7 +583,7 @@ local function CommandAutocompleteContext(framework: Framework, interaction: dis
         framework = framework,
         ctx = framework.ctx,
         loop = framework.loop,
-        interaction = InteractionManager(framework.ctx, interaction),
+        interaction = InteractionManager(framework.ctx, framework, interaction),
         command = command,
         args = CommandArgs(command)
     }

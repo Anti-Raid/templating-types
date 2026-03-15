@@ -16,6 +16,7 @@ local SupportedAltPerms: {[string]: permissions.Permissions} = {
     ["moderation.setlogchannel"] = "ManageChannels" :: "ManageChannels"
 }
 
+--- Errors if the moderator does not have cap `cap`. For most cases, `InteractionManager.assertpermission` is a better higher-level API to use here
 local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string) 
     if userinfo.guild_owner_id == userinfo.userid then 
         return
