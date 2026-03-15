@@ -149,7 +149,7 @@ export type InteractionManager = {
     --- Replies to an interaction with an error
     read replyerror: (err: errorHandler.HandledError) -> discordP.LazyMessageObject?,
     --- Helper method to create a simple embed reply
-    read replysimpleembed: (title: string, description: string, color: number) -> nil,
+    read replysimpleembed: (title: string, description: string, color: number, components: {discord.ComponentObjects}?) -> nil,
     --- Replies to a autocomplete with a set of choices
     read autocomplete: (choices: {discord.ApplicationCommandOptionChoiceObject}) -> nil,
     --- Returns the custom id in the interaction if any
@@ -253,7 +253,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
         end
     end
 
-    local function replysimpleembed(title: string, description: string, color: number): nil
+    local function replysimpleembed(title: string, description: string, color: number, components: {discord.ComponentObjects}?): nil
         reply({
             embeds = {
                 {
@@ -261,7 +261,8 @@ local function InteractionManager(ctx: Primitives.TemplateContext, interaction: 
                     description = description,
                     color = color
                 }
-            }
+            },
+            components = components
         })
         return nil
     end
