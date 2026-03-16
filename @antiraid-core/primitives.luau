@@ -1,7 +1,6 @@
 local discord = require("@discord-types/apiTypes")
 local runtimeP = require("@antiraid-core/plugins/runtime")
 local discordP = require("@antiraid-core/plugins/discord")
-local imgcaptchaP = require("@antiraid-core/plugins/img_captcha")
 local kvP = require("@antiraid-core/plugins/kv")
 local objectstorageP = require("@antiraid-core/plugins/objectstorage")
 local httpclientP = require("@antiraid-core/plugins/httpclient")
@@ -64,8 +63,6 @@ export type TemplateContext = {
     read Runtime: runtimeP.Plugin,
     --- Discord plugin
     read Discord: discordP.Plugin,
-    --- Image Captcha plugin
-    read ImageCaptcha: imgcaptchaP.Plugin,
     --- Key-Value plugin
     read KV: kvP.Plugin,
     --- Object Storage plugin
