@@ -165,6 +165,8 @@ export type InteractionManager = {
     read userinfo: () -> userinfomanager.UserInfo,
     --- Assert that the user `u` has permission `p` erroring if not
     read assertpermission: (perm: string) -> userinfomanager.UserInfo,
+    --- If a component, drop it from callbacks
+    read dropcomponent: () -> ()
 }
 
 --- Creates a new InteractionManager, if `inithasresponded` is true, then the InteractionManager will consider the interaction
@@ -329,6 +331,10 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
         canModeratorDo(userinfo, cap)
         return userinfo
     end
+    local function dropcomponent() 
+        local customid = customid()
+        if customid then framework.components.remove(customid) end
+    end
 
     return table.freeze{
         ctx = ctx,
@@ -349,7 +355,8 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
         userid = userid,
         user = user,
         userinfo = userinfo,
-        assertpermission = assertpermission
+        assertpermission = assertpermission,
+        dropcomponent = dropcomponent
     }
 end
 
