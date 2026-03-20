@@ -6,8 +6,8 @@ local discordGateway = require("@discord-types/gatewayTypes")
 ---
 --- Dispatched when a channel’s webhook is updated.
 local function WebhookUpdate(callback: (ctx: Primitives.TemplateContext, payload: discordGateway.WebhooksUpdatePayload) -> ())
-    return createTab("WEBHOOKS_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("WEBHOOKS_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

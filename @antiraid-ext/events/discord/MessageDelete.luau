@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when a message is deleted.
 local function MessageDelete(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.MessageDeletePayload) -> ())
-    return createTab("MESSAGE_DELETE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("MESSAGE_DELETE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when an invite is deleted.
 local function InviteDelete(callback: (ctx: Primitives.TemplateContext, data: discordGateway.InviteDeletePayload) -> ())
-    return createTab("INVITE_DELETE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("INVITE_DELETE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

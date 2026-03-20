@@ -4,8 +4,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- EntitlementCreate
 local function EntitlementCreate(callback: (ctx: Primitives.TemplateContext, entitlement: discord.EntitlementObject) -> ())
-    return createTab("ENTITLEMENT_CREATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("ENTITLEMENT_CREATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

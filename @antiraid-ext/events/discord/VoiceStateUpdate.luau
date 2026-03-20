@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when a user joins, leaves or moves to a voice channel.
 local function VoiceStateUpdate(callback: (ctx: Primitives.TemplateContext, new: discord.VoiceStateObject) -> ())
-    return createTab("VOICE_STATE_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("VOICE_STATE_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

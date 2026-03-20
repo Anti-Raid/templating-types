@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when a stage instance is created.
 local function StageInstanceCreate(callback: (ctx: Primitives.TemplateContext, instance: discord.StageInstanceObject) -> ())
-    return createTab("STAGE_INSTANCE_CREATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("STAGE_INSTANCE_CREATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

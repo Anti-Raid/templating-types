@@ -8,8 +8,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Provides the guild’s id and the user’s data.
 local function GuildMemberRemoval(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildMemberRemovePayload) -> ())
-    return createTab("GUILD_MEMBER_REMOVE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("GUILD_MEMBER_REMOVE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

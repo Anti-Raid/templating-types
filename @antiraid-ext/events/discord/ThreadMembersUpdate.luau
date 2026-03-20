@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when anyone is added to or removed from a thread.
 local function ThreadMembersUpdate(callback: (ctx: Primitives.TemplateContext, data: discordGateway.ThreadMembersUpdatePayload) -> ())
-    return createTab("THREAD_MEMBERS_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("THREAD_MEMBERS_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end 
 

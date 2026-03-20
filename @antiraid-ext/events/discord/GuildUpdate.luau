@@ -8,8 +8,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Note that the new data may be partial
 local function GuildUpdate(callback: (ctx: Primitives.TemplateContext, new: discord.GuildObject) -> ())
-    return createTab("GUILD_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("GUILD_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

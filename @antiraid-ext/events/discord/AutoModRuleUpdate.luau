@@ -4,8 +4,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
  
 --- AutoModRuleUpdate
 local function AutoModRuleUpdate(callback: (ctx: Primitives.TemplateContext, rule: discord.AutomoderationRuleObject) -> ())
-    return createTab("AUTO_MODERATION_RULE_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("AUTO_MODERATION_RULE_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

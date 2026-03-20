@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when a reaction is added to a message.
 local function ReactionAdd(callback: (ctx: Primitives.TemplateContext, reaction: discordGateway.MessageReactionAddPayload) -> ())
-    return createTab("MESSAGE_REACTION_ADD", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("MESSAGE_REACTION_ADD", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

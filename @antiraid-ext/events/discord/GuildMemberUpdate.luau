@@ -8,8 +8,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Provides the member’s old and new data (if cache feature is enabled and data is available) and the new raw data about updated fields.
 local function GuildMemberUpdate(callback: (ctx: Primitives.TemplateContext, payload: discordGateway.GuildMemberUpdatePayload) -> ())
-    return createTab("GUILD_MEMBER_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("GUILD_MEMBER_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

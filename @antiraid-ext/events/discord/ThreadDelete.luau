@@ -8,8 +8,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Provides the partial data about the deleted thread and, if it was present in the cache before its deletion, its full data.
 local function ThreadDelete(callback: (ctx: Primitives.TemplateContext, event: discordGateway.DeleteThreadPayload) -> ())
-    return createTab("THREAD_DELETE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("THREAD_DELETE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

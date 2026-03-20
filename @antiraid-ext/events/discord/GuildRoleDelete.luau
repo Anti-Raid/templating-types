@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when a role is deleted in a guild.
 local function GuildRoleDelete(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildRoleDeletePayload) -> ())
-    return createTab("GUILD_ROLE_DELETE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("GUILD_ROLE_DELETE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

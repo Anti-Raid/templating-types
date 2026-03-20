@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when a role is updated in a guild.
 local function GuildRoleUpdate(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildRoleUpdatePayload) -> ())
-    return createTab("GUILD_ROLE_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("GUILD_ROLE_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when a role is created in a guild.
 local function GuildRoleCreate(callback: (ctx: Primitives.TemplateContext, payload: discordgateway.GuildRoleCreatePayload) -> ())
-    return createTab("GUILD_ROLE_CREATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("GUILD_ROLE_CREATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

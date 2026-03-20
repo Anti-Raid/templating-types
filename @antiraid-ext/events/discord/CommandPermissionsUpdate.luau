@@ -4,8 +4,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 
 --- CommandPermissionsUpdate
 local function CommandPermissionsUpdate(callback: (ctx: Primitives.TemplateContext, permission: discord.GuildApplicationCommandPermissionsObject) -> ())
-    return createTab("APPLICATION_COMMAND_PERMISSIONS_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("APPLICATION_COMMAND_PERMISSIONS_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

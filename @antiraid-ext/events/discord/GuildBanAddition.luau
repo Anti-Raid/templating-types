@@ -8,8 +8,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Provides the user’s data and the id of the guild where the ban occurred.
 local function GuildBanAddition(callback: (ctx: Primitives.TemplateContext, data: discordGateway.GuildBanAddPayload) -> ())
-    return createTab("GUILD_BAN_ADD", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("GUILD_BAN_ADD", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

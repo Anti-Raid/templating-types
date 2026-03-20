@@ -8,8 +8,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Note that you usually won't get this event from AntiRaid unless you're self-hosting or unusual circumstances.
 local function VoiceServerUpdate(callback: (ctx: Primitives.TemplateContext, data: discordGateway.VoiceServerUpdatePayload) -> ())
-    return createTab("VOICE_SERVER_UPDATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("VOICE_SERVER_UPDATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

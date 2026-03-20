@@ -6,8 +6,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 ---
 --- Dispatched when all reactions are removed from a message.
 local function ReactionRemoveAll(callback: (ctx: Primitives.TemplateContext, reaction: discordGateway.MessageReactionRemoveAllPayload) -> ())
-    return createTab("MESSAGE_REACTION_REMOVE_ALL", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("MESSAGE_REACTION_REMOVE_ALL", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

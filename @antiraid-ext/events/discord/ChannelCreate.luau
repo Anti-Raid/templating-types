@@ -4,8 +4,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 
 --- ChannelCreate
 local function ChannelCreate(callback: (ctx: Primitives.TemplateContext, channel: discord.ChannelObject) -> ())
-    return createTab("CHANNEL_CREATE", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("CHANNEL_CREATE", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 

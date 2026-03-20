@@ -3,8 +3,8 @@ local createTab = require("@antiraid-ext/events/dispatch").createTab
 local events = require"@antiraid-core/events"
 
 local function ListLogEntries(callback: (ctx: Primitives.TemplateContext, event: events.ListLogsEvent) -> ())
-    return createTab("ListLogs", function(ctx)
-        return callback(ctx, ctx:event().data)
+    return createTab("ListLogs", function(ctx, event)
+        return callback(ctx, event.data)
     end)
 end
 
