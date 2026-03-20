@@ -42,7 +42,7 @@ local function MutexFn(): MutexFn
         if success then
             return res
         else
-            error(res, 2)
+            error(res, 1)
         end
     end
 
