@@ -6,8 +6,6 @@ local typesext = require"@antiraid/typesext"
 export type TenantState = {
     --- The list of events the guild is (globally) subscribed to
     events: {string},
-    --- boolean flag dictating whether or not we’ve been banned
-    banned: boolean,
     --- Flags (such as whether we need to load in more data etc.)
     flags: number
 }
