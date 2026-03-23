@@ -4,9 +4,6 @@ local typesext = require"@antiraid/typesext"
 export type TemplateSource = {
     read type: "custom",
 
-    --- The key of the template attachment
-    read key: string,
-
     --- Name of the template
     read name: string,
 
@@ -33,9 +30,6 @@ export type Template = {
     --- The template attachment source
     read source: TemplateSource,
 
-    --- The capabilities allowed for this template
-    read allowed_caps: { string },
-
     --- Whether or not the template is paused
     read paused: boolean,
 
@@ -54,9 +48,6 @@ export type CreateTemplate = {
     --- Template Content
     read content: typesext.MemoryVfs,
 
-    --- The capabilities allowed for this template
-    allowed_caps: { string },
-
     --- Whether or not the template is paused
     paused: boolean,
 }
@@ -66,10 +57,12 @@ export type TemplateManager = {
     builtins: () -> Template,
     --- Returns a list of all templates. Will always include the builtins template as the first entry
     list: () -> {Template},
+    --- Returns a count of the number of custom templates we have
+    countcustom: () -> number,
     --- Returns a template by key. Will either return `nil` or error on non-custom templates
     getcustom: (key: string) -> Template?,
-    --- Creates or updates a custom template (if id is set), returning the template ID
-    setcustom: (key: string?, data: CreateTemplate) -> string,
+    --- Creates or updates a custom template
+    setcustom: (data: CreateTemplate) -> (),
     --- Deletes a custom template
     deletecustom: (key: string) -> (),
     --- Given a template, compute the VFS to use for it

@@ -14,6 +14,8 @@ export type KeyRecord<T> = {
     read value: T,
     --- The timestamp when the record was created
     read createdat: datetime.DateTime,
+    --- The timestamp when the record was last updated at
+    read lastupdatedat: datetime.DateTime,
 }
 
 --- A key manager provides methods to add, remove and check keys with builtin caching
@@ -55,9 +57,11 @@ export type KeyManager<T> = {
 --- A key manager
 ---
 --- A key manager can be used to handle data with caching. Similar to KeyExpiryManager but without the expiry functionality
+---
+--- Note for internal use: the KeyManager only needs the loop to be attached with subscribeEvent/unsubscribeEvent/isSubscribed/debugmanager
 local function KeyManager<T>(
     ctx: Primitives.TemplateContext, 
-    basescope: string, 
+    basescope: string,
     oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: KeyRecord<T>}, km: KeyManager<T>) -> any)?
 ): KeyManager<T>
     local loop = templateloopImpl.getRunningLoop(ctx)
@@ -101,9 +105,11 @@ local function KeyManager<T>(
         -- Record in kv store
         loop.subscribeEvent("@keym", basescope)
         ctx.KV:set(key, data, {basescope})
+        local now = datetime.UTC:now()
         kexs[key] = table.freeze{
             key = key,
-            createdat = datetime.UTC:now(),
+            createdat = now,
+            lastupdatedat = now,
             value = data,
         }
         count = count + 1
@@ -123,6 +129,7 @@ local function KeyManager<T>(
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
+            lastupdatedat = datetime.UTC:now(),
             value = data,
         }
     end
@@ -153,6 +160,7 @@ local function KeyManager<T>(
                     key = item.key,
                     value = record,
                     createdat = item.created_at,
+                    lastupdatedat = item.last_updated_at
                 }
                 newcount = newcount + 1
             end

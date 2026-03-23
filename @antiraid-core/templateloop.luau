@@ -1,4 +1,5 @@
 local Primitives = require"./primitives"
+local templatemanagerimpl = require"./templatemanager"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
 
@@ -10,11 +11,6 @@ export type DispatchResult = {
 
 --- A manager that handles template loops for a tenant
 export type TemplateLoopManager = {
-    --- Update the template cache due to a modification of a template with the provided `id`.
-    ---
-    --- Returns the result from the templates startup code.
-    updateTemplateCache: (id: string) -> {DispatchResult},
-
     --- Dispatch an event to all cached templates, returning the result as desired
     ---
     --- If `event` is passed, the sub-context created for each template will have the event set to it.
@@ -34,6 +30,9 @@ export type TemplateLoopManager = {
 
     --- Debug logging
     read debugmanager: DebugManager,
+
+    --- Template manager
+    read templatemanager: () -> templatemanagerimpl.TemplateManager
 }
 
 --- Debug logging

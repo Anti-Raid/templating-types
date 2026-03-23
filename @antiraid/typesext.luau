@@ -111,6 +111,7 @@ export type Opaque = { __phantom: "opaque" }
 --- A MemoryVfs type that can be made into a real Vfs using Vfs.newoverlay
 export type MemoryVfs = {
     data: {[string]: string},
+    __phantom: "MemoryVfs"
 }
 
 export type Vfs = {
