@@ -1,38 +1,35 @@
 local Primitives = require"./primitives"
-local templatemanagerimpl = require"./templatemanager"
+local isolate = require"@antiraid-ext/isolate"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
 
-export type DispatchResult = {
-    type: "ok" | "err",
-    id: string,
-    value: any,
-}
-
---- A manager that handles template loops for a tenant
+--- A manager that handles the base event loop for a tenant
 export type TemplateLoopManager = {
-    --- Dispatch an event to all cached templates, returning the result as desired
+    --- Dispatch an event to all attached isolates, returning the result as desired
     ---
     --- If `event` is passed, the sub-context created for each template will have the event set to it.
     ---
     --- If `targetId` is passed, the event will only be sent to the targetted id
-    dispatchEvent: (event: Primitives.Event, targetId: string?) -> {DispatchResult},
+    read dispatchEvent: (event: Primitives.Event, targetId: string?) -> {isolate.DispatchResult},
 
     --- Subscribe to an event, adding the system to the event's refs
-    subscribeEvent: (event: string, system: string) -> (),
+    read subscribeEvent: (event: string, system: string) -> (),
 
-    --- Unsubscribe from an event for a system, removing the system from the events ref
+    --- Unsubscribe from the event loop for a system, removing the system from the events ref
     --- and automatically removing the event if no systems use it anymore
-    unsubscribeEvent: (event: string, system: string) -> (),
+    read unsubscribeEvent: (event: string, system: string) -> (),
 
     --- Returns if a system is subscribed to an event
-    isSubscribed: (event: string, system: string) -> boolean,
+    read isSubscribed: (event: string, system: string) -> boolean,
 
     --- Debug logging
     read debugmanager: DebugManager,
 
-    --- Template manager
-    read templatemanager: () -> templatemanagerimpl.TemplateManager
+    --- Attach an isolate to the loop
+    read attachisolate: (isolate: isolate.Isolate) -> (),
+
+    --- Remove/detach an isolate from the loop
+    read detachisolate: (id: string) -> (),
 }
 
 --- Debug logging
