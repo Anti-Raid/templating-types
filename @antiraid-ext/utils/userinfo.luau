@@ -308,7 +308,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
     end
 
     local function _getS1D_SlowPath(user_id: discord.Snowflake, currentPathUsed: string): Stage1Data 
-        -- Slow path: we need to do a call to antiraid_get_fused_member to get the member and resolved permissions
+        -- Slow path: we need to do a call to antiraid_get_fused_member to get the member, resolved permissions and guild info
         local fusedMember = ctx.Discord:antiraid_get_fused_member({user_id})
         local member = fusedMember.data.members[1] or error("Fused member does not have a member. This is a bug and should not happen.")
         local resolvedPerms = member.resolved_perms or error("Fused member does not have resolved permissions. This is a bug and should not happen.")
@@ -354,16 +354,14 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
 
                 if type(resolvedMembers) == "table" then 
                     local member = resolvedMembers[user_id]
-                    if member then 
-                        -- Fast path 2: if the interaction has resolved members and we find the user ID, we can use that
-                        local resolvedPerms = member.permissions or error("Interaction resolved member does not have permissions. This is a bug and should not happen.")
-                        local memberRoles = member.roles or error("Interaction resolved member does not have roles. This is a bug and should not happen.")
 
+                    -- Fast path 2: if the interaction has resolved members and we find the user ID, we can use that
+                    if member and member.permissions and member.roles then 
                         return _getS1D_FastPath_HasResolvedAndMemberRoles(
                             user_id,
                             "fast_path_2",
-                            resolvedPerms,
-                            memberRoles
+                            member.permissions,
+                            member.roles
                         )
                     end
                 end
