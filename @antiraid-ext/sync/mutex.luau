@@ -25,7 +25,7 @@ local function MutexFn(): MutexFn
             runningThread = coroutine.running()
         end
 
-        local success, res = pcall(fn)
+        local success, res = xpcall(fn, function(res) return debug.traceback(tostring(res)) end)
 
         -- Wake up next thread in the queue
         local nextThread = table.remove(queue, 1)

@@ -1,11 +1,10 @@
 local discord = require"@discord-types/apiTypes"
 local Kittycat = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
-local kv = require "@antiraid-core/plugins/kv"
+local KeyManager = require"../keymanager"
 
 export type GuildRolePermission = {
     position: Kittycat.PartialStaffPosition,
-    raw: kv.KvRecord
 }
 
 --- @class UserInfo
@@ -45,7 +44,6 @@ export type Stage1Data = {
 export type MemberPermissionOverrideEntry = {
     userid: discord.Snowflake,
     perm_overrides: {Kittycat.Permission},
-    raw: kv.KvRecord
 }
 
 --- UserInfoManager is a utility for fetching user info in a performant way
@@ -107,34 +105,28 @@ export type UserInfoManager = {
     deleteMemberPermissionOverrides: (userid: discord.Snowflake) -> nil,
 }
 
+type IGuildPermissions = {
+    index: number,
+    perms: {string}
+}
+
+type IGuildMemberPermOverrides = {string}
+
 local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
     local self = {}
+    local guildperms = KeyManager<<IGuildPermissions>>(ctx, "builtins.guild_permissions")
+    local guildmemberpermoverrides = KeyManager<<IGuildMemberPermOverrides>>(ctx, "builtins.guild_permissions.overrides")
 
     local function getGuildPermissions(): {GuildRolePermission}
-        local permissionRecords = ctx.KV:find("%%", {"builtins.guild_permissions"})
+        local permissionRecords = guildperms.list()
 
-        local userPositions = table.create(#permissionRecords) :: {GuildRolePermission}
+        local userPositions: {GuildRolePermission} = {}
         for _, record in permissionRecords do
-            if not record.exists then continue end
-
-            if not record.value or type(record.value) ~= "table" then
-                continue
-            end
-
-            local value: {
-                index: number?,
-                perms: {string}?
-            } = record.value
-
-            if not value.index or not value.perms then
-                continue -- Skip invalid records
-            end
-
             local roleId = record.key
-            local index = value.index 
-            local permissionsSet = value.perms
+            local index = record.value.index 
+            local permissionsSet = record.value.perms
 
-            local kittycatPermissions = table.create(#permissionsSet) :: {Kittycat.Permission}
+            local kittycatPermissions = table.create<<Kittycat.Permission>>(#permissionsSet)
             for _, perm in permissionsSet do
                 local kittycatPerm = Kittycat.Permission.from_string(perm)
                 table.insert(kittycatPermissions, kittycatPerm)
@@ -145,8 +137,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
                     id = roleId,
                     index = index,
                     perms = kittycatPermissions,
-                },
-                raw = record,
+                }
             })
         end
 
@@ -154,29 +145,17 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
     end
 
     local function getGuildPermissionForRole(roleid: discord.Snowflake): GuildRolePermission?
-        local record = ctx.KV:getrecord(roleid, {"builtins.guild_permissions"})
-
-        if not record.exists then return nil end
-
-        if not record.value or type(record.value) ~= "table" then
-            error("internal error: role is invalid (not a table)")
-        end
-
-        local value: {
-            id: discord.Snowflake?,
-            index: number?,
-            perms: {string}?
-        } = record.value :: any
-
-        if not value.index or not value.perms then
+        local record = guildperms.get(roleid)
+        if not record then return nil end
+        if not record.value.index or not record.value.perms then
             error("internal error: index/perms not in role")
         end
 
         local roleId = record.key
-        local index = value.index 
-        local permissionsSet = value.perms
+        local index = record.value.index 
+        local permissionsSet = record.value.perms
 
-        local kittycatPermissions = table.create(#permissionsSet) :: {Kittycat.Permission}
+        local kittycatPermissions = table.create<<Kittycat.Permission>>(#permissionsSet)
         for _, perm in permissionsSet do
             local kittycatPerm = Kittycat.Permission.from_string(perm)
             table.insert(kittycatPermissions, kittycatPerm)
@@ -188,7 +167,6 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
                 index = index,
                 perms = kittycatPermissions,
             },
-            raw = record,
         }
     end
 
@@ -202,10 +180,16 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
             table.insert(permsSet, tostring(perm))
         end
 
-        ctx.KV:set(position.id, {
+        local data: IGuildPermissions = {
             index = position.index,
             perms = permsSet,
-        }, {"builtins.guild_permissions"})
+        }
+
+        if guildperms.exists(position.id) then 
+            guildperms.updatedata(position.id, data)
+        else
+            guildperms.add(data, position.id)
+        end
 
         return nil
     end
@@ -213,82 +197,69 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
     local function applyReorder(reorderList: { {role_id: discord.Snowflake, index: number} }): nil
         assert(reorderList, "Reorder list is required.")
 
-        for _, entry in reorderList do
+        -- Ensure no repeated index/other checks
+        local indexes: {[number]: boolean} = {}
+        local updates: {[discord.Snowflake]: IGuildPermissions} = {}
+        for _, entry in reorderList do 
             assert(entry.role_id, "Role ID is required.")
             assert(entry.index, "Index is required.")
 
-            local record = ctx.KV:getrecord(entry.role_id, {"builtins.guild_permissions"})
-            if not record.exists then
-                error("Role with ID " .. entry.role_id .. " does not exist in guild permissions.")
-            end
+            -- Ensure no repeated indexes
+            assert(not indexes[entry.index], "index  in reorder list")
+            indexes[entry.index] = true
 
-            if not record.value or type(record.value) ~= "table" then
-                error("Role with ID " .. entry.role_id .. " has invalid permissions data.")
-            end
+            -- Finally check if this role already uses this ID already and if not, add to updates
+            local record = guildperms.get(entry.role_id)
+            if not record then error("Role with ID " .. entry.role_id .. " does not exist in guild permissions.") end
+            if record.value.index == entry.index then continue end
+            updates[entry.role_id] = {
+                perms = record.value.perms,
+                index = entry.index
+            }
+        end
 
-            local value: {
-                index: number?,
-                perms: {string}?
-            } = record.value :: any
-
-            value.index = entry.index -- Update the index
-            ctx.KV:set(entry.role_id, value, {"builtins.guild_permissions"})
+        for roleid, entry in updates do
+            guildperms.updatedata(roleid, entry)
         end
 
         return nil
     end
 
     local function deleteGuildPermission(roleid: discord.Snowflake): nil
-        assert(roleid, "Guild Role ID is required.")
-
-        ctx.KV:delete(roleid, {"builtins.guild_permissions"})
-
+        guildperms.remove(roleid)
         return nil
     end
 
     local function getMemberPermissionOverrides(): {MemberPermissionOverrideEntry} 
-        local overridesList = ctx.KV:find("%%", {"builtins.guild_permissions.overrides"})
+        local overridesList = guildmemberpermoverrides.list()
 
-        local overrideEntries = table.create(#overridesList) :: {MemberPermissionOverrideEntry}
+        local overrideEntries: {MemberPermissionOverrideEntry} = {}
 
         for _, record in overridesList do 
-            if not record.exists then continue end
-
-            if not record.value or type(record.value) ~= "table" then
-                continue
-            end
-
-            local kittycatPermissions = table.create(#record.value) :: {Kittycat.Permission}
+            local kittycatPermissions = table.create<<Kittycat.Permission>>(#record.value)
             for _, perm in record.value do
-                if type(perm) ~= "string" then
-                    continue -- Ignore non-string permissions
-                end
                 local kittycatPerm = Kittycat.Permission.from_string(perm)
                 table.insert(kittycatPermissions, kittycatPerm)
             end
 
-            table.insert(overrideEntries, {userid = record.key, perm_overrides = kittycatPermissions, raw = record})
+            table.insert(overrideEntries, {userid = record.key, perm_overrides = kittycatPermissions})
         end
 
         return overrideEntries
     end
 
     local function getMemberPermissionOverridesForUser(userid: discord.Snowflake): MemberPermissionOverrideEntry
-        local overrides = ctx.KV:getrecord(userid, {"builtins.guild_permissions.overrides"})
+        local overrides = guildmemberpermoverrides.get(userid)
 
-        if not overrides.exists or type(overrides.value) ~= "table" then
+        if not overrides then
             return {
                 userid = userid,
                 perm_overrides = {},
-                raw = overrides
             }
         end
 
-        local kittycatPermissions = table.create(#overrides.value) :: {Kittycat.Permission}
+        local kittycatPermissions = table.create<<Kittycat.Permission>>(#overrides.value)
         for _, perm in overrides.value do
-            if type(perm) ~= "string" then
-                continue -- Ignore non-string permissions
-            end
             local kittycatPerm = Kittycat.Permission.from_string(perm)
             table.insert(kittycatPermissions, kittycatPerm)
         end
@@ -296,29 +267,22 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
         return {
             userid = userid,
             perm_overrides = kittycatPermissions,
-            raw = overrides
         }
     end
 
     local function setMemberPermissionOverrides(userid: discord.Snowflake, permissions: {Kittycat.Permission}): nil
-        assert(userid, "User ID is required.")
-        assert(permissions, "Permissions are required.")
-
         local permsSet: {string} = {}
         for _, perm in permissions do
             table.insert(permsSet, tostring(perm))
         end
 
-        ctx.KV:set(userid, permsSet, {"builtins.guild_permissions.overrides"})
-
+        if guildmemberpermoverrides.exists(userid) then guildmemberpermoverrides.updatedata(userid, permsSet) 
+        else guildmemberpermoverrides.add(permsSet, userid) end
         return nil
     end
 
     local function deleteMemberPermissionOverrides(userid: discord.Snowflake): nil
-        assert(userid, "User ID is required.")
-
-        ctx.KV:delete(userid, {"builtins.guild_permissions.overrides"})
-
+        guildmemberpermoverrides.remove(userid)
         return nil
     end
 
