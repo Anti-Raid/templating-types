@@ -4,8 +4,6 @@ local datetime = require "@antiraid/datetime"
 --- KvRecord represents a key-value record with metadata.
 ---@class KvRecord
 export type KvRecord = {
-    --- The ID of the record
-    id: string,
     --- The key of the record.
     key: string,
     --- The value of the record. This can be any type, depending on what was stored.
@@ -13,7 +11,7 @@ export type KvRecord = {
     --- Indicates whether the record exists in the key-value store.
     exists: true,
     --- The scopes the key has
-    scopes: {string},
+    scope: string,
     --- The timestamp when the record was created, in ISO 8601 format.
     created_at: datetime.DateTime,
     --- The timestamp when the record was last updated, in ISO 8601 format.
@@ -48,21 +46,14 @@ export type KvExecutor = {
     ---
     --- @param query string The query to search for.
     --- @return {KvRecord} The records.
-    find: (self: KvExecutor, query: string, scopes: {string}) -> KvRecordList,
-
-    --- @yields
-    ---
-    --- Gets a value from this key-value scope.
-    --- @param key string The key of the record.
-    --- @return any The value of the record.
-    get: (self: KvExecutor, key: string, scopes: {string}) -> khronosvalue.KhronosValue,
+    find: (self: KvExecutor, query: string, scope: string) -> KvRecordList,
 
     --- @yields
     ---
     --- Gets a record from this key-value scope.
     --- @param key string The key of the record.
     --- @return KvRecord The record.
-    getrecord: (self: KvExecutor, key: string, scopes: {string}) -> KvRecord,
+    get: (self: KvExecutor, key: string, scope: string) -> KvRecord,
 
     --- @yields
     ---
@@ -70,13 +61,13 @@ export type KvExecutor = {
     --- @param key string The key of the record.
     --- @param value any The value of the record.
     --- @param scopes {string} The scopes to set the record in.
-    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scopes: {string}) -> (),
+    set: (self: KvExecutor, key: string, value: khronosvalue.KhronosValue, scope: string) -> (),
 
     --- @yields
     ---
     --- Deletes a record from this key-value scope
     --- @param key string The key of the record.
-    delete: (self: KvExecutor, key: string, scopes: {string}) -> nil,
+    delete: (self: KvExecutor, key: string, scope: string) -> nil,
 }
 
 export type Plugin = KvExecutor

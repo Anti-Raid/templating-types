@@ -98,7 +98,7 @@ local function KeyExpiryManager<T>(
         if kexs[key] then -- Remove associated key expiry + data
             loop.debugmanager.print("[KeyExpiryManager] Removing key expiry: "..key)
             kexs[key] = nil
-            ctx.KV:delete(key, {systemscope})
+            ctx.KV:delete(key, systemscope)
             count = count - 1
             if next(kexs) == nil and #delayqueue == 0 then 
                 loop.unsubscribeEvent("OnStartup", systemscope) -- No more key expiries, unsubscribe
@@ -189,7 +189,7 @@ local function KeyExpiryManager<T>(
         ctx.KV:set(key, {
             expiresat = expiresat,
             data = data,
-        }, {systemscope})
+        }, systemscope)
         count = count + 1
         kexs[key] = table.freeze{
             key = key,
@@ -225,7 +225,7 @@ local function KeyExpiryManager<T>(
         ctx.KV:set(key, {
             expiresat = record.expiresat,
             data = data,
-        }, {systemscope})
+        }, systemscope)
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -251,7 +251,7 @@ local function KeyExpiryManager<T>(
         if #delayqueue > 0 then delayqueue:clear() end -- Clear existing delayqueue entries
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
-        local kexdata = ctx.KV:find("%%", {systemscope})
+        local kexdata = ctx.KV:find("%%", systemscope)
         local newkexs: {[string]: ExpiringKeyRecord<T>} = {}
         local newcount = 0
         for _, item in kexdata do

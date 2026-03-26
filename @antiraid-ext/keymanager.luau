@@ -74,7 +74,7 @@ local function KeyManager<T>(
         if kexs[key] then -- Remove associated key + data
             loop.debugmanager.print("[KeyManager] Removing key: "..key)
             kexs[key] = nil
-            ctx.KV:delete(key, {basescope})
+            ctx.KV:delete(key, basescope)
             count = count - 1
             if next(kexs) == nil then 
                 loop.unsubscribeEvent("@keym", basescope) -- No more keys, unsubscribe
@@ -104,7 +104,7 @@ local function KeyManager<T>(
 
         -- Record in kv store
         loop.subscribeEvent("@keym", basescope)
-        ctx.KV:set(key, data, {basescope})
+        ctx.KV:set(key, data, basescope)
         local now = datetime.UTC:now()
         kexs[key] = table.freeze{
             key = key,
@@ -125,7 +125,7 @@ local function KeyManager<T>(
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx.KV:set(key, data, {basescope})
+        ctx.KV:set(key, data, basescope)
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -150,7 +150,7 @@ local function KeyManager<T>(
     local function sync() 
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyManager] Syncing keys from tenant state")
-        local kexdata = ctx.KV:find("%%", {basescope})
+        local kexdata = ctx.KV:find("%%", basescope)
         local newkexs: {[string]: KeyRecord<T>} = {}
         local newcount = 0
         for _, item in kexdata do
