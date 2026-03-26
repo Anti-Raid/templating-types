@@ -1,7 +1,6 @@
 local discord = require("@discord-types/apiTypes")
 local runtimeP = require("@antiraid-core/plugins/runtime")
 local discordP = require("@antiraid-core/plugins/discord")
-local kvP = require("@antiraid-core/plugins/kv")
 local objectstorageP = require("@antiraid-core/plugins/objectstorage")
 local httpclientP = require("@antiraid-core/plugins/httpclient")
 
@@ -38,20 +37,6 @@ export type Event = {
     data: any,
 }
 
-export type Limitations = {
-    --- The capabilities the template has access to.
-    capabilities: {string},
-    --- The reserved key scopes the template has. These are key scopes that the template cannot use when using the key-value API
-    reserved_key_scopes: {string},
-}
-
-export type With = {
-    --- Limitations of the sub-context
-    limitations: Limitations,
-    --- The event to set in the sub-context.
-    event: Event?,
-}
-
 --- TemplateContext is a struct that represents the context of a template. 
 --- 
 --- Stores key data including the templates data, pragma and what capabilities it should have access to. 
@@ -63,8 +48,6 @@ export type TemplateContext = {
     read Runtime: runtimeP.Plugin,
     --- Discord plugin
     read Discord: discordP.Plugin,
-    --- Key-Value plugin
-    read KV: kvP.Plugin,
     --- Object Storage plugin
     read ObjectStorage: objectstorageP.Plugin,
     --- HTTP Client plugin
@@ -76,13 +59,6 @@ export type TemplateContext = {
     read allowed_caps: {string},
     --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
     read current_user: discord.UserObject,
-    --- Returns a new TemplateContext with the specified limits which must be a strict subset
-    --- of the current context's limits.
-    read with: (self: TemplateContext, data: With) -> TemplateContext,
-    --- Returns the event present within the TemplateContext
-    read event: (self: TemplateContext) -> Event,
-    --- Returns the templates limitations
-    read limitations: (self: TemplateContext) -> Limitations,
 
     --- The global/common store table shared across all templates within the same
     --- server

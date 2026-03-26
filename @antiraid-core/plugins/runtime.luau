@@ -2,11 +2,75 @@
 
 local datetime = require("@antiraid/datetime")
 local typesext = require"@antiraid/typesext"
+local khronosvalue = require "@antiraid-core/khronosvalue"
+
+--- A result from a state operation
+export type StateExecResult = {
+    --- The key of the record.
+    key: string,
+    --- The value of the record. This can be any type, depending on what was stored.
+    value: khronosvalue.KhronosValue,
+    --- The scopes the key has
+    scope: string,
+    --- The timestamp when the record was created, in ISO 8601 format.
+    created_at: datetime.DateTime,
+    --- The timestamp when the record was last updated, in ISO 8601 format.
+    last_updated_at: datetime.DateTime,
+}
 
 export type TenantState = {
     --- The list of events the guild is (globally) subscribed to
     events: {string},
     --- Flags (such as whether we need to load in more data etc.)
+    flags: number
+}
+
+--[[
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum StateOp {
+    KvFind {
+        query: String,
+        scope: String
+    },
+    KvGet {
+        key: String,
+        scope: String
+    },
+    KvSet {
+        key: String,
+        scope: String,
+        value: KhronosValue
+    },
+    KvDelete {
+        key: String,
+        scope: String
+    },
+    UpdateTenantState {
+        events: Vec<String>,
+        flags: i32
+    }
+}
+]]
+
+export type StateOp = {
+    op: "KvFind",
+    query: string,
+    scope: string
+} | {
+    op: "KvGet",
+    key: string,
+    scope: string
+} | {
+    op: "KvSet",
+    key: string,
+    value: khronosvalue.KhronosValue
+} | {
+    op: "KvDelete",
+    key: string,
+    scope: string
+} | {
+    op: "UpdateTenantState",
+    events: {string},
     flags: number
 }
 
@@ -17,13 +81,8 @@ export type Plugin = {
 
     --- @yields
     ---
-    --- Fetches the TenantState or returns a suitable default
-    gettenantstate: (self: Plugin) -> TenantState,
-
-    --- @yields
-    ---
-    --- Sets the TenantState
-    settenantstate: (self: Plugin, state: TenantState) -> (),
+    --- Executes a state operation
+    execstate: (self: Plugin, op: {StateOp}) -> {StateExecResult},
 
     --- @yields
     ---
