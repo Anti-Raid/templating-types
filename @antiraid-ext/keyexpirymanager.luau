@@ -53,15 +53,11 @@ export type KeyExpiryManager<T> = {
 
     --- Lists all keys with their data
     ---
-    --- Analogous to `ctx.KV:find` in the normal key-value store API but doesn't support pattern matching
-    ---
     --- Note that the data returned is not cloned, so modifying it may modify actual stored data. This is for performance reasons since the data can be large, 
     --- but be aware of this when using the list method.
     read list: () -> {[string]: ExpiringKeyRecord<T>},
 
     --- Gets a specific key expiry's data
-    ---
-    --- Analogous to `ctx.KV:getrecord` in the normal key-value store API.
     read get: (key: string) -> ExpiringKeyRecord<T>?,
 
     --- Returns the number of keys currently stored (approximate)
@@ -73,11 +69,11 @@ export type KeyExpiryManager<T> = {
 --- A key expiry manager can be used to schedule events to be dispatched at a later time with associated data.
 local function KeyExpiryManager<T>(
     ctx: Primitives.TemplateContext, 
-    basescope: string, 
+    scope: string, 
     callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord<T>) -> any, 
     oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: ExpiringKeyRecord<T>}, kexm: KeyExpiryManager<T>) -> any)?
 ): KeyExpiryManager<T>
-    local systemscope = "__kexs"..basescope -- System scope where kex's are stored
+    local systemscope = "__kexs"..scope -- System scope where kex's are stored
 
     local loop = templateloopImpl.getRunningLoop(ctx)
     loop.debugmanager.print("[KeyExpiryManager] Initializing KeyExpiryManager")
@@ -90,19 +86,20 @@ local function KeyExpiryManager<T>(
     local th: thread? = nil
 
     local function remove(key: string) 
+        if not kexs[key] then return end
+        loop.debugmanager.print("[KeyExpiryManager] Removing key expiry: "..key)
+        
+        -- First, drop the key, this may error in which we halt immediately
+        ctx.Runtime:execstate({{ op = "KvDelete", key = key, scope = systemscope }})
         local handle = handles[key]
         if handle then 
             handle:cancel() -- Cancel the handle
             handles[key] = nil
         end
-        if kexs[key] then -- Remove associated key expiry + data
-            loop.debugmanager.print("[KeyExpiryManager] Removing key expiry: "..key)
-            kexs[key] = nil
-            ctx.KV:delete(key, systemscope)
-            count = count - 1
-            if next(kexs) == nil and #delayqueue == 0 then 
-                loop.unsubscribeEvent("OnStartup", systemscope) -- No more key expiries, unsubscribe
-            end
+        kexs[key] = nil
+        count = count - 1
+        if next(kexs) == nil and #delayqueue == 0 then 
+            loop.unsubscribeEvent("OnStartup", systemscope) -- No more key expiries, unsubscribe
         end
     end
 
@@ -184,19 +181,27 @@ local function KeyExpiryManager<T>(
         assert(not exists(key), `Generated KeyExpiry key \`{key}\` already exists`)
         assert(expiresat.timezone == datetime.UTC, "expiresat must be in UTC timezone, currently: "..tostring(expiresat.timezone))
 
-        -- Record in kv store
-        loop.subscribeEvent("OnStartup", systemscope)
-        ctx.KV:set(key, {
-            expiresat = expiresat,
-            data = data,
-        }, systemscope)
-        count = count + 1
+        -- Record in kv store and subscribe to event via attachedop
+        loop.subscribeEvent(
+            "OnStartup", 
+            systemscope, 
+            { 
+                op = "KvSet", 
+                key = key, 
+                scope = systemscope, 
+                value = {
+                    expiresat = expiresat,
+                    data = data,
+                }    
+            }
+        )
         kexs[key] = table.freeze{
             key = key,
             createdat = datetime.UTC:now(),
             expiresat = expiresat,
             value = data,
         }
+        count = count + 1
         handles[key] = delayqueue:add(key, _getduration(expiresat))
         _ensureLoopRunning()
 
@@ -222,10 +227,15 @@ local function KeyExpiryManager<T>(
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx.KV:set(key, {
-            expiresat = record.expiresat,
-            data = data,
-        }, systemscope)
+        ctx.Runtime:execstate({ 
+            op = "KvSet", 
+            key = key, 
+            scope = systemscope, 
+            value = {
+                expiresat = record.expiresat,
+                data = data,
+            }
+        })
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -251,23 +261,21 @@ local function KeyExpiryManager<T>(
         if #delayqueue > 0 then delayqueue:clear() end -- Clear existing delayqueue entries
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
-        local kexdata = ctx.KV:find("%%", systemscope)
+        local kexdata = ctx.Runtime:execstate({{ op = "KvFind", query = "%%", scope = systemscope}})
         local newkexs: {[string]: ExpiringKeyRecord<T>} = {}
         local newcount = 0
         for _, item in kexdata do
-            if item.exists then
-                local record = item.value :: {
-                    expiresat: datetime.DateTime,
-                    data: T,
-                }
-                newkexs[item.key] = table.freeze{
-                    key = item.key,
-                    value = record.data,
-                    createdat = item.created_at,
-                    expiresat = record.expiresat,
-                }
-                newcount = newcount + 1
-            end
+            local record = item.value :: {
+                expiresat: datetime.DateTime,
+                data: T,
+            }
+            newkexs[item.key] = table.freeze{
+                key = item.key,
+                value = record.data,
+                createdat = item.created_at,
+                expiresat = record.expiresat,
+            }
+            newcount = newcount + 1
         end
         kexs = newkexs -- Replace with new data
         count = newcount

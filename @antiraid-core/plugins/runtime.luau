@@ -1,3 +1,4 @@
+--!strict
 --- Proposed interface (not yet implemented)
 
 local datetime = require("@antiraid/datetime")
@@ -63,6 +64,7 @@ export type StateOp = {
 } | {
     op: "KvSet",
     key: string,
+    scope: string,
     value: khronosvalue.KhronosValue
 } | {
     op: "KvDelete",

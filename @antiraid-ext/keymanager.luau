@@ -1,3 +1,4 @@
+--!strict
 local Primitives = require"@antiraid-core/primitives"
 local datetime = require"@antiraid/datetime"
 local templateloopImpl = require"@antiraid-core/templateloop"
@@ -39,15 +40,11 @@ export type KeyManager<T> = {
 
     --- Lists all keys with their data
     ---
-    --- Analogous to `ctx.KV:find` in the normal key-value store API but doesn't support pattern matching
-    ---
     --- Note that the data returned is not cloned, so modifying it may modify actual stored data. This is for performance reasons since the data can be large, 
     --- but be aware of this when using the list method.
     read list: () -> {[string]: KeyRecord<T>},
 
     --- Gets a specific key's data
-    ---
-    --- Analogous to `ctx.KV:getrecord` in the normal key-value store API.
     read get: (key: string) -> KeyRecord<T>?,
 
     --- Returns the number of keys currently stored (approximate)
@@ -57,8 +54,6 @@ export type KeyManager<T> = {
 --- A key manager
 ---
 --- A key manager can be used to handle data with caching. Similar to KeyExpiryManager but without the expiry functionality
----
---- Note for internal use: the KeyManager only needs the loop to be attached with subscribeEvent/unsubscribeEvent/isSubscribed/debugmanager
 local function KeyManager<T>(
     ctx: Primitives.TemplateContext, 
     basescope: string,
@@ -71,14 +66,13 @@ local function KeyManager<T>(
     local count = 0
 
     local function remove(key: string) 
-        if kexs[key] then -- Remove associated key + data
-            loop.debugmanager.print("[KeyManager] Removing key: "..key)
-            kexs[key] = nil
-            ctx.KV:delete(key, basescope)
-            count = count - 1
-            if next(kexs) == nil then 
-                loop.unsubscribeEvent("@keym", basescope) -- No more keys, unsubscribe
-            end
+        if not kexs[key] then return end -- Remove associated key + data
+        loop.debugmanager.print("[KeyManager] Removing key: "..key)
+        ctx.Runtime:execstate({{ op = "KvDelete", key = key, scope = basescope }})
+        kexs[key] = nil
+        count = count - 1
+        if next(kexs) == nil then 
+            loop.unsubscribeEvent("@keym", basescope) -- No more keys, unsubscribe
         end
     end
 
@@ -102,9 +96,8 @@ local function KeyManager<T>(
         local key = ckey or _createkey()
         assert(not exists(key), `Generated key \`{key}\` already exists`)
 
-        -- Record in kv store
-        loop.subscribeEvent("@keym", basescope)
-        ctx.KV:set(key, data, basescope)
+        -- Record in kv store and subscribe to event via attachedop
+        loop.subscribeEvent("@keym", basescope, { op = "KvSet", key = key, scope = basescope, value = data })
         local now = datetime.UTC:now()
         kexs[key] = table.freeze{
             key = key,
@@ -125,7 +118,7 @@ local function KeyManager<T>(
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx.KV:set(key, data, basescope)
+        ctx.Runtime:execstate({{ op = "KvSet", key = key, scope = basescope, value = data }})
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -150,20 +143,18 @@ local function KeyManager<T>(
     local function sync() 
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyManager] Syncing keys from tenant state")
-        local kexdata = ctx.KV:find("%%", basescope)
+        local kexdata = ctx.Runtime:execstate({{ op = "KvFind", query = "%%", scope = basescope}})
         local newkexs: {[string]: KeyRecord<T>} = {}
         local newcount = 0
         for _, item in kexdata do
-            if item.exists then
-                local record = item.value :: T
-                newkexs[item.key] = table.freeze{
-                    key = item.key,
-                    value = record,
-                    createdat = item.created_at,
-                    lastupdatedat = item.last_updated_at
-                }
-                newcount = newcount + 1
-            end
+            local record = item.value :: T
+            newkexs[item.key] = table.freeze{
+                key = item.key,
+                value = record,
+                createdat = item.created_at,
+                lastupdatedat = item.last_updated_at
+            }
+            newcount = newcount + 1
         end
         kexs = newkexs -- Replace with new data
         count = newcount

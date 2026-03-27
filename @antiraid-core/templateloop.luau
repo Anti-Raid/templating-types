@@ -1,4 +1,5 @@
 local Primitives = require"./primitives"
+local runtime = require"./plugins/runtime"
 local isolate = require"@antiraid-ext/isolate"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
@@ -13,7 +14,9 @@ export type TemplateLoopManager = {
     read dispatchEvent: (event: Primitives.Event, targetId: string?) -> {isolate.DispatchResult},
 
     --- Subscribe to an event, adding the system to the event's refs
-    read subscribeEvent: (event: string, system: string) -> (),
+    ---
+    --- If attachedop is set, the attached op will be run atomically with the event subscription
+    read subscribeEvent: (event: string, system: string, attachedop: runtime.StateOp?) -> (),
 
     --- Unsubscribe from the event loop for a system, removing the system from the events ref
     --- and automatically removing the event if no systems use it anymore
