@@ -227,15 +227,15 @@ local function KeyExpiryManager<T>(
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx.Runtime:execstate({ 
-            op = "KvSet", 
-            key = key, 
-            scope = systemscope, 
+        ctx.Runtime:execstate({{
+            op = "KvSet",
+            key = key,
+            scope = systemscope,
             value = {
                 expiresat = record.expiresat,
                 data = data,
             }
-        })
+        }})
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,

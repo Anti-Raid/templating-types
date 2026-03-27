@@ -26,33 +26,6 @@ export type TenantState = {
     flags: number
 }
 
---[[
-#[derive(serde::Serialize, serde::Deserialize)]
-pub enum StateOp {
-    KvFind {
-        query: String,
-        scope: String
-    },
-    KvGet {
-        key: String,
-        scope: String
-    },
-    KvSet {
-        key: String,
-        scope: String,
-        value: KhronosValue
-    },
-    KvDelete {
-        key: String,
-        scope: String
-    },
-    UpdateTenantState {
-        events: Vec<String>,
-        flags: i32
-    }
-}
-]]
-
 export type StateOp = {
     op: "KvFind",
     query: string,
@@ -74,6 +47,30 @@ export type StateOp = {
     op: "UpdateTenantState",
     events: {string},
     flags: number
+} | {
+    op: "GlobalKvFind",
+    query: string,
+    scope: string
+} | {
+    op: "GlobalKvGet",
+    key: string,
+    version: number,
+    scope: string
+} | {
+    op: "GlobalKvCreate",
+    key: string,
+    version: number,
+    short: string,
+    public_metadata: khronosvalue.KhronosValue,
+    scope: string,
+    public_data: boolean,
+    long: string?,
+    data: khronosvalue.KhronosValue
+} | {
+    op: "GlobalKvDelete",
+    key: string,
+    version: number,
+    scope: string
 }
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime

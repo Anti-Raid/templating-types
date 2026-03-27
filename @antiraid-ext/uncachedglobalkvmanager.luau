@@ -16,12 +16,12 @@ export type KeyRecord<T> = {
 }
 
 --- An uncached key manager provides methods to add, remove and check keys with *no* caching
-export type UncachedKeyManager<T> = {
-    --- Inserts or updates a new key
-    read set: (key: string, data: T) -> (),
+export type UncachedGlobalKeyManager<T> = {
+    --- Inserts a new key
+    read set: (key: string, data: T, version: number) -> (),
 
     --- Removes a key
-    read remove: (key: string) -> (),
+    read remove: (key: string, version: number) -> (),
 
     --- Lists all keys with their data
     ---
@@ -32,7 +32,7 @@ export type UncachedKeyManager<T> = {
     read listarr: (query: string?) -> {KeyRecord<T>},
 
     --- Gets a specific key's data
-    read get: (key: string) -> KeyRecord<T>?,
+    read get: (key: string, version: number) -> KeyRecord<T>?,
 }
 
 --- An uncached key manager
@@ -41,17 +41,26 @@ export type UncachedKeyManager<T> = {
 ---
 --- Notes:
 --- 1. Unlike KeyManager, it is guaranteed that creating a UncachedKeyManager will *not* yield
-local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope: string): UncachedKeyManager<T>
-    local function remove(key: string) 
-        ctx.Runtime:execstate({{ op = "KvDelete", key = key, scope = basescope }})
+local function UncachedGlobalKeyManager<T>(ctx: Primitives.TemplateContext, basescope: string): UncachedGlobalKeyManager<T>
+    local function remove(key: string, version: number) 
+        ctx.Runtime:execstate({{ op = "GlobalKvDelete", key = key, version = version, scope = basescope }})
     end
 
-    local function set(key: string, data: T)
-        ctx.Runtime:execstate({{ op = "KvSet", key = key, scope = basescope, value = data }})
+    local function set(key: string, data: T, version: number)
+        ctx.Runtime:execstate({{
+            op = "GlobalKvCreate",
+            key = key,
+            version = version,
+            short = "",
+            public_metadata = {},
+            scope = basescope,
+            public_data = false,
+            data = data
+        }})
     end
 
     local function list(query: string?): (number, {[string]: KeyRecord<T>})
-        local records = ctx.Runtime:execstate({{ op = "KvFind", query = query or "%%", scope = basescope }})
+        local records = ctx.Runtime:execstate({{ op = "GlobalKvFind", query = query or "%%", scope = basescope }})
         local parsed: {[string]: KeyRecord<T>} = {}
         local count = 0
         for _, record in records do 
@@ -68,7 +77,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
     end
 
     local function listarr(query: string?): {KeyRecord<T>}
-        local records = ctx.Runtime:execstate({{ op = "KvFind", query = query or "%%", scope = basescope }})
+        local records = ctx.Runtime:execstate({{ op = "GlobalKvFind", query = query or "%%", scope = basescope }})
         local parsed: {KeyRecord<T>} = {}
         for _, record in records do 
             table.insert(parsed, {
@@ -82,8 +91,8 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
         return parsed
     end
 
-    local function get(key: string): KeyRecord<T>?
-        local records = ctx.Runtime:execstate({{ op = "KvGet", key = key, scope = basescope }})
+    local function get(key: string, version: number): KeyRecord<T>?
+        local records = ctx.Runtime:execstate({{ op = "GlobalKvGet", key = key, version = version, scope = basescope }})
         if #records == 0 then return nil end
         local record = records[1]
         return {
@@ -94,7 +103,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
         }
     end
 
-    local self: UncachedKeyManager<T> = table.freeze{
+    local self: UncachedGlobalKeyManager<T> = table.freeze{
         set = set,
         remove = remove,
         list = list,
@@ -105,4 +114,4 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
     return self
 end
 
-return UncachedKeyManager
+return UncachedGlobalKeyManager
