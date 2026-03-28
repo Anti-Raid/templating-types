@@ -96,17 +96,18 @@ export type UncachedGlobalKeyManager<PublicMetadata, Data> = {
 }
 
 local function parseglobalkeyrecord<PublicMetadata>(record: runtime.StateExecResult): GlobalKeyRecord<PublicMetadata>
+    if record.op ~= "GlobalKv" then error("internal error: StateExecResult returned is not a GlobalKv as expected!") end
     return {
         key = record.key,
-        version = record.value.version,
-        owner_id = record.value.owner_id,
-        owner_type = record.value.owner_type,
-        short = record.value.short,
-        publicmetadata = record.value.public_metadata,
-        public_data = record.value.public_data,
-        review_state = record.value.review_state,
-        long = record.value.long,
-        price = record.value.price,
+        version = record.version,
+        owner_id = record.owner_id,
+        owner_type = record.owner_type,
+        short = record.short,
+        publicmetadata = record.public_metadata,
+        public_data = record.public_data,
+        review_state = record.review_state,
+        long = record.long,
+        price = record.price,
         createdat = record.created_at,
         lastupdatedat = record.last_updated_at
     }
@@ -142,6 +143,7 @@ local function UncachedGlobalKeyManager<PublicMetadata, Data>(ctx: Primitives.Te
         local parsed: {[string]: GlobalKeyRecord<PublicMetadata>} = {}
         local count = 0
         for _, record in records do
+            if record.op ~= "GlobalKv" then continue end
             parsed[record.key] = parseglobalkeyrecord(record)
             count += 1
         end

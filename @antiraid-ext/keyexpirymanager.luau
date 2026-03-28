@@ -265,6 +265,7 @@ local function KeyExpiryManager<T>(
         local newkexs: {[string]: ExpiringKeyRecord<T>} = {}
         local newcount = 0
         for _, item in kexdata do
+            if item.op ~= "Kv" then continue end
             local record = item.value :: {
                 expiresat: datetime.DateTime,
                 data: T,

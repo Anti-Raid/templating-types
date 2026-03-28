@@ -147,6 +147,7 @@ local function KeyManager<T>(
         local newkexs: {[string]: KeyRecord<T>} = {}
         local newcount = 0
         for _, item in kexdata do
+            if item.op ~= "Kv" then continue end
             local record = item.value :: T
             newkexs[item.key] = table.freeze{
                 key = item.key,

@@ -55,6 +55,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
         local parsed: {[string]: KeyRecord<T>} = {}
         local count = 0
         for _, record in records do 
+            if record.op ~= "Kv" then continue end
             parsed[record.key] = {
                 key = record.key,
                 value = record.value,
@@ -71,6 +72,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
         local records = ctx.Runtime:execstate({{ op = "KvFind", query = query or "%%", scope = basescope }})
         local parsed: {KeyRecord<T>} = {}
         for _, record in records do 
+            if record.op ~= "Kv" then continue end
             table.insert(parsed, {
                 key = record.key,
                 value = record.value,
@@ -86,6 +88,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
         local records = ctx.Runtime:execstate({{ op = "KvGet", key = key, scope = basescope }})
         if #records == 0 then return nil end
         local record = records[1]
+        if record.op ~= "Kv" then return nil end
         return {
             key = record.key,
             value = record.value,

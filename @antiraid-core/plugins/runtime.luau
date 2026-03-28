@@ -7,6 +7,8 @@ local khronosvalue = require "@antiraid-core/khronosvalue"
 
 --- A result from a state operation
 export type StateExecResult = {
+    op: "Kv",
+
     --- The key of the record.
     key: string,
     --- The value of the record. This can be any type, depending on what was stored.
@@ -17,6 +19,49 @@ export type StateExecResult = {
     created_at: datetime.DateTime,
     --- The timestamp when the record was last updated, in ISO 8601 format.
     last_updated_at: datetime.DateTime,
+} | {
+    op: "GlobalKv",
+
+    read key: string,
+
+    --- The version of the record
+    read version: number,
+
+    --- The owner id of the record (for global kvs, this is the tenant id)
+    read owner_id: string,
+
+    --- The owner type of the record (user or guild)
+    read owner_type: string,
+
+    --- Short description of the record
+    read short: string,
+
+    --- Public metadata about the key-value
+    read public_metadata: any,
+
+    --- Contents of vfs is readable or not (paid templates)
+    read public_data: boolean,
+
+    --- Review state of the record (pending, approved, rejected)
+    read review_state: string,
+
+    --- An optional long description of the record
+    read long: string?,
+
+    --- An optional price for the record (if the record is for sale)
+    read price: number?,
+
+    --- The timestamp when the record was created
+    read created_at: datetime.DateTime,
+
+    --- The timestamp when the record was last updated at
+    read last_updated_at: datetime.DateTime,
+} | {
+    op: "GlobalKvData.Opaque",
+    data: any, -- todo: add opaque type,
+} | {
+    op: "GlobalKvData",
+    data: any
 }
 
 export type TenantState = {
