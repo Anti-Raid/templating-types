@@ -57,11 +57,11 @@ export type StateExecResult = {
     --- The timestamp when the record was last updated at
     read last_updated_at: datetime.DateTime,
 } | {
-    op: "GlobalKvData.Opaque",
-    data: any, -- todo: add opaque type,
-} | {
     op: "GlobalKvData",
     data: any
+} | {
+    op: "GlobalKvDataOpaque",
+    data: any, -- todo: add opaque type,
 }
 
 export type TenantState = {
