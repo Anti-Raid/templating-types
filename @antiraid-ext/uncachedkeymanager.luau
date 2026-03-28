@@ -47,11 +47,11 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
     end
 
     local function set(key: string, data: T)
-        ctx.Runtime:execstate({ op = "KvSet", key = key, scope = basescope, value = data })
+        ctx.Runtime:execstate({{ op = "KvSet", key = key, scope = basescope, value = data }})
     end
 
     local function list(query: string?): (number, {[string]: KeyRecord<T>})
-        local records = ctx.Runtime:execstate({ op = "KvFind", key = query or "%%", scope = basescope })
+        local records = ctx.Runtime:execstate({{ op = "KvFind", query = query or "%%", scope = basescope }})
         local parsed: {[string]: KeyRecord<T>} = {}
         local count = 0
         for _, record in records do 
@@ -68,7 +68,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
     end
 
     local function listarr(query: string?): {KeyRecord<T>}
-        local records = ctx.Runtime:execstate({ op = "KvFind", key = query or "%%", scope = basescope })
+        local records = ctx.Runtime:execstate({{ op = "KvFind", query = query or "%%", scope = basescope }})
         local parsed: {KeyRecord<T>} = {}
         for _, record in records do 
             table.insert(parsed, {
@@ -83,7 +83,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
     end
 
     local function get(key: string): KeyRecord<T>?
-        local records = ctx.Runtime:execstate({ op = "KvGet", key = key or "%%", scope = basescope })
+        local records = ctx.Runtime:execstate({{ op = "KvGet", key = key, scope = basescope }})
         if #records == 0 then return nil end
         local record = records[1]
         return {
