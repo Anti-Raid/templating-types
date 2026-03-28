@@ -2,13 +2,17 @@
 local Primitives = require"@antiraid-core/primitives"
 local datetime = require"@antiraid/datetime"
 
+export type GlobalKvData<PublicMetadata> = { short: string, public_metadata: PublicMetadata, public_data: boolean }
+
 --- KeyRecord represents a key-value of the record.
 ---@class KvRecord
-export type KeyRecord<T> = {
+export type GlobalKeyRecord<PublicMetadata> = {
     --- The key of the record.
     read key: string,
-    --- The value of the record. This can be any type, depending on what was stored.
-    read value: T,
+    --- The value returned by the runtime
+    read value: any,
+    --- Public metadata about the key-value
+    read publicmetadata: PublicMetadata,
     --- The timestamp when the record was created
     read createdat: datetime.DateTime,
     --- The timestamp when the record was last updated at
@@ -16,9 +20,9 @@ export type KeyRecord<T> = {
 }
 
 --- An uncached key manager provides methods to add, remove and check keys with *no* caching
-export type UncachedGlobalKeyManager<T> = {
+export type UncachedGlobalKeyManager<PublicMetadata, Data> = {
     --- Inserts a new key
-    read set: (key: string, data: T, version: number) -> (),
+    read set: (key: string, metadata: GlobalKvData<PublicMetadata>, data: Data, version: number) -> (),
 
     --- Removes a key
     read remove: (key: string, version: number) -> (),
@@ -26,13 +30,13 @@ export type UncachedGlobalKeyManager<T> = {
     --- Lists all keys with their data
     ---
     --- If query is passed, will use said query (sql ilike syntax for query) for listing, otherwise, will use `%%` to get all keys
-    read list: (query: string?) -> (number, {[string]: KeyRecord<T>}),
+    read list: (query: string?) -> (number, {[string]: GlobalKeyRecord<PublicMetadata>}),
 
     --- Same as list but returns an array
-    read listarr: (query: string?) -> {KeyRecord<T>},
+    read listarr: (query: string?) -> {GlobalKeyRecord<PublicMetadata>},
 
     --- Gets a specific key's data
-    read get: (key: string, version: number) -> KeyRecord<T>?,
+    read get: (key: string, version: number) -> GlobalKeyRecord<PublicMetadata>?,
 }
 
 --- An uncached key manager
@@ -41,32 +45,33 @@ export type UncachedGlobalKeyManager<T> = {
 ---
 --- Notes:
 --- 1. Unlike KeyManager, it is guaranteed that creating a UncachedKeyManager will *not* yield
-local function UncachedGlobalKeyManager<T>(ctx: Primitives.TemplateContext, basescope: string): UncachedGlobalKeyManager<T>
-    local function remove(key: string, version: number) 
+local function UncachedGlobalKeyManager<PublicMetadata, Data>(ctx: Primitives.TemplateContext, basescope: string): UncachedGlobalKeyManager<PublicMetadata, Data>
+    local function remove(key: string, version: number)
         ctx.Runtime:execstate({{ op = "GlobalKvDelete", key = key, version = version, scope = basescope }})
     end
 
-    local function set(key: string, data: T, version: number)
+    local function set(key: string, metadata: GlobalKvData<PublicMetadata>, data: Data, version: number)
         ctx.Runtime:execstate({{
             op = "GlobalKvCreate",
             key = key,
             version = version,
-            short = "",
-            public_metadata = {},
+            short = metadata.short,
+            public_metadata = metadata.public_metadata,
             scope = basescope,
-            public_data = false,
+            public_data = metadata.public_data,
             data = data
         }})
     end
 
-    local function list(query: string?): (number, {[string]: KeyRecord<T>})
+    local function list(query: string?): (number, {[string]: GlobalKeyRecord<PublicMetadata>})
         local records = ctx.Runtime:execstate({{ op = "GlobalKvFind", query = query or "%%", scope = basescope }})
-        local parsed: {[string]: KeyRecord<T>} = {}
+        local parsed: {[string]: GlobalKeyRecord<PublicMetadata>} = {}
         local count = 0
-        for _, record in records do 
+        for _, record in records do
             parsed[record.key] = {
                 key = record.key,
                 value = record.value,
+                publicmetadata = record.value.public_metadata,
                 createdat = record.created_at,
                 lastupdatedat = record.last_updated_at
             }
@@ -76,13 +81,14 @@ local function UncachedGlobalKeyManager<T>(ctx: Primitives.TemplateContext, base
         return count, parsed
     end
 
-    local function listarr(query: string?): {KeyRecord<T>}
+    local function listarr(query: string?): {GlobalKeyRecord<PublicMetadata>}
         local records = ctx.Runtime:execstate({{ op = "GlobalKvFind", query = query or "%%", scope = basescope }})
-        local parsed: {KeyRecord<T>} = {}
-        for _, record in records do 
+        local parsed: {GlobalKeyRecord<PublicMetadata>} = {}
+        for _, record in records do
             table.insert(parsed, {
                 key = record.key,
                 value = record.value,
+                publicmetadata = record.value.public_metadata,
                 createdat = record.created_at,
                 lastupdatedat = record.last_updated_at
             })
@@ -91,19 +97,20 @@ local function UncachedGlobalKeyManager<T>(ctx: Primitives.TemplateContext, base
         return parsed
     end
 
-    local function get(key: string, version: number): KeyRecord<T>?
+    local function get(key: string, version: number): GlobalKeyRecord<PublicMetadata>?
         local records = ctx.Runtime:execstate({{ op = "GlobalKvGet", key = key, version = version, scope = basescope }})
         if #records == 0 then return nil end
         local record = records[1]
         return {
             key = record.key,
             value = record.value,
+            publicmetadata = record.value.public_metadata,
             createdat = record.created_at,
             lastupdatedat = record.last_updated_at
         }
     end
 
-    local self: UncachedGlobalKeyManager<T> = table.freeze{
+    local self: UncachedGlobalKeyManager<PublicMetadata, Data> = table.freeze{
         set = set,
         remove = remove,
         list = list,
