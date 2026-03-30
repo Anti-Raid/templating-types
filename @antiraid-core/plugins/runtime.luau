@@ -120,6 +120,14 @@ export type StateOp = {
 
 export type SyscallArgs = {
     op: "State",
+    --- A set of 'state operations' to perform. Depending on implementation, this may end up performing a call
+    --- into the master via grpc or otherwise (hence making 'State' ops expensive) but this purely a implementation
+    --- detail that can and likely will change in the future
+    ---
+    --- # Guarantees 
+    --- Antiraid guarantees that all 'state operations'
+    --- of 'ops' will be performed atomically. That is, if any op in `ops` fails, the entire observable 
+    --- db state remains unchanged/all changes from `op` are roll-backed.
     ops: {StateOp}
 }
 
@@ -135,7 +143,7 @@ export type Plugin = {
 
     --- @yields
     ---
-    --- Executes a state operation
+    --- Performs a system call
     syscall: (self: Plugin, args: SyscallArgs) -> SyscallRet,
 
     --- @yields
