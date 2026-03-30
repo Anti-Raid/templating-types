@@ -118,6 +118,16 @@ export type StateOp = {
     scope: string
 }
 
+export type SyscallArgs = {
+    op: "State",
+    ops: {StateOp}
+}
+
+export type SyscallRet = {
+    op: "State",
+    res: {StateExecResult}
+}
+
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime
 export type Plugin = {
     --- Returns a list of VFS's that the runtime exposes
@@ -126,7 +136,7 @@ export type Plugin = {
     --- @yields
     ---
     --- Executes a state operation
-    execstate: (self: Plugin, op: {StateOp}) -> {StateExecResult},
+    syscall: (self: Plugin, args: SyscallArgs) -> SyscallRet,
 
     --- @yields
     ---

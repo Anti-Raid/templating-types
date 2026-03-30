@@ -68,7 +68,7 @@ local function KeyManager<T>(
     local function remove(key: string) 
         if not kexs[key] then return end -- Remove associated key + data
         loop.debugmanager.print("[KeyManager] Removing key: "..key)
-        ctx.Runtime:execstate({{ op = "KvDelete", key = key, scope = basescope }})
+        ctx.Runtime:syscall({op="State", ops={{ op = "KvDelete", key = key, scope = basescope }}})
         kexs[key] = nil
         count = count - 1
         if next(kexs) == nil then 
@@ -118,7 +118,7 @@ local function KeyManager<T>(
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx.Runtime:execstate({{ op = "KvSet", key = key, scope = basescope, value = data }})
+        ctx.Runtime:syscall({op="State", ops={{ op = "KvSet", key = key, scope = basescope, value = data }}})
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -143,10 +143,11 @@ local function KeyManager<T>(
     local function sync() 
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyManager] Syncing keys from tenant state")
-        local kexdata = ctx.Runtime:execstate({{ op = "KvFind", query = "%%", scope = basescope}})
+        local kexdata = ctx.Runtime:syscall({op="State", ops={{ op = "KvFind", query = "%%", scope = basescope}}})
+        assert(kexdata.op == "State")
         local newkexs: {[string]: KeyRecord<T>} = {}
         local newcount = 0
-        for _, item in kexdata do
+        for _, item in kexdata.res do
             if item.op ~= "Kv" then continue end
             local record = item.value :: T
             newkexs[item.key] = table.freeze{

@@ -90,7 +90,7 @@ local function KeyExpiryManager<T>(
         loop.debugmanager.print("[KeyExpiryManager] Removing key expiry: "..key)
         
         -- First, drop the key, this may error in which we halt immediately
-        ctx.Runtime:execstate({{ op = "KvDelete", key = key, scope = systemscope }})
+        ctx.Runtime:syscall({op="State", ops={{ op = "KvDelete", key = key, scope = systemscope }}})
         local handle = handles[key]
         if handle then 
             handle:cancel() -- Cancel the handle
@@ -227,7 +227,7 @@ local function KeyExpiryManager<T>(
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx.Runtime:execstate({{
+        ctx.Runtime:syscall({op="State", ops={{
             op = "KvSet",
             key = key,
             scope = systemscope,
@@ -235,7 +235,7 @@ local function KeyExpiryManager<T>(
                 expiresat = record.expiresat,
                 data = data,
             }
-        }})
+        }}})
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -261,10 +261,11 @@ local function KeyExpiryManager<T>(
         if #delayqueue > 0 then delayqueue:clear() end -- Clear existing delayqueue entries
         -- Fetch existing key expiries from kv
         loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
-        local kexdata = ctx.Runtime:execstate({{ op = "KvFind", query = "%%", scope = systemscope}})
+        local kexdata = ctx.Runtime:syscall({op="State", ops = {{ op = "KvFind", query = "%%", scope = systemscope}}})
+        assert(kexdata.op == "State")
         local newkexs: {[string]: ExpiringKeyRecord<T>} = {}
         local newcount = 0
-        for _, item in kexdata do
+        for _, item in kexdata.res do
             if item.op ~= "Kv" then continue end
             local record = item.value :: {
                 expiresat: datetime.DateTime,
