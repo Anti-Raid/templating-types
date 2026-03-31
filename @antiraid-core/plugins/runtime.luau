@@ -3,6 +3,7 @@
 
 local datetime = require("@antiraid/datetime")
 local typesext = require"@antiraid/typesext"
+local blob = require"@antiraid-core/blob"
 local khronosvalue = require "@antiraid-core/khronosvalue"
 
 --- A result from a state operation
@@ -118,6 +119,29 @@ export type StateOp = {
     scope: string
 }
 
+--- Metadata about an object.
+export type ObjectMetadata = {
+    read key: string,
+    read last_modified: datetime.DateTime?,
+    read size: number,
+    read etag: string?,
+}
+
+export type ObjectStorageCall = 
+    | { op: "ListFileMetas", prefix: string? }
+    | { op: "GetFileMeta", key: string }
+    | { op: "GetFileUrl", key: string, expiry: datetime.TimeDelta }
+    | { op: "DownloadFile", key: string }
+    | { op: "UploadFile", key: string, data: blob.BlobTaker }
+    | { op: "DeleteFile", key: string }
+
+export type ObjectStorageResult = 
+    | { op: "ObjectMetadata", objs: { ObjectMetadata } }
+    | { op: "FileUrl", url: string }
+    | { op: "Blob", data: blob.Blob }
+    | { op: "Ack" }
+
+--- The arguments to be passed into a system call
 export type SyscallArgs = {
     op: "State",
     --- A set of 'state operations' to perform. Depending on implementation, this may end up performing a call
@@ -129,11 +153,27 @@ export type SyscallArgs = {
     --- of 'ops' will be performed atomically. That is, if any op in `ops` fails, the entire observable 
     --- db state remains unchanged/all changes from `op` are roll-backed.
     ops: {StateOp}
+} | {
+    op: "ObjectStorage",
+    --- Object storage is mainly useful over kv when dealing with blobs of data
+    --- (otherwise, kv is better+easier to use as it has support for serializing most AntiRaid types
+    --- along with atomicity guarantees). 
+    ---
+    --- As an example, datetimes should be stored using object storage for automatic
+    --- conversion to/from the storage bit for you while object storage can be used for storing
+    --- backups etc.
+    ---
+    --- Object storage also works over HTTP calls and may be slower than key-value which 
+    --- may use a custom binary protocol or other optimizations
+    req: ObjectStorageCall
 }
 
 export type SyscallRet = {
     op: "State",
     res: {StateExecResult}
+} | {
+    op: "ObjectStorage",
+    res: ObjectStorageResult
 }
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime

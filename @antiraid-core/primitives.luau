@@ -1,7 +1,6 @@
 local discord = require("@discord-types/apiTypes")
 local runtimeP = require("@antiraid-core/plugins/runtime")
 local discordP = require("@antiraid-core/plugins/discord")
-local objectstorageP = require("@antiraid-core/plugins/objectstorage")
 local httpclientP = require("@antiraid-core/plugins/httpclient")
 
 -- AntiRaid primitives
@@ -48,8 +47,6 @@ export type TemplateContext = {
     read Runtime: runtimeP.Plugin,
     --- Discord plugin
     read Discord: discordP.Plugin,
-    --- Object Storage plugin
-    read ObjectStorage: objectstorageP.Plugin,
     --- HTTP Client plugin
     read HTTPClient: httpclientP.Plugin,
 
