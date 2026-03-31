@@ -141,6 +141,10 @@ export type ObjectStorageResult =
     | { op: "Blob", data: blob.Blob }
     | { op: "Ack" }
 
+export type CdnCall = { op: "DownloadFile", url: string, as_buffer: boolean } -- only discord cdn urls are supported
+
+export type CdnResult = { op: "Blob", data: blob.Blob } | { op: "Buffer", data: buffer }
+
 --- The arguments to be passed into a system call
 export type SyscallArgs = {
     op: "State",
@@ -159,13 +163,17 @@ export type SyscallArgs = {
     --- (otherwise, kv is better+easier to use as it has support for serializing most AntiRaid types
     --- along with atomicity guarantees). 
     ---
-    --- As an example, datetimes should be stored using object storage for automatic
+    --- As an example, datetimes should be stored using kv for automatic
     --- conversion to/from the storage bit for you while object storage can be used for storing
     --- backups etc.
     ---
     --- Object storage also works over HTTP calls and may be slower than key-value which 
     --- may use a custom binary protocol or other optimizations
     req: ObjectStorageCall
+} | {
+    op: "Cdn",
+    --- Cdn allows for downloading Discord CDN urls *only*
+    req: CdnCall
 }
 
 export type SyscallRet = {
@@ -174,6 +182,9 @@ export type SyscallRet = {
 } | {
     op: "ObjectStorage",
     res: ObjectStorageResult
+} | {
+    op: "Cdn",
+    res: CdnResult
 }
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime
