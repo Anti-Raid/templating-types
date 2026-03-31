@@ -4,16 +4,7 @@ local blob = require("@antiraid-core/blob")
 local runtime = require("@antiraid-core/plugins/runtime")
 local Primitives = require"@antiraid-core/primitives"
 
-export type Bucket = {    
-    read listfiles: (prefix: string?) -> {runtime.ObjectMetadata},
-    read getfile: (path: string) -> runtime.ObjectMetadata?,
-    read downloadfile: (path: string) -> blob.Blob,
-    read getfileurl: (path: string, expiry: datetime.TimeDelta) -> string,
-    read uploadfile: (path: string, data: blob.BlobTaker) -> (),
-    read deletefile: (path: string) -> (),
-}
-
---- Helper function to execute and unwrap the syscall
+--- Helper function to execute and unwrap object storage syscall
 local function objstorecall(ctx: Primitives.TemplateContext, req: runtime.ObjectStorageCall): runtime.ObjectStorageResult
     local result = ctx.Runtime:syscall({
         op = "ObjectStorage",
@@ -26,6 +17,29 @@ local function objstorecall(ctx: Primitives.TemplateContext, req: runtime.Object
 
     return result.res
 end
+
+--- Helper function to execute and unwrap cdn syscall
+local function cdncall(ctx: Primitives.TemplateContext, req: runtime.CdnCall): runtime.CdnResult
+    local result = ctx.Runtime:syscall({
+        op = "Cdn",
+        req = req
+    })
+
+    if result.op ~= "Cdn" then
+        error(`expected Cdn response`, 3)
+    end
+
+    return result.res
+end
+
+export type Bucket = {    
+    read listfiles: (prefix: string?) -> {runtime.ObjectMetadata},
+    read getfile: (path: string) -> runtime.ObjectMetadata?,
+    read downloadfile: (path: string) -> blob.Blob,
+    read getfileurl: (path: string, expiry: datetime.TimeDelta) -> string,
+    read uploadfile: (path: string, data: blob.BlobTaker) -> (),
+    read deletefile: (path: string) -> (),
+}
 
 --- Creates a new bucket interface
 local function Bucket(ctx: Primitives.TemplateContext): Bucket
@@ -111,4 +125,44 @@ local function Bucket(ctx: Primitives.TemplateContext): Bucket
     }
 end
 
-return Bucket
+export type Cdn = {    
+    read downloadfromdiscordasbuffer: (url: string) -> buffer,
+    read downloadfromdiscordasblob: (url: string) -> blob.Blob,
+}
+
+local function Cdn(ctx: Primitives.TemplateContext): Cdn 
+    local function downloadfromdiscordasbuffer(url: string): buffer
+        local res = cdncall(ctx, {
+            op = "DownloadFile",
+            url = url,
+            as_buffer = true
+        })
+
+        if res.op ~= "Buffer" then
+            error(`[Cdn] downloadfromdiscordasbuffer failed: unexpected response '{res.op}'`, 2)
+        end
+
+        return res.data
+    end
+
+    local function downloadfromdiscordasblob(url: string): blob.Blob
+        local res = cdncall(ctx, {
+            op = "DownloadFile",
+            url = url,
+            as_buffer = false
+        })
+
+        if res.op ~= "Blob" then
+            error(`[Cdn] downloadfromdiscordasblob failed: unexpected response '{res.op}'`, 2)
+        end
+
+        return res.data
+    end
+
+    return table.freeze{
+        downloadfromdiscordasbuffer = downloadfromdiscordasbuffer,
+        downloadfromdiscordasblob = downloadfromdiscordasblob
+    }
+end
+
+return { Bucket = Bucket, Cdn = Cdn }

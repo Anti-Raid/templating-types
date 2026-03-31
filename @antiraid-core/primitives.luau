@@ -1,7 +1,6 @@
 local discord = require("@discord-types/apiTypes")
 local runtimeP = require("@antiraid-core/plugins/runtime")
 local discordP = require("@antiraid-core/plugins/discord")
-local httpclientP = require("@antiraid-core/plugins/httpclient")
 
 -- AntiRaid primitives
 -- 
@@ -47,8 +46,6 @@ export type TemplateContext = {
     read Runtime: runtimeP.Plugin,
     --- Discord plugin
     read Discord: discordP.Plugin,
-    --- HTTP Client plugin
-    read HTTPClient: httpclientP.Plugin,
 
     --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
     read memory_limit: u64,
