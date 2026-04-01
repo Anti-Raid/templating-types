@@ -1,10 +1,10 @@
 --!strict
---- Proposed interface (not yet implemented)
 
 local datetime = require("@antiraid/datetime")
 local typesext = require"@antiraid/typesext"
 local blob = require"@antiraid-core/blob"
 local khronosvalue = require "@antiraid-core/khronosvalue"
+local discord = require("@discord-types/apiTypes")
 
 --- A result from a state operation
 export type StateExecResult = {
@@ -70,6 +70,16 @@ export type TenantState = {
     events: {string},
     --- Flags (such as whether we need to load in more data etc.)
     flags: number
+}
+
+export type Id = {
+    read tenant_type: "guild" | "user",
+    read tenant_id: string
+}
+
+export type BaseTenantData = {
+    read bot: discord.UserObject,
+    read id: Id,
 }
 
 export type StateOp = {

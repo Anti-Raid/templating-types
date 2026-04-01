@@ -28,6 +28,9 @@ export type TemplateLoopManager = {
     --- Debug logging
     read debugmanager: DebugManager,
 
+    --- Base tenant data
+    read btd: runtime.BaseTenantData,
+
     --- Attach an isolate to the loop
     read attachisolate: (isolate: isolate.Isolate) -> (),
 
