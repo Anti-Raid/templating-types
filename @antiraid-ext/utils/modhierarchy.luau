@@ -4,6 +4,7 @@ local kc = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local typesext = require "@antiraid/typesext"  
 local userinfo = require "./userinfo"
+local tloop = require"@antiraid-core/templateloop"
 
 local SupportedAltPerms: {[string]: permissions.Permissions} = {
     ["moderation.sting"] = "ModerateMembers" :: "ModerateMembers",
@@ -43,10 +44,11 @@ local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string)
 end
 
 local function canBotDoInChannel(channelId: string, ctx: Primitives.TemplateContext, botNeededPerms: typesext.U64Convertibles) 
+    local loop = tloop.getRunningLoop(ctx)
     return ctx.Discord:antiraid_check_channel_permissions({
         needed_permissions = tostring(botNeededPerms),
         channel_id = channelId,
-        user_id = ctx.current_user.id,
+        user_id = loop.btd.bot.id,
     })
 end
 

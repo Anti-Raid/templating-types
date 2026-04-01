@@ -1,4 +1,3 @@
-local discord = require("@discord-types/apiTypes")
 local runtimeP = require("@antiraid-core/plugins/runtime")
 local discordP = require("@antiraid-core/plugins/discord")
 
@@ -49,8 +48,6 @@ export type TemplateContext = {
 
     --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
     read memory_limit: u64,
-    --- Returns AntiRaid's discord user object [the current discord bot user driving the template].
-    read current_user: discord.UserObject,
 
     --- The global/common store table shared across all templates within the same
     --- server
