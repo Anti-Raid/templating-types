@@ -45,7 +45,7 @@ end
 
 local function canBotDoInChannel(channelId: string, ctx: Primitives.TemplateContext, botNeededPerms: typesext.U64Convertibles) 
     local loop = tloop.getRunningLoop(ctx)
-    return ctx.Discord:antiraid_check_channel_permissions({
+    return loop.discord:antiraid_check_channel_permissions({
         needed_permissions = tostring(botNeededPerms),
         channel_id = channelId,
         user_id = loop.btd.bot.id,
@@ -53,6 +53,7 @@ local function canBotDoInChannel(channelId: string, ctx: Primitives.TemplateCont
 end
 
 local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinfo: userinfo.UserInfo, targetId: string, cap: string)
+    local loop = tloop.getRunningLoop(ctx)
     if userinfo.userid == targetId then
         error("You cannot moderate yourself!")
     end
@@ -84,7 +85,7 @@ local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinf
     end
 
     -- Check hierarchy
-    ctx.Discord:antiraid_check_permissions_and_hierarchy({
+    loop.discord:antiraid_check_permissions_and_hierarchy({
         needed_permissions = "0",
         target_id = targetId,
         user_id = userinfo.userid,

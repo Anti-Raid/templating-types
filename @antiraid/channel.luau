@@ -1,13 +1,27 @@
 local datetime = require"@antiraid/datetime"
 
+export type StreamSender<T> = {
+    --- Once called, sends a value to the channel ignoring any errors
+    read send: (self: StreamSender<T>, message: T) -> (),
+    --- Once called, sends a value to the channel erroring if the channel is already closed
+    read sendstrict: (self: StreamSender<T>, message: T) -> (),
+    --- Returns if the underlying stream channel is closed
+    read isclosed: (self: StreamSender<T>) -> boolean,
+}
+
 --- A oneshot channel allows sending and receiving a single value across tasks (Lua threads etc.)
-export type OneshotChannel<T> = {
-    --- Once called, sends a value to the channel and destroys it. Errors if receiver is destroyed before sending a value
-    read send: (self: OneshotChannel<T>, message: T) -> (),
-    --- Waits for a value to be sent to the channel and receives it. Errors if sender is destroyed before sending a value
-    read recv: (self: OneshotChannel<T>) -> T,
-    --- Waits for a value to be sent to the channel and receives it, with a timeout. Errors if sender is destroyed before sending a value or if timeout is reached
-    read recvtimeout: (self: OneshotChannel<T>, timeout: datetime.TimeDelta) -> T,
+export type StreamReceiver<T> = {
+    --- Waits for a value to be sent to the channel and receives it.
+    read recv: (self: StreamReceiver<T>) -> T,
+    --- Waits for a value to be sent to the channel and receives it, with a timeout.
+    read recvtimeout: (self: StreamReceiver<T>, timeout: datetime.TimeDelta) -> T,
+    --- Waits for a batch of messages or until timeout
+    read recvbatch: (self: StreamReceiver<T>, expecteditems: number, timeout: datetime.TimeDelta) -> ({T}, "completed" | "closed" | "timeout")
+}
+
+export type Stream<T> = {
+    read tx: StreamSender<T>,
+    read rx: StreamReceiver<T>
 }
 
 --- A delay channel allows sending values that will be received after a specified delay
@@ -40,7 +54,7 @@ export type KeyHandle<T> = typeof(setmetatable({} :: {
     __eq: (self: KeyHandle<T>, other: KeyHandle<T>) -> boolean,
 }))
 
-local function OneshotChannel<T>(): OneshotChannel<T>
+local function Stream<T>(): Stream<T>
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -48,15 +62,7 @@ local function DelayChannel<T>(): DelayChannel<T>
     error("Implemented internally in AntiRaid runtime!")
 end
 
---- Waits on multiple oneshot channels and returns the values received from the ones that completed before the timeout
----
---- Returns a list of the received values and a boolean indicating whether the timeout was reached
-local function selectoneshots<T>(channels: {OneshotChannel<T>}, timeout: datetime.TimeDelta): ({T}, boolean)
-    error("Implemented internally in AntiRaid runtime!")
-end
-
 return {
-    OneshotChannel = OneshotChannel,
+    Stream = Stream,
     DelayChannel = DelayChannel,
-    selectoneshots = selectoneshots,
 }

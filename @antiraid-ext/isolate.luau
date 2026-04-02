@@ -18,9 +18,8 @@ export type Isolate = {
     --- The global table of the isolate.
     read global_table: {[any]: any},
 
-    --- Spawns a task to dispatch an event to this isolate. If `event` is passed, the sub-context
-    --- created for the template will have the event set to it.
-    read dispatchEvent: (rootctx: Primitives.TemplateContext, event: Primitives.Event) -> channel.OneshotChannel<DispatchResult>,
+    --- Spawns a task to dispatch an event to this isolate.
+    read dispatchEvent: (rootctx: Primitives.TemplateContext, event: Primitives.Event, stream: channel.Stream<DispatchResult>) -> (),
 
     --- Fires an event 'in-thread' and returns the result directly.
     read runEvent: (rootctx: Primitives.TemplateContext, event: Primitives.Event) -> any,
@@ -61,15 +60,11 @@ local function new(id: string, vfs: typesext.Vfs, expose: {[any]: any}): Isolate
 
     isolate.id = id
     isolate.global_table = globaltable
-    isolate.dispatchEvent = function(rootctx: Primitives.TemplateContext, event: Primitives.Event): channel.OneshotChannel<DispatchResult>
-        local chan = channel.OneshotChannel() :: channel.OneshotChannel<DispatchResult>
-
+    isolate.dispatchEvent = function(rootctx: Primitives.TemplateContext, event: Primitives.Event, stream: channel.Stream<DispatchResult>): ()
         task.spawn(function() 
             local res = isolate.runEventResult(rootctx, event)
-            chan:send(res)
+            stream.tx:send(res)
         end)
-
-        return chan
     end
     isolate.runEvent = function(rootctx: Primitives.TemplateContext, event: Primitives.Event): any 
         local entrypoint = entrypointloader.get()

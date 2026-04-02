@@ -1,5 +1,4 @@
 local runtimeP = require("@antiraid-core/plugins/runtime")
-local discordP = require("@antiraid-core/plugins/discord")
 
 -- AntiRaid primitives
 -- 
@@ -43,8 +42,6 @@ export type Event = {
 export type TemplateContext = {
     --- Runtime plugin
     read Runtime: runtimeP.Plugin,
-    --- Discord plugin
-    read Discord: discordP.Plugin,
 
     --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
     read memory_limit: u64,

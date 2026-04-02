@@ -4,23 +4,11 @@ local discord = require("@antiraid-core/plugins/discord")
 local discordRest = require("@discord-types/restTypes")
 local discordApi = require("@discord-types/apiTypes")
 local Primitives = require("@antiraid-core/primitives")
-local tloop = require"@antiraid-core/templateloop"
 
 --- The fully typed, sandboxed Discord API Client for template execution
 export type DiscordClient = {
     -- Internal State
     _ctx: Primitives.TemplateContext,
-    _tloop: tloop.TemplateLoopManager,
-
-    -- ==========================================
-    -- Identity / Environment
-    -- ==========================================
-    
-    --- Returns the guild id or `nil` if not in a guild context
-    guild_id: (self: DiscordClient) -> string?,
-    
-    --- Returns the bot's user id
-    bot_id: (self: DiscordClient) -> string,
 
     -- ==========================================
     -- AntiRaid Helpers
@@ -321,20 +309,6 @@ function DiscordClientMethods:_call(req: any): any
 end
 
 -- ==========================================
--- Identity / Environment
--- ==========================================
-function DiscordClientMethods:guild_id()
-    if self._tloop.btd.id.tenant_type == "guild" then
-        return self._tloop.btd.id.tenant_id
-    end
-    return nil
-end
-
-function DiscordClientMethods:bot_id()
-    return self._tloop.btd.bot.id
-end
-
--- ==========================================
 -- AntiRaid Helpers
 -- ==========================================
 function DiscordClientMethods:antiraid_check_reason(reason)
@@ -619,7 +593,6 @@ local function DiscordExecutor(ctx: Primitives.TemplateContext): DiscordClient
     -- Instead of recreating 75 closures, we instantiate a tiny table and slap a metatable on it.
     local client = {
         _ctx = ctx,
-        _tloop = tloop.getRunningLoop(ctx)
     }
     
     return (setmetatable(client, DiscordClientMethods) :: any) :: DiscordClient

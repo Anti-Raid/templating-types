@@ -176,7 +176,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
 
     local function editoriginalresponse(data: discordRestTypes.EditWebhookMessageRequest)
         assert(hasresponded, "You must first reply to a interaction before editing it")
-        return ctx.Discord:edit_original_interaction_response({
+        return framework.loop.discord:edit_original_interaction_response({
             interaction_token = interaction.token,
             data = data,
         })
@@ -184,13 +184,13 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
 
     local function createoriginalresponse(data: discordRestTypes.CreateInteractionRequest)
         assert(not hasresponded, "You cannot create multiple original responses")
-        local res = ctx.Discord:create_interaction_response({
+        framework.loop.discord:create_interaction_response({
             interaction_id = interaction.id,
             interaction_token = interaction.token,
             data = data,
         })
         hasresponded = true
-        return res
+        return nil
     end
 
     local function ack() 
@@ -220,7 +220,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
         assert(hasresponded, "You must first respond to the interaction before sending a followup")
         -- Note: Ensure this matches the exact method name in your Discord wrapper 
         -- (e.g., create_followup_message or execute_webhook)
-        return ctx.Discord:create_followup_message({
+        return framework.loop.discord:create_followup_message({
             interaction_token = interaction.token,
             data = data,
         })

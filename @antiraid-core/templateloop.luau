@@ -1,6 +1,7 @@
 local Primitives = require"./primitives"
 local runtime = require"./plugins/runtime"
 local isolate = require"@antiraid-ext/isolate"
+local Discord = require"@antiraid-ext/discord"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
 
@@ -36,6 +37,9 @@ export type TemplateLoopManager = {
 
     --- Remove/detach an isolate from the loop
     read detachisolate: (id: string) -> (),
+
+    --- Returns the underlying discord client wrapper
+    read discord: Discord.DiscordClient
 }
 
 --- Debug logging
