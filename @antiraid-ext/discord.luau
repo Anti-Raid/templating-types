@@ -8,606 +8,621 @@ local tloop = require"@antiraid-core/templateloop"
 
 --- The fully typed, sandboxed Discord API Client for template execution
 export type DiscordClient = {
+    -- Internal State
+    _ctx: Primitives.TemplateContext,
+    _tloop: tloop.TemplateLoopManager,
+
     -- ==========================================
     -- Identity / Environment
     -- ==========================================
     
     --- Returns the guild id or `nil` if not in a guild context
-    guild_id: () -> string?,
+    guild_id: (self: DiscordClient) -> string?,
     
     --- Returns the bot's user id
-    bot_id: () -> string,
+    bot_id: (self: DiscordClient) -> string,
 
     -- ==========================================
     -- AntiRaid Helpers
     -- ==========================================
     
     --- Checks an audit log reason for validity, errors out if invalid
-    antiraid_check_reason: (reason: string) -> (),
+    antiraid_check_reason: (self: DiscordClient, reason: string) -> (),
     
     --- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server
-    antiraid_check_permissions: (data: discord.AntiRaidCheckPermissionsOptions) -> discord.AntiRaidCheckPermissionsResponse,
+    antiraid_check_permissions: (self: DiscordClient, data: discord.AntiRaidCheckPermissionsOptions) -> discord.AntiRaidCheckPermissionsResponse,
 
     --- Checks if a specified user has the specified permissions in the server and is above the target user in terms of hierarchy
-    antiraid_check_permissions_and_hierarchy: (data: discord.AntiRaidCheckPermissionsAndHierarchyOptions) -> discord.AntiRaidCheckPermissionsResponse,
+    antiraid_check_permissions_and_hierarchy: (self: DiscordClient, data: discord.AntiRaidCheckPermissionsAndHierarchyOptions) -> discord.AntiRaidCheckPermissionsResponse,
 
     --- Checks if a specified user has the specified permissions in the channel `data.channel_id`
-    antiraid_check_channel_permissions: (data: discord.AntiRaidCheckChannelPermissionsOptions) -> discord.AntiRaidCheckChannelPermissionsResponse,
+    antiraid_check_channel_permissions: (self: DiscordClient, data: discord.AntiRaidCheckChannelPermissionsOptions) -> discord.AntiRaidCheckChannelPermissionsResponse,
 
     --- Fetches the member and resolved permissions of a user in the guild
-    antiraid_get_fused_member: (ids: {discordApi.Snowflake}) -> discord.LazyAntiraidFusedMember,
+    antiraid_get_fused_member: (self: DiscordClient, ids: {discordApi.Snowflake}) -> discord.LazyAntiraidFusedMember,
 
     -- ==========================================
     -- Audit Logs
     -- ==========================================
     
     --- Gets the audit logs
-    get_audit_logs: (data: discord.GetAuditLogOptions) -> discord.LazyAuditLogObject,
+    get_audit_logs: (self: DiscordClient, data: discord.GetAuditLogOptions) -> discord.LazyAuditLogObject,
 
     -- ==========================================
     -- Auto Moderation
     -- ==========================================
     
     --- Lists the auto moderation rules available
-    list_auto_moderation_rules: () -> discord.LazyAutomoderationRuleObjectList,
+    list_auto_moderation_rules: (self: DiscordClient) -> discord.LazyAutomoderationRuleObjectList,
 
     --- Gets an auto moderation rule by ID
-    get_auto_moderation_rule: (data: discord.GetAutoModerationRuleOptions) -> discord.LazyAutomoderationRuleObject,
+    get_auto_moderation_rule: (self: DiscordClient, data: discord.GetAutoModerationRuleOptions) -> discord.LazyAutomoderationRuleObject,
 
     --- Creates an auto moderation rule
-    create_auto_moderation_rule: (data: discord.CreateAutoModerationRuleOptions) -> discord.LazyAutomoderationRuleObject,
+    create_auto_moderation_rule: (self: DiscordClient, data: discord.CreateAutoModerationRuleOptions) -> discord.LazyAutomoderationRuleObject,
 
     --- Edits an auto moderation rule
-    edit_auto_moderation_rule: (data: discord.EditAutoModerationRuleOptions) -> discord.LazyAutomoderationRuleObject,
+    edit_auto_moderation_rule: (self: DiscordClient, data: discord.EditAutoModerationRuleOptions) -> discord.LazyAutomoderationRuleObject,
 
     --- Deletes an auto moderation rule
-    delete_auto_moderation_rule: (data: discord.DeleteAutoModerationRuleOptions) -> (),
+    delete_auto_moderation_rule: (self: DiscordClient, data: discord.DeleteAutoModerationRuleOptions) -> (),
     
     -- ==========================================
     -- Channels
     -- ==========================================
     
     --- Gets a channel
-    get_channel: (channel_id: string) -> discord.LazyChannelObject, 
+    get_channel: (self: DiscordClient, channel_id: string) -> discord.LazyChannelObject, 
 
     --- Edits a channel
-    edit_channel: (data: discord.EditChannelOptions) -> discord.LazyChannelObject,
+    edit_channel: (self: DiscordClient, data: discord.EditChannelOptions) -> discord.LazyChannelObject,
 
     --- Deletes a channel
-    delete_channel: (data: discord.DeleteChannelOptions) -> discord.LazyChannelObject,
+    delete_channel: (self: DiscordClient, data: discord.DeleteChannelOptions) -> discord.LazyChannelObject,
 
     --- Edits channel permissions for a target
-    edit_channel_permissions: (data: discord.EditChannelPermissionsOptions) -> (),
+    edit_channel_permissions: (self: DiscordClient, data: discord.EditChannelPermissionsOptions) -> (),
 
     --- Gets all invites a channel has
-    get_channel_invites: () -> discord.LazyInviteObjectList,
+    get_channel_invites: (self: DiscordClient) -> discord.LazyInviteObjectList,
 
     --- Creates a channel invite
-    create_channel_invite: (data: discord.CreateChannelInviteOptions) -> discord.LazyInviteObject,
+    create_channel_invite: (self: DiscordClient, data: discord.CreateChannelInviteOptions) -> discord.LazyInviteObject,
 
     --- Deletes a channel permission
-    delete_channel_permission: (data: discord.DeleteChannelPermissionOptions) -> (),
+    delete_channel_permission: (self: DiscordClient, data: discord.DeleteChannelPermissionOptions) -> (),
 
     --- Follows an announcement channel
-    follow_announcement_channel: (data: discord.FollowAnnouncementChannelOptions) -> discord.LazyChannelObject,
+    follow_announcement_channel: (self: DiscordClient, data: discord.FollowAnnouncementChannelOptions) -> discord.LazyChannelObject,
 
     -- ==========================================
     -- Guild Base
     -- ==========================================
     
     --- Gets the guild
-    get_guild: () -> discord.LazyGuildObject,
+    get_guild: (self: DiscordClient) -> discord.LazyGuildObject,
 
     --- Gets the guilds preview
-    get_guild_preview: () -> discord.LazyGuildPreviewObject,
+    get_guild_preview: (self: DiscordClient) -> discord.LazyGuildPreviewObject,
 
     --- Edits the guild
-    modify_guild: (data: discord.ModifyGuildOptions) -> discord.LazyGuildObject,
+    modify_guild: (self: DiscordClient, data: discord.ModifyGuildOptions) -> discord.LazyGuildObject,
 
     --- Gets the guild channels
-    get_guild_channels: () -> discord.LazyChannelsObject,
+    get_guild_channels: (self: DiscordClient) -> discord.LazyChannelsObject,
 
     --- Creates a guild channel
-    create_guild_channel: (data: discord.CreateChannelOptions) -> discord.LazyChannelObject,
+    create_guild_channel: (self: DiscordClient, data: discord.CreateChannelOptions) -> discord.LazyChannelObject,
 
-    --- Modify guild channel positions
-    modify_guild_channel_positions: (data: {discordRest.ModifyGuildChannelPositionsRequest}) -> (),
+    --- Modify guild channel positions. Only channels to be modified are required to be passed in `data`.
+    modify_guild_channel_positions: (self: DiscordClient, data: {discordRest.ModifyGuildChannelPositionsRequest}) -> (),
 
     --- List active guild threads
-    list_active_guild_threads: () -> discord.LazyActiveGuildThreadsResponse,
+    list_active_guild_threads: (self: DiscordClient) -> discord.LazyActiveGuildThreadsResponse,
 
     -- ==========================================
     -- Guild Members & Bans
     -- ==========================================
 
     --- Gets a guild member by ID
-    get_guild_member: (user_id: string) -> discord.LazyGuildMemberObject,
+    get_guild_member: (self: DiscordClient, user_id: string) -> discord.LazyGuildMemberObject,
 
     --- List all guild members
-    list_guild_members: (data: discord.GetGuildMembersOptions) -> discord.LazyGuildMembersObject,
+    list_guild_members: (self: DiscordClient, data: discord.GetGuildMembersOptions) -> discord.LazyGuildMembersObject,
 
     --- Search guild members
-    search_guild_members: (data: discord.SearchGuildMembersOptions) -> discord.LazyGuildMembersObject,
+    search_guild_members: (self: DiscordClient, data: discord.SearchGuildMembersOptions) -> discord.LazyGuildMembersObject,
 
-    --- Modify guild member (includes timing out)
-    modify_guild_member: (data: discord.ModifyGuildMemberOptions) -> discord.LazyGuildMemberObject,
+    --- Modify guild member (this includes timing out a member using `communication_disabled_until`)
+    modify_guild_member: (self: DiscordClient, data: discord.ModifyGuildMemberOptions) -> discord.LazyGuildMemberObject,
 
     --- Adds a role to a member
-    add_guild_member_role: (data: discord.AddGuildMemberRoleOptions) -> (),
+    add_guild_member_role: (self: DiscordClient, data: discord.AddGuildMemberRoleOptions) -> (),
 
     --- Removes a role from a member
-    remove_guild_member_role: (data: discord.RemoveGuildMemberRoleOptions) -> (),
+    remove_guild_member_role: (self: DiscordClient, data: discord.RemoveGuildMemberRoleOptions) -> (),
 
     --- Removes a member from a guild
-    remove_guild_member: (data: discord.RemoveGuildMemberOptions) -> (),
+    remove_guild_member: (self: DiscordClient, data: discord.RemoveGuildMemberOptions) -> (),
 
     --- Gets guild bans
-    get_guild_bans: (data: discord.GetGuildBansOptions) -> discord.LazyBanObjectList,
+    get_guild_bans: (self: DiscordClient, data: discord.GetGuildBansOptions) -> discord.LazyBanObjectList,
 
     --- Gets a guild ban for a user or nil if it does not exist
-    get_guild_ban: (user_id: discordApi.Snowflake) -> discord.LazyBanOptionalObject,
+    get_guild_ban: (self: DiscordClient, user_id: discordApi.Snowflake) -> discord.LazyBanOptionalObject,
 
     --- Creates a guild ban
-    create_guild_ban: (data: discord.CreateGuildBanOptions) -> (),
+    create_guild_ban: (self: DiscordClient, data: discord.CreateGuildBanOptions) -> (),
 
     --- Removes a guild ban
-    remove_guild_ban: (data: discord.RemoveGuildBanOptions) -> (),
+    remove_guild_ban: (self: DiscordClient, data: discord.RemoveGuildBanOptions) -> (),
 
     -- ==========================================
     -- Guild Roles & Commands
     -- ==========================================
 
     --- Returns the guild roles of a guild
-    get_guild_roles: () -> discord.LazyRolesObject,
+    get_guild_roles: (self: DiscordClient) -> discord.LazyRolesObject,
 
     --- Returns a guild role by ID
-    get_guild_role: (role_id: discordApi.Snowflake) -> discord.LazyRoleObject,
+    get_guild_role: (self: DiscordClient, role_id: discordApi.Snowflake) -> discord.LazyRoleObject,
 
     --- Creates a guild role
-    create_guild_role: (data: discord.CreateGuildRoleOptions) -> discord.LazyRoleObject,
+    create_guild_role: (self: DiscordClient, data: discord.CreateGuildRoleOptions) -> discord.LazyRoleObject,
 
     --- Modify guild role positions
-    modify_guild_role_positions: (data: discord.ModifyRolePositionOptions) -> discord.LazyRolesObject,
+    modify_guild_role_positions: (self: DiscordClient, data: discord.ModifyRolePositionOptions) -> discord.LazyRolesObject,
 
     --- Modifies a guild role
-    modify_guild_role: (data: discord.EditGuildRoleOptions) -> discord.LazyRoleObject,
+    modify_guild_role: (self: DiscordClient, data: discord.EditGuildRoleOptions) -> discord.LazyRoleObject,
 
     --- Deletes a guild role
-    delete_guild_role: (data: discord.DeleteGuildRoleOptions) -> (),
+    delete_guild_role: (self: DiscordClient, data: discord.DeleteGuildRoleOptions) -> (),
 
     --- Gets all guild commands currently registered
-    get_guild_commands: () -> discord.LazyApplicationCommandsObject,
+    get_guild_commands: (self: DiscordClient) -> discord.LazyApplicationCommandsObject,
 
     --- Gets a specific guild command by ID
-    get_guild_command: (command_id: string) -> discord.LazyApplicationCommandObject,
+    get_guild_command: (self: DiscordClient, command_id: string) -> discord.LazyApplicationCommandObject,
 
     --- Creates a guild command
-    create_guild_command: (data: discord.CreateCommandOptions) -> discord.LazyApplicationCommandObject,
+    create_guild_command: (self: DiscordClient, data: discord.CreateCommandOptions) -> discord.LazyApplicationCommandObject,
 
     --- Creates multiple guild commands
-    create_guild_commands: (data: discord.CreateCommandsOptions) -> discord.LazyApplicationCommandsObject,
+    create_guild_commands: (self: DiscordClient, data: discord.CreateCommandsOptions) -> discord.LazyApplicationCommandsObject,
 
     -- ==========================================
     -- Invites
     -- ==========================================
 
     --- Gets an invite by code
-    get_invite: (data: discord.GetInviteOptions) -> discord.LazyInviteObject,
+    get_invite: (self: DiscordClient, data: discord.GetInviteOptions) -> discord.LazyInviteObject,
 
     --- Deletes an invite by code
-    delete_invite: (data: discord.DeleteInviteOptions) -> discord.LazyInviteObject,
+    delete_invite: (self: DiscordClient, data: discord.DeleteInviteOptions) -> discord.LazyInviteObject,
 
     -- ==========================================
     -- Messages
     -- ==========================================
 
     --- Gets messages from a channel
-    get_channel_messages: (data: discord.GetMessagesOptions) -> discord.LazyMessagesObject,
+    get_channel_messages: (self: DiscordClient, data: discord.GetMessagesOptions) -> discord.LazyMessagesObject,
 
     --- Gets a message
-    get_channel_message: (data: discord.GetMessageOptions) -> discord.LazyMessageObject,
+    get_channel_message: (self: DiscordClient, data: discord.GetMessageOptions) -> discord.LazyMessageObject,
 
     --- Creates a message
-    create_message: (data: discord.CreateMessageOptions) -> discord.LazyMessageObject,
+    create_message: (self: DiscordClient, data: discord.CreateMessageOptions) -> discord.LazyMessageObject,
 
     --- Crossposts a message to an announcement channel
-    crosspost_message: (data: discord.CrosspostMessageOptions) -> discord.LazyMessageObject,
+    crosspost_message: (self: DiscordClient, data: discord.CrosspostMessageOptions) -> discord.LazyMessageObject,
     
     --- Edits a message
-    edit_message: (data: discord.EditMessageOptions) -> discord.LazyMessageObject,
+    edit_message: (self: DiscordClient, data: discord.EditMessageOptions) -> discord.LazyMessageObject,
 
     --- Deletes a message
-    delete_message: (data: discord.DeleteMessageOptions) -> (),
+    delete_message: (self: DiscordClient, data: discord.DeleteMessageOptions) -> (),
 
     --- Bulk deletes messages in a channel
-    bulk_delete_messages: (data: discord.BulkDeleteMessagesOptions) -> (),
+    bulk_delete_messages: (self: DiscordClient, data: discord.BulkDeleteMessagesOptions) -> (),
 
     -- ==========================================
     -- Reactions
     -- ==========================================
 
     --- Creates a reaction to a message
-    create_reaction: (data: discord.CreateReactionOptions) -> (),
+    create_reaction: (self: DiscordClient, data: discord.CreateReactionOptions) -> (),
 
     --- Deletes the reaction AntiRaid has made on a message
-    delete_own_reaction: (data: discord.DeleteOwnReactionOptions) -> (),
+    delete_own_reaction: (self: DiscordClient, data: discord.DeleteOwnReactionOptions) -> (),
 
     --- Deletes a reaction another user has made on a message
-    delete_user_reaction: (data: discord.DeleteUserReactionOptions) -> (),
+    delete_user_reaction: (self: DiscordClient, data: discord.DeleteUserReactionOptions) -> (),
 
-    --- Gets all users who have reacted
-    get_reactions: (data: discord.GetReactionsOptions) -> discord.LazyUsersObject,
+    --- Gets all users who have reacted with the provided reaction based on provided criteria
+    get_reactions: (self: DiscordClient, data: discord.GetReactionsOptions) -> discord.LazyUsersObject,
 
     --- Deletes all reactions on a message
-    delete_all_reactions: (data: discord.DeleteAllReactionsOptions) -> (),
+    delete_all_reactions: (self: DiscordClient, data: discord.DeleteAllReactionsOptions) -> (),
 
     --- Deletes all reactions for a specific emoji on a message
-    delete_all_reactions_for_emoji: (data: discord.DeleteAllReactionsForEmojiOptions) -> (),
+    delete_all_reactions_for_emoji: (self: DiscordClient, data: discord.DeleteAllReactionsForEmojiOptions) -> (),
 
     -- ==========================================
     -- Interactions
     -- ==========================================
     
     --- Creates an interaction response
-    create_interaction_response: (data: discord.CreateInteractionResponseOptions) -> (),
+    create_interaction_response: (self: DiscordClient, data: discord.CreateInteractionResponseOptions) -> (),
 
     --- Gets the original interaction response
-    get_original_interaction_response: (interaction_token: string) -> discord.LazyMessageObject,
+    get_original_interaction_response: (self: DiscordClient, interaction_token: string) -> discord.LazyMessageObject,
 
     --- Edits the original interaction response
-    edit_original_interaction_response: (data: discord.EditInteractionResponseOptions) -> discord.LazyMessageObject,
+    edit_original_interaction_response: (self: DiscordClient, data: discord.EditInteractionResponseOptions) -> discord.LazyMessageObject,
 
     --- Deletes the original interaction response
-    delete_original_interaction_response: (interaction_token: string) -> (),
+    delete_original_interaction_response: (self: DiscordClient, interaction_token: string) -> (),
 
     --- Gets a followup interaction response
-    get_followup_message: (data: discord.GetFollowupMessageOptions) -> discord.LazyMessageObject,
+    get_followup_message: (self: DiscordClient, data: discord.GetFollowupMessageOptions) -> discord.LazyMessageObject,
 
     --- Creates a followup interaction response
-    create_followup_message: (data: discord.CreateFollowupMessageOptions) -> discord.LazyMessageObject,
+    create_followup_message: (self: DiscordClient, data: discord.CreateFollowupMessageOptions) -> discord.LazyMessageObject,
 
     --- Edits a followup interaction response
-    edit_followup_message: (data: discord.EditFollowupMessageOptions) -> discord.LazyMessageObject,
+    edit_followup_message: (self: DiscordClient, data: discord.EditFollowupMessageOptions) -> discord.LazyMessageObject,
 
     --- Deletes a followup interaction response
-    delete_followup_message: (data: discord.DeleteFollowupMessageOptions) -> (),
+    delete_followup_message: (self: DiscordClient, data: discord.DeleteFollowupMessageOptions) -> (),
 
     -- ==========================================
     -- Webhooks
     -- ==========================================
 
     --- Creates a webhook in a channel
-    create_webhook: (data: { channel_id: string, data: discordRest.CreateWebhookRequest, reason: string? }) -> lazy.Lazy<discordApi.WebhookObject>,
+    create_webhook: (self: DiscordClient, data: { channel_id: string, data: discordRest.CreateWebhookRequest, reason: string? }) -> lazy.Lazy<discordApi.WebhookObject>,
 
     --- Gets all webhooks in a channel
-    get_channel_webhooks: (channel_id: string) -> lazy.Lazy<{discordApi.WebhookObject}>,
+    get_channel_webhooks: (self: DiscordClient, channel_id: string) -> lazy.Lazy<{discordApi.WebhookObject}>,
 
     --- Gets all webhooks in the guild
-    get_guild_webhooks: () -> lazy.Lazy<{discordApi.WebhookObject}>,
+    get_guild_webhooks: (self: DiscordClient) -> lazy.Lazy<{discordApi.WebhookObject}>,
 
     --- Gets a specific webhook
-    get_webhook: (webhook_id: string) -> lazy.Lazy<discordApi.WebhookObject>,
+    get_webhook: (self: DiscordClient, webhook_id: string) -> lazy.Lazy<discordApi.WebhookObject>,
 
     --- Modifies a webhook
-    modify_webhook: (data: { webhook_id: string, data: discordRest.ModifyWebhookRequest, reason: string? }) -> lazy.Lazy<discordApi.WebhookObject>,
+    modify_webhook: (self: DiscordClient, data: { webhook_id: string, data: discordRest.ModifyWebhookRequest, reason: string? }) -> lazy.Lazy<discordApi.WebhookObject>,
 
     --- Deletes a webhook
-    delete_webhook: (webhook_id: string) -> (),
+    delete_webhook: (self: DiscordClient, webhook_id: string) -> (),
 
     --- Executes a webhook
-    execute_webhook: (data: { webhook_id: string, webhook_token: string, data: discordRest.ExecuteWebhookRequest }) -> lazy.Lazy<discordApi.MessageObject?>,
+    execute_webhook: (self: DiscordClient, data: { webhook_id: string, webhook_token: string, data: discordRest.ExecuteWebhookRequest }) -> lazy.Lazy<discordApi.MessageObject?>,
 }
+
+-- Pre-allocate the shared metatable exactly once
+local DiscordClientMethods = {}
+DiscordClientMethods.__index = DiscordClientMethods
+
+-- Internal Syscall Helper (Now a method)
+function DiscordClientMethods:_call(req: any): any
+    local res = self._ctx.Runtime:syscall({
+        op = "Discord",
+        req = req
+    })
+
+    if res.op ~= "Discord" or res.req.op ~= req.op then
+        error(`invalid op returned`, 3)
+    end
+
+    return (res.req :: any).res
+end
+
+-- ==========================================
+-- Identity / Environment
+-- ==========================================
+function DiscordClientMethods:guild_id()
+    if self._tloop.btd.id.tenant_type == "guild" then
+        return self._tloop.btd.id.tenant_id
+    end
+    return nil
+end
+
+function DiscordClientMethods:bot_id()
+    return self._tloop.btd.bot.id
+end
+
+-- ==========================================
+-- AntiRaid Helpers
+-- ==========================================
+function DiscordClientMethods:antiraid_check_reason(reason)
+    self:_call({ op = "AntiRaidCheckReason", reason = reason })
+end
+function DiscordClientMethods:antiraid_check_permissions(data)
+    return self:_call({ op = "AntiRaidCheckPermissions", data = data })
+end
+function DiscordClientMethods:antiraid_check_permissions_and_hierarchy(data)
+    return self:_call({ op = "AntiRaidCheckPermissionsAndHierarchy", data = data })
+end
+function DiscordClientMethods:antiraid_check_channel_permissions(data)
+    return self:_call({ op = "AntiRaidCheckChannelPermissions", data = data })
+end
+function DiscordClientMethods:antiraid_get_fused_member(ids)
+    return self:_call({ op = "AntiRaidGetFusedMember", ids = ids })
+end
+
+-- ==========================================
+-- Audit Logs & Auto Moderation
+-- ==========================================
+function DiscordClientMethods:get_audit_logs(data)
+    return self:_call({ op = "GetAuditLog", data = data })
+end
+function DiscordClientMethods:list_auto_moderation_rules()
+    return self:_call({ op = "ListAutoModerationRules" })
+end
+function DiscordClientMethods:get_auto_moderation_rule(data)
+    return self:_call({ op = "GetAutoModerationRule", data = data })
+end
+function DiscordClientMethods:create_auto_moderation_rule(data)
+    return self:_call({ op = "CreateAutoModerationRule", data = data })
+end
+function DiscordClientMethods:edit_auto_moderation_rule(data)
+    return self:_call({ op = "EditAutoModerationRule", data = data })
+end
+function DiscordClientMethods:delete_auto_moderation_rule(data)
+    self:_call({ op = "DeleteAutoModerationRule", data = data })
+end
+
+-- ==========================================
+-- Channels
+-- ==========================================
+function DiscordClientMethods:get_channel(channel_id)
+    return self:_call({ op = "GetChannel", channel_id = channel_id })
+end
+function DiscordClientMethods:edit_channel(data)
+    return self:_call({ op = "EditChannel", data = data })
+end
+function DiscordClientMethods:delete_channel(data)
+    return self:_call({ op = "DeleteChannel", data = data })
+end
+function DiscordClientMethods:edit_channel_permissions(data)
+    self:_call({ op = "EditChannelPermissions", data = data })
+end
+function DiscordClientMethods:get_channel_invites()
+    return self:_call({ op = "GetChannelInvites" })
+end
+function DiscordClientMethods:create_channel_invite(data)
+    return self:_call({ op = "CreateChannelInvite", data = data })
+end
+function DiscordClientMethods:delete_channel_permission(data)
+    self:_call({ op = "DeleteChannelPermission", data = data })
+end
+function DiscordClientMethods:follow_announcement_channel(data)
+    return self:_call({ op = "FollowAnnouncementChannel", data = data })
+end
+
+-- ==========================================
+-- Guild Base
+-- ==========================================
+function DiscordClientMethods:get_guild()
+    return self:_call({ op = "GetGuild" })
+end
+function DiscordClientMethods:get_guild_preview()
+    return self:_call({ op = "GetGuildPreview" })
+end
+function DiscordClientMethods:modify_guild(data)
+    return self:_call({ op = "ModifyGuild", data = data })
+end
+function DiscordClientMethods:get_guild_channels()
+    return self:_call({ op = "GetGuildChannels" })
+end
+function DiscordClientMethods:create_guild_channel(data)
+    return self:_call({ op = "CreateGuildChannel", data = data })
+end
+function DiscordClientMethods:modify_guild_channel_positions(data)
+    self:_call({ op = "ModifyGuildChannelPositions", data = data })
+end
+function DiscordClientMethods:list_active_guild_threads()
+    return self:_call({ op = "ListActiveGuildThreads" })
+end
+
+-- ==========================================
+-- Guild Members & Bans
+-- ==========================================
+function DiscordClientMethods:get_guild_member(user_id)
+    return self:_call({ op = "GetGuildMember", user_id = user_id })
+end
+function DiscordClientMethods:list_guild_members(data)
+    return self:_call({ op = "ListGuildMembers", data = data })
+end
+function DiscordClientMethods:search_guild_members(data)
+    return self:_call({ op = "SearchGuildMembers", data = data })
+end
+function DiscordClientMethods:modify_guild_member(data)
+    return self:_call({ op = "ModifyGuildMember", data = data })
+end
+function DiscordClientMethods:add_guild_member_role(data)
+    self:_call({ op = "AddGuildMemberRole", data = data })
+end
+function DiscordClientMethods:remove_guild_member_role(data)
+    self:_call({ op = "RemoveGuildMemberRole", data = data })
+end
+function DiscordClientMethods:remove_guild_member(data)
+    self:_call({ op = "RemoveGuildMember", data = data })
+end
+function DiscordClientMethods:get_guild_bans(data)
+    return self:_call({ op = "GetGuildBans", data = data })
+end
+function DiscordClientMethods:get_guild_ban(user_id)
+    return self:_call({ op = "GetGuildBan", user_id = user_id })
+end
+function DiscordClientMethods:create_guild_ban(data)
+    self:_call({ op = "CreateGuildBan", data = data })
+end
+function DiscordClientMethods:remove_guild_ban(data)
+    self:_call({ op = "RemoveGuildBan", data = data })
+end
+
+-- ==========================================
+-- Guild Roles & Commands
+-- ==========================================
+function DiscordClientMethods:get_guild_roles()
+    return self:_call({ op = "GetGuildRoles" })
+end
+function DiscordClientMethods:get_guild_role(role_id)
+    return self:_call({ op = "GetGuildRole", role_id = role_id })
+end
+function DiscordClientMethods:create_guild_role(data)
+    return self:_call({ op = "CreateGuildRole", data = data })
+end
+function DiscordClientMethods:modify_guild_role_positions(data)
+    return self:_call({ op = "ModifyGuildRolePositions", data = data })
+end
+function DiscordClientMethods:modify_guild_role(data)
+    return self:_call({ op = "ModifyGuildRole", data = data })
+end
+function DiscordClientMethods:delete_guild_role(data)
+    self:_call({ op = "DeleteGuildRole", data = data })
+end
+function DiscordClientMethods:get_guild_commands()
+    return self:_call({ op = "GetGuildCommands" })
+end
+function DiscordClientMethods:get_guild_command(command_id)
+    return self:_call({ op = "GetGuildCommand", command_id = command_id })
+end
+function DiscordClientMethods:create_guild_command(data)
+    return self:_call({ op = "CreateGuildCommand", data = data })
+end
+function DiscordClientMethods:create_guild_commands(data)
+    return self:_call({ op = "CreateGuildCommands", data = data })
+end
+
+-- ==========================================
+-- Invites
+-- ==========================================
+function DiscordClientMethods:get_invite(data)
+    return self:_call({ op = "GetInvite", data = data })
+end
+function DiscordClientMethods:delete_invite(data)
+    return self:_call({ op = "DeleteInvite", data = data })
+end
+
+-- ==========================================
+-- Messages
+-- ==========================================
+function DiscordClientMethods:get_channel_messages(data)
+    return self:_call({ op = "GetChannelMessages", data = data })
+end
+function DiscordClientMethods:get_channel_message(data)
+    return self:_call({ op = "GetChannelMessage", data = data })
+end
+function DiscordClientMethods:create_message(data)
+    return self:_call({ op = "CreateMessage", data = data })
+end
+function DiscordClientMethods:crosspost_message(data)
+    return self:_call({ op = "CrosspostMessage", data = data })
+end
+function DiscordClientMethods:edit_message(data)
+    return self:_call({ op = "EditMessage", data = data })
+end
+function DiscordClientMethods:delete_message(data)
+    self:_call({ op = "DeleteMessage", data = data })
+end
+function DiscordClientMethods:bulk_delete_messages(data)
+    self:_call({ op = "BulkDeleteMessages", data = data })
+end
+
+-- ==========================================
+-- Reactions
+-- ==========================================
+function DiscordClientMethods:create_reaction(data)
+    self:_call({ op = "CreateReaction", data = data })
+end
+function DiscordClientMethods:delete_own_reaction(data)
+    self:_call({ op = "DeleteOwnReaction", data = data })
+end
+function DiscordClientMethods:delete_user_reaction(data)
+    self:_call({ op = "DeleteUserReaction", data = data })
+end
+function DiscordClientMethods:get_reactions(data)
+    return self:_call({ op = "GetReactions", data = data })
+end
+function DiscordClientMethods:delete_all_reactions(data)
+    self:_call({ op = "DeleteAllReactions", data = data })
+end
+function DiscordClientMethods:delete_all_reactions_for_emoji(data)
+    self:_call({ op = "DeleteAllReactionsForEmoji", data = data })
+end
+
+-- ==========================================
+-- Interactions
+-- ==========================================
+function DiscordClientMethods:create_interaction_response(data)
+    self:_call({ op = "CreateInteractionResponse", data = data })
+end
+function DiscordClientMethods:get_original_interaction_response(interaction_token)
+    return self:_call({ op = "GetOriginalInteractionResponse", interaction_token = interaction_token })
+end
+function DiscordClientMethods:edit_original_interaction_response(data)
+    return self:_call({ op = "EditOriginalInteractionResponse", data = data })
+end
+function DiscordClientMethods:delete_original_interaction_response(interaction_token)
+    self:_call({ op = "DeleteOriginalInteractionResponse", interaction_token = interaction_token })
+end
+function DiscordClientMethods:get_followup_message(data)
+    return self:_call({ op = "GetFollowupMessage", data = data })
+end
+function DiscordClientMethods:create_followup_message(data)
+    return self:_call({ op = "CreateFollowupMessage", data = data })
+end
+function DiscordClientMethods:edit_followup_message(data)
+    return self:_call({ op = "EditFollowupMessage", data = data })
+end
+function DiscordClientMethods:delete_followup_message(data)
+    self:_call({ op = "DeleteFollowupMessage", data = data })
+end
+
+-- ==========================================
+-- Webhooks
+-- ==========================================
+function DiscordClientMethods:create_webhook(data)
+    return self:_call({ op = "CreateWebhook", data = data })
+end
+function DiscordClientMethods:get_channel_webhooks(channel_id)
+    return self:_call({ op = "GetChannelWebhooks", channel_id = channel_id })
+end
+function DiscordClientMethods:get_guild_webhooks()
+    return self:_call({ op = "GetGuildWebhooks" })
+end
+function DiscordClientMethods:get_webhook(webhook_id)
+    return self:_call({ op = "GetWebhook", webhook_id = webhook_id })
+end
+function DiscordClientMethods:modify_webhook(data)
+    return self:_call({ op = "ModifyWebhook", data = data })
+end
+function DiscordClientMethods:delete_webhook(webhook_id)
+    self:_call({ op = "DeleteWebhook", webhook_id = webhook_id })
+end
+function DiscordClientMethods:execute_webhook(data)
+    return self:_call({ op = "ExecuteWebhook", data = data })
+end
+
+
+-- ==========================================
+-- The Constructor
+-- ==========================================
 
 --- Creates a new Discord API executor for the template
 local function DiscordExecutor(ctx: Primitives.TemplateContext): DiscordClient
-    local tloop = tloop.getRunningLoop(ctx)
-    local function call(req: any): any
-        local res = ctx.Runtime:syscall({
-            op = "Discord",
-            req = req
-        })
-
-        if res.op ~= "Discord" or res.req.op ~= req.op then
-            error(`invalid op returned`, 3)
-        end
-
-        return (res.req :: any).res
-    end
-
-    -- 2. LOOSE TABLE: Zero CPU overhead for type evaluation here.
+    -- Instead of recreating 75 closures, we instantiate a tiny table and slap a metatable on it.
     local client = {
-        -- ==========================================
-        -- Identity / Environment
-        -- ==========================================
-        guild_id = function(): string?
-            if tloop.btd.id.tenant_type == "guild" then
-                return tloop.btd.id.tenant_id
-            end
-            return nil
-        end,
-        
-        bot_id = function()
-            return tloop.btd.bot.id
-        end,
-
-        -- ==========================================
-        -- AntiRaid Helpers
-        -- ==========================================
-        antiraid_check_reason = function(reason)
-            call({ op = "AntiRaidCheckReason", reason = reason })
-        end,
-        antiraid_check_permissions = function(data)
-            return call({ op = "AntiRaidCheckPermissions", data = data })
-        end,
-        antiraid_check_permissions_and_hierarchy = function(data)
-            return call({ op = "AntiRaidCheckPermissionsAndHierarchy", data = data })
-        end,
-        antiraid_check_channel_permissions = function(data)
-            return call({ op = "AntiRaidCheckChannelPermissions", data = data })
-        end,
-        antiraid_get_fused_member = function(ids)
-            return call({ op = "AntiRaidGetFusedMember", ids = ids })
-        end,
-
-        -- ==========================================
-        -- Audit Logs & Auto Moderation
-        -- ==========================================
-        get_audit_logs = function(data)
-            return call({ op = "GetAuditLog", data = data })
-        end,
-        list_auto_moderation_rules = function()
-            return call({ op = "ListAutoModerationRules" })
-        end,
-        get_auto_moderation_rule = function(data)
-            return call({ op = "GetAutoModerationRule", data = data })
-        end,
-        create_auto_moderation_rule = function(data)
-            return call({ op = "CreateAutoModerationRule", data = data })
-        end,
-        edit_auto_moderation_rule = function(data)
-            return call({ op = "EditAutoModerationRule", data = data })
-        end,
-        delete_auto_moderation_rule = function(data)
-            call({ op = "DeleteAutoModerationRule", data = data })
-        end,
-
-        -- ==========================================
-        -- Channels
-        -- ==========================================
-        get_channel = function(channel_id)
-            return call({ op = "GetChannel", channel_id = channel_id })
-        end,
-        edit_channel = function(data)
-            return call({ op = "EditChannel", data = data })
-        end,
-        delete_channel = function(data)
-            return call({ op = "DeleteChannel", data = data })
-        end,
-        edit_channel_permissions = function(data)
-            call({ op = "EditChannelPermissions", data = data })
-        end,
-        get_channel_invites = function()
-            return call({ op = "GetChannelInvites" })
-        end,
-        create_channel_invite = function(data)
-            return call({ op = "CreateChannelInvite", data = data })
-        end,
-        delete_channel_permission = function(data)
-            call({ op = "DeleteChannelPermission", data = data })
-        end,
-        follow_announcement_channel = function(data)
-            return call({ op = "FollowAnnouncementChannel", data = data })
-        end,
-
-        -- ==========================================
-        -- Guild Base
-        -- ==========================================
-        get_guild = function()
-            return call({ op = "GetGuild" })
-        end,
-        get_guild_preview = function()
-            return call({ op = "GetGuildPreview" })
-        end,
-        modify_guild = function(data)
-            return call({ op = "ModifyGuild", data = data })
-        end,
-        get_guild_channels = function()
-            return call({ op = "GetGuildChannels" })
-        end,
-        create_guild_channel = function(data)
-            return call({ op = "CreateGuildChannel", data = data })
-        end,
-        modify_guild_channel_positions = function(data)
-            call({ op = "ModifyGuildChannelPositions", data = data })
-        end,
-        list_active_guild_threads = function()
-            return call({ op = "ListActiveGuildThreads" })
-        end,
-
-        -- ==========================================
-        -- Guild Members & Bans
-        -- ==========================================
-        get_guild_member = function(user_id)
-            return call({ op = "GetGuildMember", user_id = user_id })
-        end,
-        list_guild_members = function(data)
-            return call({ op = "ListGuildMembers", data = data })
-        end,
-        search_guild_members = function(data)
-            return call({ op = "SearchGuildMembers", data = data })
-        end,
-        modify_guild_member = function(data)
-            return call({ op = "ModifyGuildMember", data = data })
-        end,
-        add_guild_member_role = function(data)
-            call({ op = "AddGuildMemberRole", data = data })
-        end,
-        remove_guild_member_role = function(data)
-            call({ op = "RemoveGuildMemberRole", data = data })
-        end,
-        remove_guild_member = function(data)
-            call({ op = "RemoveGuildMember", data = data })
-        end,
-        get_guild_bans = function(data)
-            return call({ op = "GetGuildBans", data = data })
-        end,
-        get_guild_ban = function(user_id)
-            return call({ op = "GetGuildBan", user_id = user_id })
-        end,
-        create_guild_ban = function(data)
-            call({ op = "CreateGuildBan", data = data })
-        end,
-        remove_guild_ban = function(data)
-            call({ op = "RemoveGuildBan", data = data })
-        end,
-
-        -- ==========================================
-        -- Guild Roles & Commands
-        -- ==========================================
-        get_guild_roles = function()
-            return call({ op = "GetGuildRoles" })
-        end,
-        get_guild_role = function(role_id)
-            return call({ op = "GetGuildRole", role_id = role_id })
-        end,
-        create_guild_role = function(data)
-            return call({ op = "CreateGuildRole", data = data })
-        end,
-        modify_guild_role_positions = function(data)
-            return call({ op = "ModifyGuildRolePositions", data = data })
-        end,
-        modify_guild_role = function(data)
-            return call({ op = "ModifyGuildRole", data = data })
-        end,
-        delete_guild_role = function(data)
-            call({ op = "DeleteGuildRole", data = data })
-        end,
-        get_guild_commands = function()
-            return call({ op = "GetGuildCommands" })
-        end,
-        get_guild_command = function(command_id)
-            return call({ op = "GetGuildCommand", command_id = command_id })
-        end,
-        create_guild_command = function(data)
-            return call({ op = "CreateGuildCommand", data = data })
-        end,
-        create_guild_commands = function(data)
-            return call({ op = "CreateGuildCommands", data = data })
-        end,
-
-        -- ==========================================
-        -- Invites
-        -- ==========================================
-        get_invite = function(data)
-            return call({ op = "GetInvite", data = data })
-        end,
-        delete_invite = function(data)
-            return call({ op = "DeleteInvite", data = data })
-        end,
-
-        -- ==========================================
-        -- Messages
-        -- ==========================================
-        get_channel_messages = function(data)
-            return call({ op = "GetChannelMessages", data = data })
-        end,
-        get_channel_message = function(data)
-            return call({ op = "GetChannelMessage", data = data })
-        end,
-        create_message = function(data)
-            return call({ op = "CreateMessage", data = data })
-        end,
-        crosspost_message = function(data)
-            return call({ op = "CrosspostMessage", data = data })
-        end,
-        edit_message = function(data)
-            return call({ op = "EditMessage", data = data })
-        end,
-        delete_message = function(data)
-            call({ op = "DeleteMessage", data = data })
-        end,
-        bulk_delete_messages = function(data)
-            call({ op = "BulkDeleteMessages", data = data })
-        end,
-
-        -- ==========================================
-        -- Reactions
-        -- ==========================================
-        create_reaction = function(data)
-            call({ op = "CreateReaction", data = data })
-        end,
-        delete_own_reaction = function(data)
-            call({ op = "DeleteOwnReaction", data = data })
-        end,
-        delete_user_reaction = function(data)
-            call({ op = "DeleteUserReaction", data = data })
-        end,
-        get_reactions = function(data)
-            return call({ op = "GetReactions", data = data })
-        end,
-        delete_all_reactions = function(data)
-            call({ op = "DeleteAllReactions", data = data })
-        end,
-        delete_all_reactions_for_emoji = function(data)
-            call({ op = "DeleteAllReactionsForEmoji", data = data })
-        end,
-
-        -- ==========================================
-        -- Interactions
-        -- ==========================================
-        create_interaction_response = function(data)
-            call({ op = "CreateInteractionResponse", data = data })
-        end,
-        get_original_interaction_response = function(interaction_token)
-            return call({ op = "GetOriginalInteractionResponse", interaction_token = interaction_token })
-        end,
-        edit_original_interaction_response = function(data)
-            return call({ op = "EditOriginalInteractionResponse", data = data })
-        end,
-        delete_original_interaction_response = function(interaction_token)
-            call({ op = "DeleteOriginalInteractionResponse", interaction_token = interaction_token })
-        end,
-        get_followup_message = function(data)
-            return call({ op = "GetFollowupMessage", data = data })
-        end,
-        create_followup_message = function(data)
-            return call({ op = "CreateFollowupMessage", data = data })
-        end,
-        edit_followup_message = function(data)
-            return call({ op = "EditFollowupMessage", data = data })
-        end,
-        delete_followup_message = function(data)
-            call({ op = "DeleteFollowupMessage", data = data })
-        end,
-
-        -- ==========================================
-        -- Webhooks
-        -- ==========================================
-        create_webhook = function(data)
-            return call({ op = "CreateWebhook", data = data })
-        end,
-        get_channel_webhooks = function(channel_id)
-            return call({ op = "GetChannelWebhooks", channel_id = channel_id })
-        end,
-        get_guild_webhooks = function()
-            return call({ op = "GetGuildWebhooks" })
-        end,
-        get_webhook = function(webhook_id)
-            return call({ op = "GetWebhook", webhook_id = webhook_id })
-        end,
-        modify_webhook = function(data)
-            return call({ op = "ModifyWebhook", data = data })
-        end,
-        delete_webhook = function(webhook_id)
-            call({ op = "DeleteWebhook", webhook_id = webhook_id })
-        end,
-        execute_webhook = function(data)
-            return call({ op = "ExecuteWebhook", data = data })
-        end,
+        _ctx = ctx,
+        _tloop = tloop.getRunningLoop(ctx)
     }
-
-    -- Cast to a discord client (type erasure -> public type)
-    return (table.freeze(client) :: any) :: DiscordClient
+    
+    return (setmetatable(client, DiscordClientMethods) :: any) :: DiscordClient
 end
 
 return DiscordExecutor
