@@ -5,6 +5,7 @@ local typesext = require"@antiraid/typesext"
 local blob = require"@antiraid-core/blob"
 local khronosvalue = require "@antiraid-core/khronosvalue"
 local discord = require("@discord-types/apiTypes")
+local discordsys = require("@antiraid-core/plugins/discord")
 
 --- A result from a state operation
 export type StateExecResult = {
@@ -184,6 +185,9 @@ export type SyscallArgs = {
     op: "Cdn",
     --- Cdn allows for downloading Discord CDN urls *only*
     req: CdnCall
+} | {
+    op: "Discord",
+    req: discordsys.DiscordRequest
 }
 
 export type SyscallRet = {
@@ -195,6 +199,9 @@ export type SyscallRet = {
 } | {
     op: "Cdn",
     res: CdnResult
+} | {
+    op: "Discord",
+    req: discordsys.DiscordResponse
 }
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime

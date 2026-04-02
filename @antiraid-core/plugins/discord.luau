@@ -972,5 +972,282 @@ export type DiscordExecutor = {
 }
 
 export type Plugin = DiscordExecutor
- 
+
+export type DiscordRequest = 
+    -- AntiRaid Helpers
+    
+    --- Checks an audit log reason for validity, errors out if invalid
+    | { op: "AntiRaidCheckReason", reason: string }
+    --- Checks if a specified user with an ID of `data.user_id` has the specified permissions in the server
+    | { op: "AntiRaidCheckPermissions", data: AntiRaidCheckPermissionsOptions }
+    --- Checks if a specified user has the specified permissions in the server and is above the target user in terms of hierarchy
+    | { op: "AntiRaidCheckPermissionsAndHierarchy", data: AntiRaidCheckPermissionsAndHierarchyOptions }
+    --- Checks if a specified user has the specified permissions in the channel
+    | { op: "AntiRaidCheckChannelPermissions", data: AntiRaidCheckChannelPermissionsOptions }
+    --- Fetches the member and resolved permissions of a user in the guild (also called a 'fused member')
+    | { op: "AntiRaidGetFusedMember", ids: {discord.Snowflake} }
+
+    -- Audit Logs
+
+    --- Gets the audit logs
+    | { op: "GetAuditLog", data: GetAuditLogOptions }
+
+    -- Auto Moderation
+
+    --- Lists the auto moderation rules available
+    | { op: "ListAutoModerationRules" }
+    --- Gets an auto moderation rule by ID
+    | { op: "GetAutoModerationRule", data: GetAutoModerationRuleOptions }
+    --- Creates an auto moderation rule
+    | { op: "CreateAutoModerationRule", data: CreateAutoModerationRuleOptions }
+    --- Edits an auto moderation rule
+    | { op: "EditAutoModerationRule", data: EditAutoModerationRuleOptions }
+    --- Deletes an auto moderation rule
+    | { op: "DeleteAutoModerationRule", data: DeleteAutoModerationRuleOptions }
+
+    -- Channels (By ID)
+
+    --- Gets a channel
+    | { op: "GetChannel", channel_id: string }
+    --- Edits a channel
+    | { op: "EditChannel", data: EditChannelOptions }
+    --- Deletes a channel
+    | { op: "DeleteChannel", data: DeleteChannelOptions }
+    --- Edits channel permissions for a target
+    | { op: "EditChannelPermissions", data: EditChannelPermissionsOptions }
+    --- Gets all invites a channel has
+    | { op: "GetChannelInvites" } 
+    --- Creates a channel invite
+    | { op: "CreateChannelInvite", data: CreateChannelInviteOptions }
+    --- Deletes a channel permission
+    | { op: "DeleteChannelPermission", data: DeleteChannelPermissionOptions }
+    --- Follows an announcement channel
+    | { op: "FollowAnnouncementChannel", data: FollowAnnouncementChannelOptions }
+
+    -- Guild Base
+
+    --- Gets the guild
+    | { op: "GetGuild" }
+    --- Gets the guilds preview
+    | { op: "GetGuildPreview" }
+    --- Edits the guild
+    | { op: "ModifyGuild", data: ModifyGuildOptions }
+    --- Gets the guild channels
+    | { op: "GetGuildChannels" }
+    --- Creates a guild channel
+    | { op: "CreateGuildChannel", data: CreateChannelOptions }
+    --- Modify guild channel positions. Only channels to be modified are required to be passed in `data`.
+    | { op: "ModifyGuildChannelPositions", data: {discordRest.ModifyGuildChannelPositionsRequest} }
+    --- List active guild threads
+    | { op: "ListActiveGuildThreads" }
+
+    -- Guild Members
+
+    --- Gets a guild member by ID
+    | { op: "GetGuildMember", user_id: string }
+    --- List all guild members
+    | { op: "ListGuildMembers", data: GetGuildMembersOptions }
+    --- Search guild members
+    | { op: "SearchGuildMembers", data: SearchGuildMembersOptions }
+    --- Modify guild member (this includes timing out a member using `communication_disabled_until`)
+    | { op: "ModifyGuildMember", data: ModifyGuildMemberOptions }
+    --- Adds a role to a member
+    | { op: "AddGuildMemberRole", data: AddGuildMemberRoleOptions }
+    --- Removes a role from a member
+    | { op: "RemoveGuildMemberRole", data: RemoveGuildMemberRoleOptions }
+    --- Removes a member from a guild
+    | { op: "RemoveGuildMember", data: RemoveGuildMemberOptions }
+
+    -- Guild Bans
+
+    --- Gets guild bans
+    | { op: "GetGuildBans", data: GetGuildBansOptions }
+    --- Gets a guild ban for a user or nil if it does not exist
+    | { op: "GetGuildBan", user_id: string }
+    --- Creates a guild ban
+    | { op: "CreateGuildBan", data: CreateGuildBanOptions }
+    --- Removes a guild ban
+    | { op: "RemoveGuildBan", data: RemoveGuildBanOptions }
+
+    -- Guild Roles
+
+    --- Returns the guild roles of a guild
+    | { op: "GetGuildRoles" }
+    --- Returns a guild role by ID
+    | { op: "GetGuildRole", role_id: string }
+    --- Creates a guild role
+    | { op: "CreateGuildRole", data: CreateGuildRoleOptions }
+    --- Modify guild role positions
+    | { op: "ModifyGuildRolePositions", data: ModifyRolePositionOptions }
+    --- Modifies a guild role
+    | { op: "ModifyGuildRole", data: EditGuildRoleOptions }
+    --- Deletes a guild role
+    | { op: "DeleteGuildRole", data: DeleteGuildRoleOptions }
+
+    -- Guild Commands
+
+    --- Gets all guild commands currently registered
+    | { op: "GetGuildCommands" }
+    --- Gets a guild command by ID
+    | { op: "GetGuildCommand", command_id: string }
+    --- Creates a guild command
+    | { op: "CreateGuildCommand", data: CreateCommandOptions }
+    --- Creates multiple guild commands
+    | { op: "CreateGuildCommands", data: CreateCommandsOptions }
+
+    -- Invites (By Code)
+
+    --- Gets an invite by code
+    | { op: "GetInvite", data: GetInviteOptions }
+    --- Deletes an invite by code
+    | { op: "DeleteInvite", data: DeleteInviteOptions }
+
+    -- Messages
+
+    --- Gets messages from a channel
+    | { op: "GetChannelMessages", data: GetMessagesOptions }
+    --- Gets a message
+    | { op: "GetChannelMessage", data: GetMessageOptions }
+    --- Creates a message
+    | { op: "CreateMessage", data: CreateMessageOptions }
+    --- Crossposts a message to an announcement channel
+    | { op: "CrosspostMessage", data: CrosspostMessageOptions }
+    --- Edits a message
+    | { op: "EditMessage", data: EditMessageOptions }
+    --- Deletes a message
+    | { op: "DeleteMessage", data: DeleteMessageOptions }
+    --- Bulk deletes messages in a channel
+    | { op: "BulkDeleteMessages", data: BulkDeleteMessagesOptions }
+
+    -- Reactions
+
+    --- Creates a reaction to a message
+    | { op: "CreateReaction", data: CreateReactionOptions }
+    --- Deletes the reaction AntiRaid has made on a message
+    | { op: "DeleteOwnReaction", data: DeleteOwnReactionOptions }
+    --- Deletes a reaction another user has made on a message
+    | { op: "DeleteUserReaction", data: DeleteUserReactionOptions }
+    --- Gets all users who have reacted with the provided reaction based on provided criteria
+    | { op: "GetReactions", data: GetReactionsOptions }
+    --- Deletes all reactions on a message
+    | { op: "DeleteAllReactions", data: DeleteAllReactionsOptions }
+    --- Deletes all reactions for a specific emoji on a message
+    | { op: "DeleteAllReactionsForEmoji", data: DeleteAllReactionsForEmojiOptions }
+
+    -- Interactions
+
+    --- Creates an interaction response
+    | { op: "CreateInteractionResponse", data: CreateInteractionResponseOptions }
+    --- Gets the original interaction response
+    | { op: "GetOriginalInteractionResponse", interaction_token: string }
+    --- Edits the original interaction response
+    | { op: "EditOriginalInteractionResponse", data: EditInteractionResponseOptions }
+    --- Deletes the original interaction response
+    | { op: "DeleteOriginalInteractionResponse", interaction_token: string }
+    --- Gets a followup interaction response
+    | { op: "GetFollowupMessage", data: GetFollowupMessageOptions }
+    --- Creates a followup interaction response
+    | { op: "CreateFollowupMessage", data: CreateFollowupMessageOptions }
+    --- Edits a followup interaction response
+    | { op: "EditFollowupMessage", data: EditFollowupMessageOptions }
+    --- Deletes a followup interaction response
+    | { op: "DeleteFollowupMessage", data: DeleteFollowupMessageOptions }
+
+export type DiscordResponse = 
+    -- AntiRaid Helpers
+    | { op: "AntiRaidCheckReason" } -- Ack (No return data)
+    | { op: "AntiRaidCheckPermissions", res: AntiRaidCheckPermissionsResponse }
+    | { op: "AntiRaidCheckPermissionsAndHierarchy", res: AntiRaidCheckPermissionsResponse }
+    | { op: "AntiRaidCheckChannelPermissions", res: AntiRaidCheckChannelPermissionsResponse }
+    | { op: "AntiRaidGetFusedMember", res: LazyAntiraidFusedMember }
+
+    -- Audit Logs
+    | { op: "GetAuditLog", res: LazyAuditLogObject }
+
+    -- Auto Moderation
+    | { op: "ListAutoModerationRules", res: LazyAutomoderationRuleObjectList }
+    | { op: "GetAutoModerationRule", res: LazyAutomoderationRuleObject }
+    | { op: "CreateAutoModerationRule", res: LazyAutomoderationRuleObject }
+    | { op: "EditAutoModerationRule", res: LazyAutomoderationRuleObject }
+    | { op: "DeleteAutoModerationRule", res: LazyAutomoderationRuleObject }
+
+    -- Channels
+    | { op: "GetChannel", res: LazyChannelObject }
+    | { op: "EditChannel", res: LazyChannelObject }
+    | { op: "DeleteChannel", res: LazyChannelObject }
+    | { op: "EditChannelPermissions" } -- Ack
+    | { op: "GetChannelInvites", res: LazyInviteObjectList }
+    | { op: "CreateChannelInvite", res: LazyInviteObject }
+    | { op: "DeleteChannelPermission" } -- Ack
+    | { op: "FollowAnnouncementChannel", res: LazyChannelObject }
+
+    -- Guild Base
+    | { op: "GetGuild", res: LazyGuildObject }
+    | { op: "GetGuildPreview", res: LazyGuildPreviewObject }
+    | { op: "ModifyGuild", res: LazyGuildObject }
+    | { op: "GetGuildChannels", res: LazyChannelsObject }
+    | { op: "CreateGuildChannel", res: LazyChannelObject }
+    | { op: "ModifyGuildChannelPositions" } -- Ack
+    | { op: "ListActiveGuildThreads", res: LazyActiveGuildThreadsResponse }
+
+    -- Guild Members
+    | { op: "GetGuildMember", res: LazyGuildMemberObject }
+    | { op: "ListGuildMembers", res: LazyGuildMembersObject }
+    | { op: "SearchGuildMembers", res: LazyGuildMembersObject }
+    | { op: "ModifyGuildMember", res: LazyGuildMemberObject }
+    | { op: "AddGuildMemberRole" } -- Ack
+    | { op: "RemoveGuildMemberRole" } -- Ack
+    | { op: "RemoveGuildMember" } -- Ack
+
+    -- Guild Bans
+    | { op: "GetGuildBans", res: LazyBanObjectList }
+    | { op: "GetGuildBan", res: LazyBanOptionalObject }
+    | { op: "CreateGuildBan" } -- Ack
+    | { op: "RemoveGuildBan" } -- Ack
+
+    -- Guild Roles
+    | { op: "GetGuildRoles", res: LazyRolesObject }
+    | { op: "GetGuildRole", res: LazyRoleObject }
+    | { op: "CreateGuildRole", res: LazyRoleObject }
+    | { op: "ModifyGuildRolePositions", res: LazyRolesObject }
+    | { op: "ModifyGuildRole", res: LazyRoleObject }
+    | { op: "DeleteGuildRole" } -- Ack
+
+    -- Guild Commands
+    | { op: "GetGuildCommands", res: LazyApplicationCommandsObject }
+    | { op: "GetGuildCommand", res: LazyApplicationCommandObject }
+    | { op: "CreateGuildCommand", res: LazyApplicationCommandObject }
+    | { op: "CreateGuildCommands", res: LazyApplicationCommandsObject }
+
+    -- Invites
+    | { op: "GetInvite", res: LazyInviteObject }
+    | { op: "DeleteInvite", res: LazyInviteObject }
+
+    -- Messages
+    | { op: "GetChannelMessages", res: LazyMessagesObject }
+    | { op: "GetChannelMessage", res: LazyMessageObject }
+    | { op: "CreateMessage", res: LazyMessageObject }
+    | { op: "CrosspostMessage", res: LazyMessageObject }
+    | { op: "EditMessage", res: LazyMessageObject }
+    | { op: "DeleteMessage" } -- Ack
+    | { op: "BulkDeleteMessages" } -- Ack
+
+    -- Reactions
+    | { op: "CreateReaction" } -- Ack
+    | { op: "DeleteOwnReaction" } -- Ack
+    | { op: "DeleteUserReaction" } -- Ack
+    | { op: "GetReactions", res: LazyUsersObject }
+    | { op: "DeleteAllReactions" } -- Ack
+    | { op: "DeleteAllReactionsForEmoji" } -- Ack
+
+    -- Interactions
+    | { op: "CreateInteractionResponse" } -- Ack
+    | { op: "GetOriginalInteractionResponse", res: LazyMessageObject }
+    | { op: "EditOriginalInteractionResponse", res: LazyMessageObject }
+    | { op: "DeleteOriginalInteractionResponse" } -- Ack
+    | { op: "GetFollowupMessage", res: LazyMessageObject }
+    | { op: "CreateFollowupMessage", res: LazyMessageObject }
+    | { op: "EditFollowupMessage", res: LazyMessageObject }
+    | { op: "DeleteFollowupMessage" } -- Ack
+
 return {}
