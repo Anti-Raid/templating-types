@@ -16,6 +16,7 @@ local ActionRowBuilder = require"@discord-types/builders/message/components/acti
 local ButtonBuilder = require"@discord-types/builders/message/components/button"
 local array_metatable = require"@antiraid/interop".array_metatable
 local unit = require"./unit"
+local net = require"@antiraid-ext/system/net"
 
 export type Command = {
     --- Discord command definition.
@@ -86,6 +87,10 @@ end
 export type Framework = {
     --- The underlying template context
     read ctx: Primitives.TemplateContext,
+    --- Underlying object storage bucket
+    read bucket: net.Bucket,
+    --- Underlying cdn downloader
+    read cdn: net.Cdn,
     --- The underlying user info manager for managing user permissions
     read userinfomanager: userinfomanager.UserInfoManager,
     --- The underlying template loop manager
@@ -105,6 +110,8 @@ local function Framework(ctx: Primitives.TemplateContext): Framework
 
     return table.freeze{
         ctx = ctx,
+        bucket = net.Bucket(ctx),
+        cdn = net.Cdn(ctx),
         userinfomanager = userinfomanager,
         loop = loop,
         components = componentcbs,

@@ -1,7 +1,7 @@
 local Primitives = require"./primitives"
 local runtime = require"./plugins/runtime"
 local isolate = require"@antiraid-ext/isolate"
-local Discord = require"@antiraid-ext/discord"
+local Discord = require"@antiraid-ext/system/discord"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
 

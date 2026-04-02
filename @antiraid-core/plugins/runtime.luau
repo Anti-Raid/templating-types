@@ -81,6 +81,8 @@ export type Id = {
 export type BaseTenantData = {
     read bot: discord.UserObject,
     read id: Id,
+    read dispatchable_events: {string},
+    read base_vfs: { [string]: typesext.Vfs }
 }
 
 export type StateOp = {
@@ -206,9 +208,6 @@ export type SyscallRet = {
 
 --- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime
 export type Plugin = {
-    --- Returns a list of VFS's that the runtime exposes
-    getexposedvfs: (self: Plugin) -> { [string]: typesext.Vfs },
-
     --- @yields
     ---
     --- Performs a system call
@@ -232,9 +231,6 @@ export type Plugin = {
         frontend_url: string,
         docs_url: string,
     },
-
-    --- Returns the list of events the bot can dispatch
-    eventlist: (self: Plugin) -> {string},
 }
 
 return {}
