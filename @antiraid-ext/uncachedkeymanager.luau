@@ -43,15 +43,15 @@ export type UncachedKeyManager<T> = {
 --- 1. Unlike KeyManager, it is guaranteed that creating a UncachedKeyManager will *not* yield
 local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope: string): UncachedKeyManager<T>
     local function remove(key: string) 
-        ctx.Runtime:syscall({op="State", ops={{ op = "KvDelete", key = key, scope = basescope }}})
+        ctx:syscall({op="State", ops={{ op = "KvDelete", key = key, scope = basescope }}})
     end
 
     local function set(key: string, data: T)
-        ctx.Runtime:syscall({op="State", ops={{ op = "KvSet", key = key, scope = basescope, value = data }}})
+        ctx:syscall({op="State", ops={{ op = "KvSet", key = key, scope = basescope, value = data }}})
     end
 
     local function list(query: string?): (number, {[string]: KeyRecord<T>})
-        local records = ctx.Runtime:syscall({op="State", ops={{ op = "KvFind", query = query or "%%", scope = basescope }}})
+        local records = ctx:syscall({op="State", ops={{ op = "KvFind", query = query or "%%", scope = basescope }}})
         assert(records.op == "State")
         local parsed: {[string]: KeyRecord<T>} = {}
         local count = 0
@@ -70,7 +70,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
     end
 
     local function listarr(query: string?): {KeyRecord<T>}
-        local records = ctx.Runtime:syscall({op="State", ops={{ op = "KvFind", query = query or "%%", scope = basescope }}})
+        local records = ctx:syscall({op="State", ops={{ op = "KvFind", query = query or "%%", scope = basescope }}})
         assert(records.op == "State")
         local parsed: {KeyRecord<T>} = {}
         for _, record in records.res do 
@@ -87,7 +87,7 @@ local function UncachedKeyManager<T>(ctx: Primitives.TemplateContext, basescope:
     end
 
     local function get(key: string): KeyRecord<T>?
-        local records = ctx.Runtime:syscall({op="State", ops={{ op = "KvGet", key = key, scope = basescope }}})
+        local records = ctx:syscall({op="State", ops={{ op = "KvGet", key = key, scope = basescope }}})
         assert(records.op == "State")
         if #records.res == 0 then return nil end
         local record = records.res[1]

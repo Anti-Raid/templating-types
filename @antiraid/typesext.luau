@@ -149,7 +149,7 @@ end
 
 --- Given a value, returns a lazy string map (Lazy<{ [string]: string }>)
 ---
---- The result of this can be passed to APIs like Vfs.newoverlay or ctx.Runtime:create/updatetemplate.
+--- The result of this can be passed to APIs like Vfs.newoverlay
 local function createvfs(value: { [string]: string }): lazy.Lazy<MemoryVfs>
     error("Implemented internally in AntiRaid runtime!")
 end

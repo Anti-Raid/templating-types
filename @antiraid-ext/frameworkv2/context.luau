@@ -91,6 +91,8 @@ export type Framework = {
     read bucket: net.Bucket,
     --- Underlying cdn downloader
     read cdn: net.Cdn,
+    --- Underlying statistics (+ other metadata) handler
+    read meta: net.Meta,
     --- The underlying user info manager for managing user permissions
     read userinfomanager: userinfomanager.UserInfoManager,
     --- The underlying template loop manager
@@ -112,6 +114,7 @@ local function Framework(ctx: Primitives.TemplateContext): Framework
         ctx = ctx,
         bucket = net.Bucket(ctx),
         cdn = net.Cdn(ctx),
+        meta = net.Meta(ctx),
         userinfomanager = userinfomanager,
         loop = loop,
         components = componentcbs,
@@ -288,7 +291,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
                 ButtonBuilder.new()
                 :setStyle("Blurple")
                 :setLabel("Support Server")
-                :setUrl(ctx.Runtime:links().support_server)
+                :setUrl(framework.loop.btd.website)
                 :build()
             )
             :build()

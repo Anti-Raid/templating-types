@@ -6,7 +6,7 @@ local Primitives = require"@antiraid-core/primitives"
 
 --- Helper function to execute and unwrap object storage syscall
 local function objstorecall(ctx: Primitives.TemplateContext, req: runtime.ObjectStorageCall): runtime.ObjectStorageResult
-    local result = ctx.Runtime:syscall({
+    local result = ctx:syscall({
         op = "ObjectStorage",
         req = req
     })
@@ -20,13 +20,27 @@ end
 
 --- Helper function to execute and unwrap cdn syscall
 local function cdncall(ctx: Primitives.TemplateContext, req: runtime.CdnCall): runtime.CdnResult
-    local result = ctx.Runtime:syscall({
+    local result = ctx:syscall({
         op = "Cdn",
         req = req
     })
 
     if result.op ~= "Cdn" then
         error(`expected Cdn response`, 3)
+    end
+
+    return result.res
+end
+
+--- Helper function to execute and unwrap meta syscall
+local function metacall(ctx: Primitives.TemplateContext, req: runtime.MetaCall): runtime.MetaResult
+    local result = ctx:syscall({
+        op = "Meta",
+        req = req
+    })
+
+    if result.op ~= "Meta" then
+        error(`expected meta response`, 3)
     end
 
     return result.res
@@ -165,4 +179,29 @@ local function Cdn(ctx: Primitives.TemplateContext): Cdn
     }
 end
 
-return { Bucket = Bucket, Cdn = Cdn }
+export type Meta = {    
+    read stats: () -> {
+        total_guilds: number, total_users: number, last_started_at: datetime.DateTime
+    },
+}
+
+local function Meta(ctx: Primitives.TemplateContext): Meta 
+    local function stats()
+        local res = metacall(ctx, {
+            op = "GetStats",
+        })
+
+        if res.op ~= "Stats" then
+            error(`[Cdn] stats failed: unexpected response '{res.op}'`, 2)
+        end
+
+        return res
+    end
+
+
+    return table.freeze{
+        stats = stats
+    }
+end
+
+return { Bucket = Bucket, Cdn = Cdn, Meta = Meta }

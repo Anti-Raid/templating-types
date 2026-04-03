@@ -1,8 +1,6 @@
 local runtimeP = require("@antiraid-core/plugins/runtime")
 
 -- AntiRaid primitives
--- 
--- Last updated: June 22nd 2025
 
 -- Core types
 export type u8 = number
@@ -40,11 +38,10 @@ export type Event = {
 --- Passing a TemplateContext is often required when using AntiRaid plugins for getting the inner context
 --- of a template.
 export type TemplateContext = {
-    --- Runtime plugin
-    read Runtime: runtimeP.Plugin,
-
-    --- Returns the memory limit the VM has/the amount of memory the VM is allowed to use
-    read memory_limit: u64,
+    --- @yields
+    ---
+    --- Performs a system call
+    syscall: (self: TemplateContext, args: runtimeP.SyscallArgs) -> runtimeP.SyscallRet,
 
     --- The global/common store table shared across all templates within the same
     --- server

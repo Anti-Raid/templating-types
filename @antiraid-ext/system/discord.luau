@@ -296,16 +296,16 @@ DiscordClientMethods.__index = DiscordClientMethods
 
 -- Internal Syscall Helper (Now a method)
 function DiscordClientMethods:_call(req: any): any
-    local res = self._ctx.Runtime:syscall({
+    local res = self._ctx:syscall({
         op = "Discord",
         req = req
     })
 
-    if res.op ~= "Discord" or res.req.op ~= req.op then
+    if res.op ~= "Discord" or res.res.op ~= req.op then
         error(`invalid op returned`, 3)
     end
 
-    return (res.req :: any).res
+    return res.res.res
 end
 
 -- ==========================================

@@ -82,7 +82,9 @@ export type BaseTenantData = {
     read bot: discord.UserObject,
     read id: Id,
     read dispatchable_events: {string},
-    read base_vfs: { [string]: typesext.Vfs }
+    read base_vfs: { [string]: typesext.Vfs },
+    read support_server: string,
+    read website: string,
 }
 
 export type StateOp = {
@@ -155,8 +157,10 @@ export type ObjectStorageResult =
     | { op: "Ack" }
 
 export type CdnCall = { op: "DownloadFile", url: string, as_buffer: boolean } -- only discord cdn urls are supported
-
 export type CdnResult = { op: "Blob", data: blob.Blob } | { op: "Buffer", data: buffer }
+
+export type MetaCall = { op: "GetStats" } 
+export type MetaResult = { op: "Stats", total_guilds: number, total_users: number, last_started_at: datetime.DateTime, } 
 
 --- The arguments to be passed into a system call
 export type SyscallArgs = {
@@ -190,6 +194,10 @@ export type SyscallArgs = {
 } | {
     op: "Discord",
     req: discordsys.DiscordRequest
+} | {
+    op: "Meta",
+    --- Metadata related requests
+    req: MetaCall
 }
 
 export type SyscallRet = {
@@ -203,34 +211,10 @@ export type SyscallRet = {
     res: CdnResult
 } | {
     op: "Discord",
-    req: discordsys.DiscordResponse
-}
-
---- Runtime plugin provides basic hooks into the AntiRaid template-worker runtime
-export type Plugin = {
-    --- @yields
-    ---
-    --- Performs a system call
-    syscall: (self: Plugin, args: SyscallArgs) -> SyscallRet,
-
-    --- @yields
-    ---
-    --- Returns the statistics of the bot.
-    stats: (self: Plugin) -> {
-        total_cached_guilds: number,
-        total_guilds: number,
-        total_users: number,
-        last_started_at: datetime.DateTime,
-    },
-
-    --- Returns various important links
-    --- of the bot
-    links: (self: Plugin) -> {
-        support_server: string,
-        api_url: string,
-        frontend_url: string,
-        docs_url: string,
-    },
+    res: discordsys.DiscordResponse
+} | {
+    op: "Meta",
+    res: MetaResult
 }
 
 return {}
