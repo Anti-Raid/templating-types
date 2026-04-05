@@ -68,9 +68,7 @@ local lazyloader = LazyLoad(function(args: Args)
     local attachedisolatescount = 1 -- initially only one attached isolate
 
     local function isSubscribed(event: string, system: string): boolean 
-        if ts.events[event] == nil then return false end
-        if table.find(ts.events[event], system) == nil then return false end
-        return true
+        return ts.events[event] ~= nil and ts.events[event][system] ~= nil
     end
 
     local function subscribeEvent(event: string, system: string, attachedop: runtime.StateOp?) 

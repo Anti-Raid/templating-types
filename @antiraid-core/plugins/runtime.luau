@@ -68,7 +68,7 @@ export type StateExecResult = {
 
 export type TenantState = {
     --- The list of events the guild is (globally) subscribed to
-    events: {[string]: {string}},
+    events: {[string]: {[string]: boolean}},
     --- Flags (such as whether we need to load in more data etc.)
     flags: number
 }

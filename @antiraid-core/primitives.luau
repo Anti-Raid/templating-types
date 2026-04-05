@@ -41,6 +41,9 @@ export type TemplateContext = {
     --- @yields
     ---
     --- Performs a system call
+    ---
+    --- This API is low-level and should be used with care. Other API's like loop.subscribeEvent may behave erratically
+    --- if syscalls which alter the underlying tenant state cache is used.
     syscall: (self: TemplateContext, args: runtimeP.SyscallArgs) -> runtimeP.SyscallRet,
 
     --- The global/common store table shared across all templates within the same
