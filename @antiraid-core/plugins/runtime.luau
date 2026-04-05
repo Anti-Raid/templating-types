@@ -68,7 +68,7 @@ export type StateExecResult = {
 
 export type TenantState = {
     --- The list of events the guild is (globally) subscribed to
-    events: {string},
+    events: {[string]: {string}},
     --- Flags (such as whether we need to load in more data etc.)
     flags: number
 }
@@ -105,9 +105,13 @@ export type StateOp = {
     key: string,
     scope: string
 } | {
-    op: "UpdateTenantState",
-    events: {string},
-    flags: number
+    op: "SubscribeEvent",
+    event: string,
+    system: string
+} | {
+    op: "UnsubscribeEvent",
+    event: string,
+    system: string
 } | {
     op: "GlobalKvFind",
     query: string,
@@ -202,7 +206,8 @@ export type SyscallArgs = {
 
 export type SyscallRet = {
     op: "State",
-    res: {StateExecResult}
+    res: {StateExecResult},
+    new_tenant_state: TenantState,
 } | {
     op: "ObjectStorage",
     res: ObjectStorageResult
