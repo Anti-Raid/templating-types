@@ -5,6 +5,27 @@ local Discord = require"@antiraid-ext/system/discord"
 
 local TEMPLATE_LOOP_KEY = "__antiraid-builtins-templateloop"
 
+--- Internal type that can be used to create multiple template loops from
+export type TemplateLoopCommon = {
+    --- Subscribe to an event, adding the system to the event's refs
+    ---
+    --- If attachedop is set, the attached op will be run atomically with the event subscription
+    read subscribeEvent: (ctx: Primitives.TemplateContext, event: string, system: string, attachedop: runtime.StateOp?) -> (),
+
+    --- Unsubscribe from the event loop for a system, removing the system from the events ref
+    --- and automatically removing the event if no systems use it anymore
+    read unsubscribeEvent: (ctx: Primitives.TemplateContext, event: string, system: string) -> (),
+
+    --- Returns if a system is subscribed to an event
+    read isSubscribed: (event: string, system: string) -> boolean,
+
+    --- Base tenant data
+    read btd: runtime.BaseTenantData,
+
+    --- Base tenant data
+    read ts: runtime.TenantState,
+}
+
 --- A manager that handles the base event loop for a tenant
 export type TemplateLoopManager = {
     --- Dispatch an event to all attached isolates, returning the result as desired
@@ -29,14 +50,14 @@ export type TemplateLoopManager = {
     --- Debug logging
     read debugmanager: DebugManager,
 
-    --- Base tenant data
-    read btd: runtime.BaseTenantData,
-
     --- Attach an isolate to the loop
     read attachisolate: (isolate: isolate.Isolate) -> (),
 
     --- Remove/detach an isolate from the loop
     read detachisolate: (id: string) -> (),
+
+    --- Inner shared common manager
+    read common: TemplateLoopCommon,
 
     --- Returns the underlying discord client wrapper
     read discord: Discord.DiscordClient

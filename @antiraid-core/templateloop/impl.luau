@@ -19,7 +19,6 @@ local channel = require"@antiraid/channel"
 local datetime = require"@antiraid/datetime"
 local templateloopImpl = require"@antiraid-core/templateloop"
 local MutexFn = require"@antiraid-ext/sync/mutex"
-local LazyLoad = require"@antiraid-ext/sync/lazyload"
 local typesext = require"@antiraid/typesext"
 local Discord = require"@antiraid-ext/system/discord"
 
@@ -32,46 +31,22 @@ local TEMPLATE_DISPATCH_TIMEOUT = datetime.timedelta_seconds(5) -- 5 seconds
 
 -- Start code
 
--- stdout logging for debugging
+--- @noyield
 local function DebugManager(): templateloopImpl.DebugManager 
     if _G._debug then return { print = _G._debug } end
     return { print = function(...) end }
 end
 
-type Args = {
-    ctx: Primitives.TemplateContext,
-    ts: runtime.TenantState,
-    btd: runtime.BaseTenantData
-}
-
---- Creates a new TemplateLoopManager instance
-local lazyloader = LazyLoad(function(args: Args)
-    local baseCtx = args.ctx
-    local ts = args.ts
-    local btd = args.btd
-    local discord = Discord(baseCtx)
-
-    -- Setup base state
-    local self = {}
-    baseCtx.store[templateloopImpl.TEMPLATE_LOOP_KEY] = self
-
-    local debugmanager = DebugManager()
+--- @noyield
+local function TemplateLoopCommon(its: runtime.TenantState, ibtd: runtime.BaseTenantData): templateloopImpl.TemplateLoopCommon
+    local ts = its
+    local btd = ibtd
     local eventrefmu = MutexFn() -- Mutex for synchronizing access to event refs
-
-    local exposedvfs = btd.base_vfs
-    local attachedisolates: {[string]: isolate.Isolate} = {
-        ["builtins"] = isolate.new("builtins", typesext.Vfs.newoverlay({
-            exposedvfs.Builtins or error("Internal error: Builtins VFS not found in exposed VFSs"),
-            exposedvfs.TemplatingTypes or error("Internal error: TemplatingTypes VFS not found in exposed VFSs"),
-        }), {})
-    } -- map of all attached isolates
-    local attachedisolatescount = 1 -- initially only one attached isolate
-
     local function isSubscribed(event: string, system: string): boolean 
         return ts.events[event] ~= nil and ts.events[event][system] ~= nil
     end
 
-    local function subscribeEvent(event: string, system: string, attachedop: runtime.StateOp?) 
+    local function subscribeEvent(ctx: Primitives.TemplateContext, event: string, system: string, attachedop: runtime.StateOp?) 
         eventrefmu.call(function() 
             if isSubscribed(event, system) and not attachedop then return nil end
             local ops: {runtime.StateOp} = {}
@@ -85,7 +60,7 @@ local lazyloader = LazyLoad(function(args: Args)
             end
             if attachedop then table.insert(ops, attachedop) end
 
-            local res = baseCtx:syscall({
+            local res = ctx:syscall({
                 op = "State",
                 ops = ops
             })
@@ -95,9 +70,9 @@ local lazyloader = LazyLoad(function(args: Args)
         end)
     end
 
-    local function unsubscribeEvent(event: string, system: string) 
+    local function unsubscribeEvent(ctx: Primitives.TemplateContext, event: string, system: string) 
         eventrefmu.call(function() 
-            local res = baseCtx:syscall({
+            local res = ctx:syscall({
                 op = "State",
                 ops = {
                     {
@@ -113,6 +88,29 @@ local lazyloader = LazyLoad(function(args: Args)
         end)
     end
 
+    return table.freeze{
+        isSubscribed = isSubscribed,
+        subscribeEvent = subscribeEvent,
+        unsubscribeEvent = unsubscribeEvent,
+        btd = btd,
+        ts = ts
+    }
+end
+
+--- @noyield
+local function TemplateLoopManager(ctx: Primitives.TemplateContext, common: templateloopImpl.TemplateLoopCommon): templateloopImpl.TemplateLoopManager 
+    local discord = Discord(ctx)
+    local debugmanager = DebugManager()
+
+    local exposedvfs = common.btd.base_vfs
+    local attachedisolates: {[string]: isolate.Isolate} = {
+        ["builtins"] = isolate.new("builtins", typesext.Vfs.newoverlay({
+            exposedvfs.Builtins or error("Internal error: Builtins VFS not found in exposed VFSs"),
+            exposedvfs.TemplatingTypes or error("Internal error: TemplatingTypes VFS not found in exposed VFSs"),
+        }), {})
+    } -- map of all attached isolates
+    local attachedisolatescount = 1 -- initially only one attached isolate
+
     local function dispatchEvent(event: Primitives.Event, targetId: string?): {isolate.DispatchResult}
         if attachedisolatescount == 0 then return {} end -- unlikely but could happen
 
@@ -122,7 +120,7 @@ local lazyloader = LazyLoad(function(args: Args)
             local _, isol = next(attachedisolates)
             assert(isol)
             if targetId and isol.id ~= targetId then return {} end -- Ignore non-targetted template
-            local ret = isol.runEventResult(baseCtx, event)
+            local ret = isol.runEventResult(ctx, event)
             if ret.type == "err" then 
                 debugmanager.print("[TemplateLoopManager] Error dispatching event to builtins template:", ret)
                 return {ret}
@@ -138,7 +136,7 @@ local lazyloader = LazyLoad(function(args: Args)
             end
 
             -- Dispatch event to isolate
-            isol.dispatchEvent(baseCtx, event, chan)
+            isol.dispatchEvent(ctx, event, chan)
             numitems += 1
         end
 
@@ -166,24 +164,48 @@ local lazyloader = LazyLoad(function(args: Args)
         attachedisolatescount -= 1
     end
 
-    self.debugmanager = debugmanager
-    self.btd = btd
-    self.discord = discord
-    self.subscribeEvent = subscribeEvent
-    self.unsubscribeEvent = unsubscribeEvent
-    self.isSubscribed = isSubscribed
-    self.dispatchEvent = dispatchEvent
-    self.attachisolate = attachisolate
-    self.detachisolate = detachisolate
+    local function subscribeEvent(event: string, system: string, attachedop: runtime.StateOp?) return common.subscribeEvent(ctx, event, system, attachedop) end
+    local function unsubscribeEvent(event: string, system: string) return common.unsubscribeEvent(ctx, event, system) end
 
-    return self
-end)
-
---- Creates a new TemplateLoopManager instance if it doesn't already exist, otherwise creates one
-local function TemplateLoopManager(baseCtx: Primitives.TemplateContext, ts: runtime.TenantState, btd: runtime.BaseTenantData): templateloopImpl.TemplateLoopManager
-    local existing = baseCtx.store[templateloopImpl.TEMPLATE_LOOP_KEY] :: templateloopImpl.TemplateLoopManager?
-    if existing then return existing end
-    return lazyloader.get({ ctx = baseCtx, ts = ts, btd = btd }) -- The lazyloader autosets the value into the store automatically
+    return table.freeze{
+        debugmanager = debugmanager,
+        discord = discord,
+        subscribeEvent = subscribeEvent,
+        unsubscribeEvent = unsubscribeEvent,
+        isSubscribed = common.isSubscribed,
+        dispatchEvent = dispatchEvent,
+        attachisolate = attachisolate,
+        detachisolate = detachisolate,
+        common = common
+    }
 end
 
-return TemplateLoopManager
+--- @noyield
+---
+--- Creates a new TemplateLoopManager instance at initialization. Using this outside of initialization may fail or lead to hard-to-debug errors
+---
+--- Note: Do not use this outside of the initial loop creation
+local function newinitloop(baseCtx: Primitives.TemplateContext, ts: runtime.TenantState, btd: runtime.BaseTenantData): templateloopImpl.TemplateLoopManager
+    if baseCtx.store[templateloopImpl.TEMPLATE_LOOP_KEY] then error("cannot call newinitloop if context already exists") end
+    local common = TemplateLoopCommon(ts, btd)
+    local tlm = TemplateLoopManager(baseCtx, common)
+    baseCtx.store[templateloopImpl.TEMPLATE_LOOP_KEY] = tlm
+    return tlm
+end
+
+--- @noyield
+---
+--- Creates a new TemplateLoopManager instance and stores it in the underlying context
+local function newloop(ctx: Primitives.TemplateContext, common: templateloopImpl.TemplateLoopCommon) 
+    if ctx.store[templateloopImpl.TEMPLATE_LOOP_KEY] then error("cannot call newloop if context already exists") end
+    local tlm = TemplateLoopManager(ctx, common)
+    ctx.store[templateloopImpl.TEMPLATE_LOOP_KEY] = tlm
+    return tlm
+end
+
+return {
+    newinitloop = newinitloop,
+    TemplateLoopManager = TemplateLoopManager,
+    newloop = newloop
+    -- Note that templateloopcommon is intentionally not exported as it should be reused from the currently running TemplateLoopManager
+}

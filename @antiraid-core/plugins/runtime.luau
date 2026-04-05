@@ -66,6 +66,7 @@ export type StateExecResult = {
     data: any, -- todo: add opaque type,
 }
 
+--- Internal tenant state of the running VM
 export type TenantState = {
     --- The list of events the guild is (globally) subscribed to
     events: {[string]: {[string]: boolean}},

@@ -1,6 +1,8 @@
 --- Syscall filterer
 local Primitives = require"@antiraid-core/primitives"
 local runtime = require"@antiraid-core/plugins/runtime"
+local tloop = require"@antiraid-core/templateloop"
+local tloopimpl = require"@antiraid-core/templateloop/impl"
 
 export type JailOpts = {
     ops: {string},
@@ -34,12 +36,15 @@ local function createjail(rootctx: Primitives.TemplateContext, jc: JailConfig): 
         end
         return rootctx:syscall(args)
     end
-    local storetab = {} -- TODO: Support templateloop
 
     innerctxref = setmetatable({
-        store = storetab,
+        store = {},
         syscall = jailcall
     }, {__metatable = false})
+
+    -- Setup inner tloop
+    local rootloop = tloop.getRunningLoop(rootctx)
+    tloopimpl.newloop(innerctxref, rootloop.common)
 
     return innerctxref
 end

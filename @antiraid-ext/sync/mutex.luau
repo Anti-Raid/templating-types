@@ -6,6 +6,9 @@ export type MutexFn = {
     read locked: () -> boolean
 }
 
+--- @noyield
+---
+--- Creates a new MutexFn instance that locks yield-based accesses to callbacks
 local function MutexFn(): MutexFn
     local queue: {thread} = {}    
     local islocked = false

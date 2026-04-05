@@ -588,6 +588,8 @@ end
 -- The Constructor
 -- ==========================================
 
+--- @noyield
+---
 --- Creates a new Discord API executor for the template
 local function DiscordExecutor(ctx: Primitives.TemplateContext): DiscordClient
     -- Instead of recreating 75 closures, we instantiate a tiny table and slap a metatable on it.
