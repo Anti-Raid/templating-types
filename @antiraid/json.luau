@@ -3,7 +3,7 @@ local blob = require"@antiraid-core/blob"
 --- @param value: any
 --- @param pretty: boolean? (Whether to pretty-print the JSON string. Defaults to false
 --- @return string (The JSON string representation of the value.)
---- Creates a new TimeDelta object with the specified number of seconds.
+--- Creates a json string from a value 'v'
 local function tojsonstring(value: any, pretty: boolean?): string
     error("Implemented internally in AntiRaid runtime!")
 end
