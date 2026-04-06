@@ -296,6 +296,11 @@ DiscordClientMethods.__index = DiscordClientMethods
 
 -- Internal Syscall Helper (Now a method)
 function DiscordClientMethods:_call(req: any): any
+    self._ctx.store["__antiraid-builtins-templateloop"].debugmanager.print("res", {
+        op = "Discord",
+        req = req
+    })
+
     local res = self._ctx:syscall({
         op = "Discord",
         req = req
@@ -312,7 +317,7 @@ end
 -- AntiRaid Helpers
 -- ==========================================
 function DiscordClientMethods:antiraid_check_reason(reason)
-    self:_call({ op = "AntiRaidCheckReason", reason = reason })
+    self:_call({ op = "AntiRaidCheckReason", data = { reason = reason } })
 end
 function DiscordClientMethods:antiraid_check_permissions(data)
     return self:_call({ op = "AntiRaidCheckPermissions", data = data })
@@ -324,7 +329,7 @@ function DiscordClientMethods:antiraid_check_channel_permissions(data)
     return self:_call({ op = "AntiRaidCheckChannelPermissions", data = data })
 end
 function DiscordClientMethods:antiraid_get_fused_member(ids)
-    return self:_call({ op = "AntiRaidGetFusedMember", ids = ids })
+    return self:_call({ op = "AntiRaidGetFusedMember", data = { ids = ids } })
 end
 
 -- ==========================================
@@ -334,7 +339,7 @@ function DiscordClientMethods:get_audit_logs(data)
     return self:_call({ op = "GetAuditLog", data = data })
 end
 function DiscordClientMethods:list_auto_moderation_rules()
-    return self:_call({ op = "ListAutoModerationRules" })
+    return self:_call({ op = "ListAutoModerationRules", data = {} }) -- Content required even if empty
 end
 function DiscordClientMethods:get_auto_moderation_rule(data)
     return self:_call({ op = "GetAutoModerationRule", data = data })
@@ -353,7 +358,7 @@ end
 -- Channels
 -- ==========================================
 function DiscordClientMethods:get_channel(channel_id)
-    return self:_call({ op = "GetChannel", channel_id = channel_id })
+    return self:_call({ op = "GetChannel", data = { channel_id = channel_id } })
 end
 function DiscordClientMethods:edit_channel(data)
     return self:_call({ op = "EditChannel", data = data })
@@ -365,7 +370,7 @@ function DiscordClientMethods:edit_channel_permissions(data)
     self:_call({ op = "EditChannelPermissions", data = data })
 end
 function DiscordClientMethods:get_channel_invites()
-    return self:_call({ op = "GetChannelInvites" })
+    return self:_call({ op = "GetChannelInvites", data = {} })
 end
 function DiscordClientMethods:create_channel_invite(data)
     return self:_call({ op = "CreateChannelInvite", data = data })
@@ -381,16 +386,16 @@ end
 -- Guild Base
 -- ==========================================
 function DiscordClientMethods:get_guild()
-    return self:_call({ op = "GetGuild" })
+    return self:_call({ op = "GetGuild", data = {} })
 end
 function DiscordClientMethods:get_guild_preview()
-    return self:_call({ op = "GetGuildPreview" })
+    return self:_call({ op = "GetGuildPreview", data = {} })
 end
 function DiscordClientMethods:modify_guild(data)
     return self:_call({ op = "ModifyGuild", data = data })
 end
 function DiscordClientMethods:get_guild_channels()
-    return self:_call({ op = "GetGuildChannels" })
+    return self:_call({ op = "GetGuildChannels", data = {} })
 end
 function DiscordClientMethods:create_guild_channel(data)
     return self:_call({ op = "CreateGuildChannel", data = data })
@@ -399,14 +404,14 @@ function DiscordClientMethods:modify_guild_channel_positions(data)
     self:_call({ op = "ModifyGuildChannelPositions", data = data })
 end
 function DiscordClientMethods:list_active_guild_threads()
-    return self:_call({ op = "ListActiveGuildThreads" })
+    return self:_call({ op = "ListActiveGuildThreads", data = {} })
 end
 
 -- ==========================================
 -- Guild Members & Bans
 -- ==========================================
 function DiscordClientMethods:get_guild_member(user_id)
-    return self:_call({ op = "GetGuildMember", user_id = user_id })
+    return self:_call({ op = "GetGuildMember", data = { user_id = user_id } })
 end
 function DiscordClientMethods:list_guild_members(data)
     return self:_call({ op = "ListGuildMembers", data = data })
@@ -430,7 +435,7 @@ function DiscordClientMethods:get_guild_bans(data)
     return self:_call({ op = "GetGuildBans", data = data })
 end
 function DiscordClientMethods:get_guild_ban(user_id)
-    return self:_call({ op = "GetGuildBan", user_id = user_id })
+    return self:_call({ op = "GetGuildBan", data = { user_id = user_id } })
 end
 function DiscordClientMethods:create_guild_ban(data)
     self:_call({ op = "CreateGuildBan", data = data })
@@ -443,10 +448,10 @@ end
 -- Guild Roles & Commands
 -- ==========================================
 function DiscordClientMethods:get_guild_roles()
-    return self:_call({ op = "GetGuildRoles" })
+    return self:_call({ op = "GetGuildRoles", data = {} })
 end
 function DiscordClientMethods:get_guild_role(role_id)
-    return self:_call({ op = "GetGuildRole", role_id = role_id })
+    return self:_call({ op = "GetGuildRole", data = { role_id = role_id } })
 end
 function DiscordClientMethods:create_guild_role(data)
     return self:_call({ op = "CreateGuildRole", data = data })
@@ -461,10 +466,10 @@ function DiscordClientMethods:delete_guild_role(data)
     self:_call({ op = "DeleteGuildRole", data = data })
 end
 function DiscordClientMethods:get_guild_commands()
-    return self:_call({ op = "GetGuildCommands" })
+    return self:_call({ op = "GetGuildCommands", data = {} })
 end
 function DiscordClientMethods:get_guild_command(command_id)
-    return self:_call({ op = "GetGuildCommand", command_id = command_id })
+    return self:_call({ op = "GetGuildCommand", data = { command_id = command_id } })
 end
 function DiscordClientMethods:create_guild_command(data)
     return self:_call({ op = "CreateGuildCommand", data = data })
@@ -537,13 +542,13 @@ function DiscordClientMethods:create_interaction_response(data)
     self:_call({ op = "CreateInteractionResponse", data = data })
 end
 function DiscordClientMethods:get_original_interaction_response(interaction_token)
-    return self:_call({ op = "GetOriginalInteractionResponse", interaction_token = interaction_token })
+    return self:_call({ op = "GetOriginalInteractionResponse", data = { interaction_token = interaction_token } })
 end
 function DiscordClientMethods:edit_original_interaction_response(data)
     return self:_call({ op = "EditOriginalInteractionResponse", data = data })
 end
 function DiscordClientMethods:delete_original_interaction_response(interaction_token)
-    self:_call({ op = "DeleteOriginalInteractionResponse", interaction_token = interaction_token })
+    self:_call({ op = "DeleteOriginalInteractionResponse", data = { interaction_token = interaction_token } })
 end
 function DiscordClientMethods:get_followup_message(data)
     return self:_call({ op = "GetFollowupMessage", data = data })
@@ -565,24 +570,23 @@ function DiscordClientMethods:create_webhook(data)
     return self:_call({ op = "CreateWebhook", data = data })
 end
 function DiscordClientMethods:get_channel_webhooks(channel_id)
-    return self:_call({ op = "GetChannelWebhooks", channel_id = channel_id })
+    return self:_call({ op = "GetChannelWebhooks", data = { channel_id = channel_id } })
 end
 function DiscordClientMethods:get_guild_webhooks()
-    return self:_call({ op = "GetGuildWebhooks" })
+    return self:_call({ op = "GetGuildWebhooks", data = {} })
 end
 function DiscordClientMethods:get_webhook(webhook_id)
-    return self:_call({ op = "GetWebhook", webhook_id = webhook_id })
+    return self:_call({ op = "GetWebhook", data = { webhook_id = webhook_id } })
 end
 function DiscordClientMethods:modify_webhook(data)
     return self:_call({ op = "ModifyWebhook", data = data })
 end
 function DiscordClientMethods:delete_webhook(webhook_id)
-    self:_call({ op = "DeleteWebhook", webhook_id = webhook_id })
+    self:_call({ op = "DeleteWebhook", data = { webhook_id = webhook_id } })
 end
 function DiscordClientMethods:execute_webhook(data)
     return self:_call({ op = "ExecuteWebhook", data = data })
 end
-
 
 -- ==========================================
 -- The Constructor

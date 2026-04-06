@@ -171,7 +171,7 @@ local function KeyExpiryManager<T>(
         local expiresat = expiry
         if expiry <= datetime.UTC:now() then 
             -- Already expired, add with a random delay > 20 seconds to avoid thundering herd
-            expiresat = datetime.UTC:now() + datetime.timedelta_seconds(20 + math.random(5, 120))
+            expiresat = datetime.UTC:now() + datetime.timedelta_seconds(20 + math.random(5, 20))
         end
         return expiresat:duration_since(datetime.UTC:now())
     end

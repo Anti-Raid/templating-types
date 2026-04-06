@@ -59,6 +59,9 @@ export type TemplateLoopManager = {
     --- Inner shared common manager
     read common: TemplateLoopCommon,
 
+    --- Base tenant data
+    read btd: runtime.BaseTenantData,
+
     --- Returns the underlying discord client wrapper
     read discord: Discord.DiscordClient
 }

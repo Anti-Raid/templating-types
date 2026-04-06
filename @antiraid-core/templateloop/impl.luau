@@ -176,7 +176,8 @@ local function TemplateLoopManager(ctx: Primitives.TemplateContext, common: temp
         dispatchEvent = dispatchEvent,
         attachisolate = attachisolate,
         detachisolate = detachisolate,
-        common = common
+        common = common,
+        btd = common.btd
     }
 end
 
