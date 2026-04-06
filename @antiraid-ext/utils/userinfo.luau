@@ -2,7 +2,6 @@ local discord = require"@discord-types/apiTypes"
 local Kittycat = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local KeyManager = require"../keymanager"
-local tloop = require"@antiraid-core/templateloop"
 
 export type GuildRolePermission = {
     position: Kittycat.PartialStaffPosition,
@@ -115,7 +114,6 @@ type IGuildMemberPermOverrides = {string}
 
 local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
     local self = {}
-    local loop = tloop.getRunningLoop(ctx)
     local guildperms = KeyManager<<IGuildPermissions>>(ctx, "builtins.guild_permissions")
     local guildmemberpermoverrides = KeyManager<<IGuildMemberPermOverrides>>(ctx, "builtins.guild_permissions.overrides")
 
@@ -296,7 +294,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
         memberRoles: {discord.Snowflake}
     ): Stage1Data
         -- We still need to fetc
-        local guild = loop.discord:get_guild().data
+        local guild = ctx.discord:get_guild().data
 
         assert(guild, "Guild is nil. This is a bug and should not happen.")
 
@@ -311,7 +309,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
 
     local function _getS1D_SlowPath(user_id: discord.Snowflake, currentPathUsed: string): Stage1Data 
         -- Slow path: we need to do a call to antiraid_get_fused_member to get the member, resolved permissions and guild info
-        local fusedMember = loop.discord:antiraid_get_fused_member({user_id})
+        local fusedMember = ctx.discord:antiraid_get_fused_member({user_id})
         local member = fusedMember.data.members[1] or error("Fused member does not have a member. This is a bug and should not happen.")
         local resolvedPerms = member.resolved_perms or error("Fused member does not have resolved permissions. This is a bug and should not happen.")
         local memberRoles = member.member.roles or error("Fused member does not have roles. This is a bug and should not happen.")

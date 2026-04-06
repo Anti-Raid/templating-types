@@ -223,4 +223,11 @@ export type SyscallRet = {
     res: MetaResult
 }
 
+export type RawSyscall = {
+    --- @yields
+    ---
+    --- Performs a system call
+    async: (self: RawSyscall, args: SyscallArgs) -> SyscallRet,
+}
+
 return {}

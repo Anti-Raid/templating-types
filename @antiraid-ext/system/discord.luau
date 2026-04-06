@@ -1,14 +1,13 @@
---!strict
+--!nocheck
 local lazy = require("@antiraid-core/lazy")
 local discord = require("@antiraid-core/plugins/discord")
 local discordRest = require("@discord-types/restTypes")
 local discordApi = require("@discord-types/apiTypes")
-local Primitives = require("@antiraid-core/primitives")
 
 --- The fully typed, sandboxed Discord API Client for template execution
 export type DiscordClient = {
     -- Internal State
-    _ctx: Primitives.TemplateContext,
+    _ctx: any,
 
     -- ==========================================
     -- AntiRaid Helpers
@@ -296,12 +295,12 @@ DiscordClientMethods.__index = DiscordClientMethods
 
 -- Internal Syscall Helper (Now a method)
 function DiscordClientMethods:_call(req: any): any
-    self._ctx.store["__antiraid-builtins-templateloop"].debugmanager.print("res", {
+    self._ctx.debug("res", {
         op = "Discord",
         req = req
     })
 
-    local res = self._ctx:syscall({
+    local res = self._ctx.syscall({
         op = "Discord",
         req = req
     })

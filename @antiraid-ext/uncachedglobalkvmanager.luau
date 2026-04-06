@@ -122,11 +122,11 @@ end
 --- 1. Unlike KeyManager, it is guaranteed that creating a UncachedKeyManager will *not* yield
 local function UncachedGlobalKeyManager<PublicMetadata, Data>(ctx: Primitives.TemplateContext, basescope: string): UncachedGlobalKeyManager<PublicMetadata, Data>
     local function remove(key: string, version: number)
-        ctx:syscall({op="State", ops={{ op = "GlobalKvDelete", key = key, version = version, scope = basescope }}})
+        ctx.syscall({op="State", ops={{ op = "GlobalKvDelete", key = key, version = version, scope = basescope }}})
     end
 
     local function create(data: CreateGlobalKey<PublicMetadata, Data>)
-        ctx:syscall({op="State", ops={{
+        ctx.syscall({op="State", ops={{
             op = "GlobalKvCreate",
             key = data.key,
             version = data.version,
@@ -139,7 +139,7 @@ local function UncachedGlobalKeyManager<PublicMetadata, Data>(ctx: Primitives.Te
     end
 
     local function list(query: string?): (number, {[string]: GlobalKeyRecord<PublicMetadata>})
-        local records = ctx:syscall({op="State", ops={{ op = "GlobalKvFind", query = query or "%%", scope = basescope }}})
+        local records = ctx.syscall({op="State", ops={{ op = "GlobalKvFind", query = query or "%%", scope = basescope }}})
         assert(records.op == "State")
         local parsed: {[string]: GlobalKeyRecord<PublicMetadata>} = {}
         local count = 0
@@ -153,7 +153,7 @@ local function UncachedGlobalKeyManager<PublicMetadata, Data>(ctx: Primitives.Te
     end
 
     local function listarr(query: string?): {GlobalKeyRecord<PublicMetadata>}
-        local records = ctx:syscall({op="State", ops={{ op = "GlobalKvFind", query = query or "%%", scope = basescope }}})
+        local records = ctx.syscall({op="State", ops={{ op = "GlobalKvFind", query = query or "%%", scope = basescope }}})
         assert(records.op == "State")
         local parsed: {GlobalKeyRecord<PublicMetadata>} = {}
         for _, record in records.res do
@@ -164,7 +164,7 @@ local function UncachedGlobalKeyManager<PublicMetadata, Data>(ctx: Primitives.Te
     end
 
     local function get(key: string, version: number): GlobalKeyRecord<PublicMetadata>?
-        local records = ctx:syscall({op="State", ops={{ op = "GlobalKvGet", key = key, version = version, scope = basescope }}})
+        local records = ctx.syscall({op="State", ops={{ op = "GlobalKvGet", key = key, version = version, scope = basescope }}})
         assert(records.op == "State")
         if #records.res == 0 then return nil end
         local record = records.res[1]

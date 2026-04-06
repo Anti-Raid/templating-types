@@ -4,7 +4,6 @@ local kc = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local typesext = require "@antiraid/typesext"  
 local userinfo = require "./userinfo"
-local tloop = require"@antiraid-core/templateloop"
 
 local SupportedAltPerms: {[string]: permissions.Permissions} = {
     ["moderation.sting"] = "ModerateMembers" :: "ModerateMembers",
@@ -44,16 +43,14 @@ local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string)
 end
 
 local function canBotDoInChannel(channelId: string, ctx: Primitives.TemplateContext, botNeededPerms: typesext.U64Convertibles) 
-    local loop = tloop.getRunningLoop(ctx)
-    return loop.discord:antiraid_check_channel_permissions({
+    return ctx.discord:antiraid_check_channel_permissions({
         needed_permissions = tostring(botNeededPerms),
         channel_id = channelId,
-        user_id = loop.btd.bot.id,
+        user_id = ctx.btd().bot.id,
     })
 end
 
 local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinfo: userinfo.UserInfo, targetId: string, cap: string)
-    local loop = tloop.getRunningLoop(ctx)
     if userinfo.userid == targetId then
         error("You cannot moderate yourself!")
     end
@@ -85,7 +82,7 @@ local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinf
     end
 
     -- Check hierarchy
-    loop.discord:antiraid_check_permissions_and_hierarchy({
+    ctx.discord:antiraid_check_permissions_and_hierarchy({
         needed_permissions = "0",
         target_id = targetId,
         user_id = userinfo.userid,

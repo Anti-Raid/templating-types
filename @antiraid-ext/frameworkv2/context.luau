@@ -5,7 +5,6 @@ local Primitives = require"@antiraid-core/primitives"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local canModeratorDo = require "@antiraid-ext/utils/modhierarchy".canModeratorDo
 local appcommands = require"@antiraid-ext/appcommands"
-local tloop = require "@antiraid-core/templateloop"
 local channel = require"@antiraid/channel"
 local datetime = require"@antiraid/datetime"
 local discordP = require"@antiraid-core/plugins/discord"
@@ -95,8 +94,6 @@ export type Framework = {
     read meta: net.Meta,
     --- The underlying user info manager for managing user permissions
     read userinfomanager: userinfomanager.UserInfoManager,
-    --- The underlying template loop manager
-    read loop: tloop.TemplateLoopManager,
     --- Message component callbacks
     read components: Callbacks<(MessageComponentContext) -> nil>,
     --- Command callbacks
@@ -105,7 +102,6 @@ export type Framework = {
 
 --- Creates a base framework
 local function Framework(ctx: Primitives.TemplateContext): Framework
-    local loop = tloop.getRunningLoop(ctx)
     local userinfomanager = userinfomanager(ctx)
     local componentcbs = Callbacks<<(MessageComponentContext) -> nil>>()
     local commandcbs = Callbacks<<Command>>()
@@ -116,7 +112,6 @@ local function Framework(ctx: Primitives.TemplateContext): Framework
         cdn = net.Cdn(ctx),
         meta = net.Meta(ctx),
         userinfomanager = userinfomanager,
-        loop = loop,
         components = componentcbs,
         commands = commandcbs
     }
@@ -186,7 +181,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
 
     local function editoriginalresponse(data: discordRestTypes.EditWebhookMessageRequest)
         assert(hasresponded, "You must first reply to a interaction before editing it")
-        return framework.loop.discord:edit_original_interaction_response({
+        return ctx.discord:edit_original_interaction_response({
             interaction_token = interaction.token,
             data = data,
         })
@@ -194,7 +189,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
 
     local function createoriginalresponse(data: discordRestTypes.CreateInteractionRequest)
         assert(not hasresponded, "You cannot create multiple original responses")
-        framework.loop.discord:create_interaction_response({
+        ctx.discord:create_interaction_response({
             interaction_id = interaction.id,
             interaction_token = interaction.token,
             data = data,
@@ -230,7 +225,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
         assert(hasresponded, "You must first respond to the interaction before sending a followup")
         -- Note: Ensure this matches the exact method name in your Discord wrapper 
         -- (e.g., create_followup_message or execute_webhook)
-        return framework.loop.discord:create_followup_message({
+        return ctx.discord:create_followup_message({
             interaction_token = interaction.token,
             data = data,
         })
@@ -291,7 +286,7 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
                 ButtonBuilder.new()
                 :setStyle("Blurple")
                 :setLabel("Support Server")
-                :setUrl(framework.loop.btd.website)
+                :setUrl(ctx.btd().website)
                 :build()
             )
             :build()
@@ -540,8 +535,6 @@ export type BaseContext = {
     read framework: Framework,
     --- The underlying context
     read ctx: Primitives.TemplateContext,
-    --- The underlying template loop
-    read loop: tloop.TemplateLoopManager,
 }
 
 --- Context for a message component interaction
@@ -557,7 +550,6 @@ local function MessageComponentContext(framework: Framework, interaction: discor
     return table.freeze{
         framework = framework,
         ctx = framework.ctx,
-        loop = framework.loop,
         interaction = InteractionManager(framework.ctx, framework, interaction)
     }
 end
@@ -577,7 +569,6 @@ local function CommandContext(framework: Framework, interaction: discord.Interac
     return table.freeze{
         framework = framework,
         ctx = framework.ctx,
-        loop = framework.loop,
         interaction = InteractionManager(framework.ctx, framework, interaction),
         command = command,
         args = CommandArgs(command)
@@ -599,7 +590,6 @@ local function CommandAutocompleteContext(framework: Framework, interaction: dis
     return table.freeze{
         framework = framework,
         ctx = framework.ctx,
-        loop = framework.loop,
         interaction = InteractionManager(framework.ctx, framework, interaction),
         command = command,
         args = CommandArgs(command)

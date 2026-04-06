@@ -6,7 +6,7 @@ local Primitives = require"@antiraid-core/primitives"
 
 --- Helper function to execute and unwrap object storage syscall
 local function objstorecall(ctx: Primitives.TemplateContext, req: runtime.ObjectStorageCall): runtime.ObjectStorageResult
-    local result = ctx:syscall({
+    local result = ctx.syscall({
         op = "ObjectStorage",
         req = req
     })
@@ -20,7 +20,7 @@ end
 
 --- Helper function to execute and unwrap cdn syscall
 local function cdncall(ctx: Primitives.TemplateContext, req: runtime.CdnCall): runtime.CdnResult
-    local result = ctx:syscall({
+    local result = ctx.syscall({
         op = "Cdn",
         req = req
     })
@@ -34,7 +34,7 @@ end
 
 --- Helper function to execute and unwrap meta syscall
 local function metacall(ctx: Primitives.TemplateContext, req: runtime.MetaCall): runtime.MetaResult
-    local result = ctx:syscall({
+    local result = ctx.syscall({
         op = "Meta",
         req = req
     })

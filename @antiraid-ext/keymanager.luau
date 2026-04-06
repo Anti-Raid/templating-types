@@ -1,7 +1,6 @@
 --!strict
 local Primitives = require"@antiraid-core/primitives"
 local datetime = require"@antiraid/datetime"
-local templateloopImpl = require"@antiraid-core/templateloop"
 local typesext = require"@antiraid/typesext"
 
 local KEY_RANDSTRING_LENGTH = 8
@@ -57,22 +56,21 @@ export type KeyManager<T> = {
 local function KeyManager<T>(
     ctx: Primitives.TemplateContext, 
     basescope: string,
-    oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: KeyRecord<T>}, km: KeyManager<T>) -> any)?
+    oninit: ((records: {[string]: KeyRecord<T>}, km: KeyManager<T>) -> any)?
 ): KeyManager<T>
-    local loop = templateloopImpl.getRunningLoop(ctx)
-    loop.debugmanager.print("[KeyManager] Initializing KeyManager")
+    ctx.debug("[KeyManager] Initializing KeyManager")
 
     local kexs = {} :: {[string]: KeyRecord<T>}
     local count = 0
 
     local function remove(key: string) 
         if not kexs[key] then return end -- Remove associated key + data
-        loop.debugmanager.print("[KeyManager] Removing key: "..key)
-        ctx:syscall({op="State", ops={{ op = "KvDelete", key = key, scope = basescope }}})
+        ctx.debug("[KeyManager] Removing key: "..key)
+        ctx.syscall({op="State", ops={{ op = "KvDelete", key = key, scope = basescope }}})
         kexs[key] = nil
         count = count - 1
         if next(kexs) == nil then 
-            loop.unsubscribeEvent("@keym", basescope) -- No more keys, unsubscribe
+            ctx.loop.unsubscribe("@keym", basescope) -- No more keys, unsubscribe
         end
     end
 
@@ -97,7 +95,7 @@ local function KeyManager<T>(
         assert(not exists(key), `Generated key \`{key}\` already exists`)
 
         -- Record in kv store and subscribe to event via attachedop
-        loop.subscribeEvent("@keym", basescope, { op = "KvSet", key = key, scope = basescope, value = data })
+        ctx.loop.subscribe("@keym", basescope, { op = "KvSet", key = key, scope = basescope, value = data })
         local now = datetime.UTC:now()
         kexs[key] = table.freeze{
             key = key,
@@ -112,13 +110,13 @@ local function KeyManager<T>(
 
     local function updatedata(key: string, data: T)
         if not exists(key) then 
-            loop.debugmanager.print("[KeyManager] Attempted to update data for non-existent key: "..key)
+            ctx.debug("[KeyManager] Attempted to update data for non-existent key: "..key)
             return
         end
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx:syscall({op="State", ops={{ op = "KvSet", key = key, scope = basescope, value = data }}})
+        ctx.syscall({op="State", ops={{ op = "KvSet", key = key, scope = basescope, value = data }}})
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -142,8 +140,8 @@ local function KeyManager<T>(
     --- Synchronize key expiries from KV store
     local function sync() 
         -- Fetch existing key expiries from kv
-        loop.debugmanager.print("[KeyManager] Syncing keys from tenant state")
-        local kexdata = ctx:syscall({op="State", ops={{ op = "KvFind", query = "%%", scope = basescope}}})
+        ctx.debug("[KeyManager] Syncing keys from tenant state")
+        local kexdata = ctx.syscall({op="State", ops={{ op = "KvFind", query = "%%", scope = basescope}}})
         assert(kexdata.op == "State")
         local newkexs: {[string]: KeyRecord<T>} = {}
         local newcount = 0
@@ -160,15 +158,15 @@ local function KeyManager<T>(
         end
         kexs = newkexs -- Replace with new data
         count = newcount
-        loop.debugmanager.print("[KeyManager] Synced keys. Count: "..count)
+        ctx.debug("[KeyManager] Synced keys. Count: "..count)
 
         -- Call oninit callback if provided
         if oninit then 
             task.spawn(function()
                 if not oninit then return end -- needed for luau new type solver
-                local ok, res = xpcall(oninit, debug.traceback :: any, loop, kexs, self)
+                local ok, res = xpcall(oninit, debug.traceback :: any, kexs, self)
                 if not ok then 
-                    loop.debugmanager.print("[KeyManager] Error in oninit callback: "..tostring(res))
+                    ctx.debug("[KeyManager] Error in oninit callback: "..tostring(res))
                 end
             end)
         end
@@ -191,7 +189,7 @@ local function KeyManager<T>(
     self = _self -- For luau type reasons
 
     -- Initially sync if we're subscribed to OnStartup explicitly.
-    if loop.isSubscribed("@keym", basescope) then
+    if ctx.loop.isSubscribed("@keym", basescope) then
         task.spawn(sync)
     end
 

@@ -1,7 +1,6 @@
 local Primitives = require"@antiraid-core/primitives"
 local channel = require"@antiraid/channel"
 local datetime = require"@antiraid/datetime"
-local templateloopImpl = require"@antiraid-core/templateloop"
 local typesext = require"@antiraid/typesext"
 
 local KEYEXPIRY_RANDSTRING_LENGTH = 8
@@ -70,13 +69,12 @@ export type KeyExpiryManager<T> = {
 local function KeyExpiryManager<T>(
     ctx: Primitives.TemplateContext, 
     scope: string, 
-    callback: (loop: templateloopImpl.TemplateLoopManager, record: ExpiringKeyRecord<T>) -> any, 
-    oninit: ((loop: templateloopImpl.TemplateLoopManager, records: {[string]: ExpiringKeyRecord<T>}, kexm: KeyExpiryManager<T>) -> any)?
+    callback: (record: ExpiringKeyRecord<T>) -> any, 
+    oninit: ((records: {[string]: ExpiringKeyRecord<T>}, kexm: KeyExpiryManager<T>) -> any)?
 ): KeyExpiryManager<T>
     local systemscope = "__kexs"..scope -- System scope where kex's are stored
 
-    local loop = templateloopImpl.getRunningLoop(ctx)
-    loop.debugmanager.print("[KeyExpiryManager] Initializing KeyExpiryManager")
+    ctx.debug("[KeyExpiryManager] Initializing KeyExpiryManager")
 
     local kexs = {} :: {[string]: ExpiringKeyRecord<T>}
     local count = 0
@@ -87,10 +85,10 @@ local function KeyExpiryManager<T>(
 
     local function remove(key: string) 
         if not kexs[key] then return end
-        loop.debugmanager.print("[KeyExpiryManager] Removing key expiry: "..key)
+        ctx.debug("[KeyExpiryManager] Removing key expiry: "..key)
         
         -- First, drop the key, this may error in which we halt immediately
-        ctx:syscall({op="State", ops={{ op = "KvDelete", key = key, scope = systemscope }}})
+        ctx.syscall({op="State", ops={{ op = "KvDelete", key = key, scope = systemscope }}})
         local handle = handles[key]
         if handle then 
             handle:cancel() -- Cancel the handle
@@ -99,22 +97,22 @@ local function KeyExpiryManager<T>(
         kexs[key] = nil
         count = count - 1
         if next(kexs) == nil and #delayqueue == 0 then 
-            loop.unsubscribeEvent("OnStartup", systemscope) -- No more key expiries, unsubscribe
+            ctx.loop.unsubscribe("OnStartup", systemscope) -- No more key expiries, unsubscribe
         end
     end
 
     --- Calls the callback with the expired key and its associated data, then removes the key expiry
     local function _callcallback(key: string) 
         -- Dispatch event to templates
-        loop.debugmanager.print("[KeyExpiryManager] Key expired: "..key)
+        ctx.debug("[KeyExpiryManager] Key expired: "..key)
 
         -- Fetch associated data if any
         local kex = kexs[key]
 
         --local ok, res = xpcall(loop.dispatchEvent, debug.traceback :: any, ctx, {name = eventname, data = { key = key, data = kex.data, created_at = kex.createdat, expires_at = kex.expiresat }, author = nil}, nil)
-        local ok, res = xpcall(callback, debug.traceback :: any, loop, kex)
+        local ok, res = xpcall(callback, debug.traceback :: any, kex)
         if not ok then 
-            loop.debugmanager.print("[KeyExpiryManager] Error dispatching KeyExpiry event for key "..key..": "..tostring(res))
+            ctx.debug("[KeyExpiryManager] Error dispatching KeyExpiry event for key "..key..": "..tostring(res))
         end
 
         -- Remove the key expiry only after dispatching
@@ -124,7 +122,7 @@ local function KeyExpiryManager<T>(
 
     --- The main loop that waits for key expiries
     local function _loop(): any 
-        loop.debugmanager.print("[KeyExpiryManager] Key expiry loop started")
+        ctx.debug("[KeyExpiryManager] Key expiry loop started")
         while true do 
             local item = delayqueue:next()
 
@@ -138,7 +136,7 @@ local function KeyExpiryManager<T>(
         while true do
                 local success, err = pcall(_loop)
                 if not success then
-                    loop.debugmanager.print("[KeyExpiryManager] Loop crashed: " .. tostring(err))
+                    ctx.debug("[KeyExpiryManager] Loop crashed: " .. tostring(err))
                     task.wait(1) -- Prevent CPU spin
                 end
             end
@@ -146,7 +144,7 @@ local function KeyExpiryManager<T>(
 
     --- Helper method to ensure the loop is running
     local function _ensureLoopRunning()
-        loop.debugmanager.print("[KeyExpiryManager] Ensuring key expiry loop is running")
+        ctx.debug("[KeyExpiryManager] Ensuring key expiry loop is running")
         if not th or coroutine.status(th) == "dead" then th = task.spawn(_loopwhile) end
     end
 
@@ -182,7 +180,7 @@ local function KeyExpiryManager<T>(
         assert(expiresat.timezone == datetime.UTC, "expiresat must be in UTC timezone, currently: "..tostring(expiresat.timezone))
 
         -- Record in kv store and subscribe to event via attachedop
-        loop.subscribeEvent(
+        ctx.loop.subscribe(
             "OnStartup", 
             systemscope, 
             { 
@@ -221,13 +219,13 @@ local function KeyExpiryManager<T>(
 
     local function updatedata(key: string, data: T)
         if not exists(key) then 
-            loop.debugmanager.print("[KeyExpiryManager] Attempted to update data for non-existent key expiry: "..key)
+            ctx.debug("[KeyExpiryManager] Attempted to update data for non-existent key expiry: "..key)
             return
         end
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx:syscall({op="State", ops={{
+        ctx.syscall({op="State", ops={{
             op = "KvSet",
             key = key,
             scope = systemscope,
@@ -260,8 +258,8 @@ local function KeyExpiryManager<T>(
     local function sync() 
         if #delayqueue > 0 then delayqueue:clear() end -- Clear existing delayqueue entries
         -- Fetch existing key expiries from kv
-        loop.debugmanager.print("[KeyExpiryManager] Syncing key expiries from tenant state")
-        local kexdata = ctx:syscall({op="State", ops = {{ op = "KvFind", query = "%%", scope = systemscope}}})
+        ctx.debug("[KeyExpiryManager] Syncing key expiries from tenant state")
+        local kexdata = ctx.syscall({op="State", ops = {{ op = "KvFind", query = "%%", scope = systemscope}}})
         assert(kexdata.op == "State")
         local newkexs: {[string]: ExpiringKeyRecord<T>} = {}
         local newcount = 0
@@ -286,9 +284,9 @@ local function KeyExpiryManager<T>(
         if oninit then 
             task.spawn(function()
                 if not oninit then return end -- needed for luau new type solver
-                local ok, res = xpcall(oninit, debug.traceback :: any, loop, kexs, self)
+                local ok, res = xpcall(oninit, debug.traceback :: any, kexs, self)
                 if not ok then 
-                    loop.debugmanager.print("[KeyExpiryManager] Error in oninit callback: "..tostring(res))
+                    ctx.debug("[KeyExpiryManager] Error in oninit callback: "..tostring(res))
                 end
             end)
         end
@@ -324,7 +322,7 @@ local function KeyExpiryManager<T>(
     self = _self -- For luau type reasons
 
     -- Initially sync if we're subscribed to OnStartup explicitly.
-    if loop.isSubscribed("OnStartup", systemscope) then
+    if ctx.loop.isSubscribed("OnStartup", systemscope) then
         task.spawn(sync)
     end
 

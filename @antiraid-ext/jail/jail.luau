@@ -1,8 +1,9 @@
+--!strict
 --- Syscall filterer
 local Primitives = require"@antiraid-core/primitives"
 local runtime = require"@antiraid-core/plugins/runtime"
-local tloop = require"@antiraid-core/templateloop"
-local tloopimpl = require"@antiraid-core/templateloop/impl"
+local setup = require"@antiraid-core/setup"
+local Discord = require"@antiraid-ext/system/discord"
 
 export type JailOpts = {
     ops: {string},
@@ -23,8 +24,7 @@ export type JailConfig = {
 -- Creates a new 'jailed' context with syscall limits
 local function createjail(rootctx: Primitives.TemplateContext, jc: JailConfig): Primitives.TemplateContext 
     local innerctxref: Primitives.TemplateContext
-    local function jailcall(innerctx: Primitives.TemplateContext, args: runtime.SyscallArgs): runtime.SyscallRet 
-        assert(innerctx == innerctxref, "jailed context call from context that is not the jailed context")
+    local function jailcall(args: runtime.SyscallArgs): runtime.SyscallRet 
         assert(type(args) == "table", "syscall arguments must be a table")
         assert(getmetatable(args) == nil, "jailed context call with arg containing a metatable")
         if args.op == "Discord" then 
@@ -34,17 +34,26 @@ local function createjail(rootctx: Primitives.TemplateContext, jc: JailConfig): 
         elseif jc.denyunsupported then
             error("unsupported syscall op")
         end
-        return rootctx:syscall(args)
+        return rootctx.syscall(args)
     end
 
-    innerctxref = setmetatable({
-        store = {},
-        syscall = jailcall
-    }, {__metatable = false})
+    local eventmanager: Primitives.EventManager
+    local discord: Discord.DiscordClient
+    innerctxref = table.freeze{
+        syscall = jailcall,
+        tenantstate = rootctx.tenantstate,
+        btd = rootctx.btd,
+        debug = rootctx.debug,
+        loop = eventmanager,
+        discord = discord
+    }
 
-    -- Setup inner tloop
-    local rootloop = tloop.getRunningLoop(rootctx)
-    tloopimpl.newloop(innerctxref, rootloop.common)
+    eventmanager = setup.EventManager(innerctxref)
+    discord = setup.Discord(innerctxref)
+
+    local ctxany = innerctxref :: any
+    ctxany.discord = discord
+    ctxany.loop = eventmanager
 
     return innerctxref
 end
