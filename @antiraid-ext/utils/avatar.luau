@@ -1,5 +1,4 @@
 local apiTypes = require "@discord-types/apiTypes"
-local typesext = require "@antiraid/typesext"
 
 --- Returns the avatar URL for a user or returns a default avatar URL if the user does not have a custom avatar.
 ---
@@ -14,7 +13,7 @@ local function avatarUrl(user: apiTypes.UserObject)
     if user.discriminator == "0" or user.discriminator == "0000" then
         index = tostring((tonumber(user.discriminator) or 0) % 5)
     else
-        index = tostring(typesext.bitu64.rshift(typesext.U64((user :: any).id), 22) % 6) -- ((user_id >> 22) % 6)
+        index = tostring(integer.urem(integer.rshift(integer.fromstring((user :: any).id), 22i), 6i)) -- ((user_id >> 22) % 6)
     end
 
     local avatarUrl = "https://cdn.discordapp.com/embed/avatars/" .. (index) .. ".png"

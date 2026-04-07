@@ -9,8 +9,6 @@
 
 local permissionTypes = require("@discord-types/permission")
 
-local typesext = require("@antiraid/typesext")
-
 local Permission = {}
 
 Permission.Prototype = {}
@@ -19,12 +17,8 @@ Permission.Interface = {}
 --[[
 	set the bitflag for this builder.
 ]]
-function Permission.Prototype.setPermissionBitflag(self: Permission, bitflag: typesext.U64Convertibles): Permission
-	local ok, numberRepresentation = pcall(typesext.U64, bitflag)
-
-	assert(ok, `Bitflag must be a number or a string representation of a number.`)
-
-	self.bitflag = numberRepresentation :: typesext.U64
+function Permission.Prototype.setPermissionBitflag(self: Permission, bitflag: integer): Permission
+	self.bitflag = bitflag
 
 	return self
 end
@@ -54,11 +48,11 @@ function Permission.Prototype.build(self: Permission): JSON
 	local bitflag = self.bitflag
 
 	for _, permission in self.addedPermissions do
-		bitflag = typesext.bitu64.bor(bitflag, permissionTypes[permission])
+		bitflag = integer.bor(bitflag, permissionTypes[permission])
 	end
 
 	for _, permission in self.removedPermissions do
-		bitflag = typesext.bitu64.band(bitflag, typesext.bitu64.bnot(permissionTypes[permission]))
+		bitflag = integer.band(bitflag, integer.bnot(permissionTypes[permission]))
 	end
 
 	return tostring(bitflag)
@@ -100,7 +94,7 @@ function Permission.Interface.fromPermissions(permissions: { permissionTypes.Per
 	local bitflag = 0
 
 	for _, permission in permissions do
-		bitflag = typesext.bitu64.bor(bitflag, permissionTypes[permission])
+		bitflag = integer.bor(bitflag, permissionTypes[permission])
 	end
 
 	return Permission.Interface.new({
@@ -109,7 +103,7 @@ function Permission.Interface.fromPermissions(permissions: { permissionTypes.Per
 end
 
 export type Permission = typeof(Permission.Prototype) & {
-	bitflag: typesext.U64,
+	bitflag: integer,
 	addedPermissions: { permissionTypes.Permissions },
 	removedPermissions: { permissionTypes.Permissions },
 }

@@ -53,7 +53,7 @@ end
 --- @param g The guild object
 --- @param m The member object
 --- @param c The channel object
---- @return typesext.U64 The permissions of the member in the channel
+--- @return integer The permissions of the member in the channel
 local function ComputeMemberChannelOverwrites(basePerms: integer, g: apitypes.GuildObject, m: apitypes.GuildMemberObject, c: apitypes.ChannelObject): integer
     assert(m.user, "Member must have a user object to use ComputeMemberChannelOverwrites")
     if integer.band(basePerms, permissions.Permissions.Administrator) == permissions.Permissions.Administrator then
@@ -110,8 +110,8 @@ local function MemberChannelPerms(g: apitypes.GuildObject, m: apitypes.GuildMemb
 end
 
 --- Check if a permission u64 has a permission
---- @param perms typesext.U64 The permission u64 to check
---- @param perm typesext.U64Convertibles The permission to check for
+--- @param perms integer The permission u64 to check
+--- @param perm integer The permission to check for
 --- @return boolean True if the permission is present, false otherwise
 local function HasPermission(perms: integer, perm: integer): boolean
     -- Check if admin
@@ -122,8 +122,8 @@ local function HasPermission(perms: integer, perm: integer): boolean
 end
 
 --- Check if a permission u64 has all permissions in a set
---- @param perms typesext.U64 The permission u64 to check
---- @param permSet set.Set<typesext.U64Convertibles> The set of permissions to check for
+--- @param perms integer The permission u64 to check
+--- @param permSet set.Set<integer> The set of permissions to check for
 --- @return boolean True if all permissions are present, false otherwise
 local function HasAllPermissions(perms: integer, permSet: set.Set<integer>): boolean
     -- Check if admin

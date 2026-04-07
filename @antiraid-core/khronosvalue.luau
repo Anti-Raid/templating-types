@@ -5,9 +5,8 @@ local typesext = require "@antiraid/typesext"
 A number, I64, U64, boolean, vector, string, map, list, DateTime, TimeDelta, TimeZone or nil
 ]]
 export type KhronosValue = string -- Text
-    | number -- Integer (small), Float
-    | typesext.I64 -- Integer (big)
-    | typesext.U64 -- UnsignedInteger (big)
+    | number -- Integer, Float
+    | integer -- Int64
     | boolean -- Boolean
     | vector -- Vector
     | { [string]: KhronosValue } -- Map
