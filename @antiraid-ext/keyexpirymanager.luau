@@ -109,7 +109,6 @@ local function KeyExpiryManager<T>(
         -- Fetch associated data if any
         local kex = kexs[key]
 
-        --local ok, res = xpcall(loop.dispatchEvent, debug.traceback :: any, ctx, {name = eventname, data = { key = key, data = kex.data, created_at = kex.createdat, expires_at = kex.expiresat }, author = nil}, nil)
         local ok, res = xpcall(callback, debug.traceback :: any, kex)
         if not ok then 
             ctx.debug("[KeyExpiryManager] Error dispatching KeyExpiry event for key "..key..": "..tostring(res))

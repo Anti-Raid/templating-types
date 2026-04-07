@@ -2,23 +2,6 @@ local runtimeP = require("@antiraid-core/plugins/runtime")
 local Discord = require"@antiraid-ext/system/discord"
 local channel = require"@antiraid/channel"
 
--- AntiRaid primitives
-
--- Core types
-export type u8 = number
-export type u16 = number
-export type u32 = number
-export type u64 = number
-export type i8 = number
-export type i16 = number
-export type i32 = number
-export type i64 = number
-export type f32 = number
-export type f64 = number
-export type bool = boolean
-export type char = string
-export type byte = number
-
 --- An event that has been dispatched to the template. 
 --- 
 --- In templates, this is ``arg``.

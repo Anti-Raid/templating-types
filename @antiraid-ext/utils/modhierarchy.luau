@@ -2,7 +2,6 @@ local permissions = require "@discord-types/permission"
 local permissionsFromBf = permissions.fromBitFlag
 local kc = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
-local typesext = require "@antiraid/typesext"  
 local userinfo = require "./userinfo"
 
 local SupportedAltPerms: {[string]: permissions.Permissions} = {
@@ -25,7 +24,7 @@ local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string)
     if not kc.has_perm(userinfo.kittycat_resolved_permissions, kc.Permission.from_string(cap)) then
         -- Check if an alternative discord permission is present on the mod
         if SupportedAltPerms[cap] then
-            local modPerms = permissionsFromBf(userinfo.discord_permissions)
+            local modPerms = permissionsFromBf(integer.fromstring(userinfo.discord_permissions))
             if not table.find(modPerms, SupportedAltPerms[cap]) then
                 error({
                     type = "MissingPermissions",
@@ -42,7 +41,7 @@ local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string)
     end
 end
 
-local function canBotDoInChannel(channelId: string, ctx: Primitives.TemplateContext, botNeededPerms: typesext.U64Convertibles) 
+local function canBotDoInChannel(channelId: string, ctx: Primitives.TemplateContext, botNeededPerms: integer) 
     return ctx.discord:antiraid_check_channel_permissions({
         needed_permissions = tostring(botNeededPerms),
         channel_id = channelId,
@@ -65,7 +64,7 @@ local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinf
     if not kc.has_perm(userinfo.kittycat_resolved_permissions, kc.Permission.from_string(cap)) then
         -- Check if an alternative discord permission is present on the mod
         if SupportedAltPerms[cap] then
-            local modPerms = permissionsFromBf(userinfo.discord_permissions)
+            local modPerms = permissionsFromBf(integer.fromstring(userinfo.discord_permissions))
             if not table.find(modPerms, SupportedAltPerms[cap]) then
                 error({
                     type = "MissingPermissions",

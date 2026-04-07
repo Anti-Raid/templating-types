@@ -1,10 +1,12 @@
 local discord = require"@discord-types/apiTypes"
+local datetime = require"@antiraid/datetime"
 local Kittycat = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local KeyManager = require"../keymanager"
 
 export type GuildRolePermission = {
     position: Kittycat.PartialStaffPosition,
+    createdat: datetime.DateTime
 }
 
 --- @class UserInfo
@@ -44,6 +46,7 @@ export type Stage1Data = {
 export type MemberPermissionOverrideEntry = {
     userid: discord.Snowflake,
     perm_overrides: {Kittycat.Permission},
+    createdat: datetime.DateTime?
 }
 
 --- UserInfoManager is a utility for fetching user info in a performant way
@@ -137,7 +140,8 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
                     id = roleId,
                     index = index,
                     perms = kittycatPermissions,
-                }
+                },
+                createdat = record.createdat
             })
         end
 
@@ -167,6 +171,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
                 index = index,
                 perms = kittycatPermissions,
             },
+            createdat = record.createdat
         }
     end
 
@@ -242,7 +247,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
                 table.insert(kittycatPermissions, kittycatPerm)
             end
 
-            table.insert(overrideEntries, {userid = record.key, perm_overrides = kittycatPermissions})
+            table.insert(overrideEntries, {userid = record.key, perm_overrides = kittycatPermissions, createdat = record.createdat})
         end
 
         return overrideEntries
@@ -255,6 +260,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
             return {
                 userid = userid,
                 perm_overrides = {},
+                createdat = nil
             }
         end
 
@@ -267,6 +273,7 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
         return {
             userid = userid,
             perm_overrides = kittycatPermissions,
+            createdat = overrides.createdat
         }
     end
 

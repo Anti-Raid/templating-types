@@ -1,12 +1,10 @@
-local typesext = require "@antiraid/typesext"
 local set = require"@antiraid-ext/set"
-local bit = typesext.bitu64
 
-local function fromBitflag(bitflag: typesext.U64Convertibles, flags: {[string]: typesext.U64Convertibles}): {string} 
-	local bf = typesext.U64(bitflag)
+local function fromBitflag(bitflag: integer, flags: {[string]: integer}): {string} 
+	local bf = bitflag
 	local permissions = {}
 	for flag, permission in flags do
-		if bit.band(bf, permission) == (permission :: any) then
+		if integer.band(bf, permission) == (permission :: any) then
 			table.insert(permissions, flag)
 		end
 	end
@@ -14,11 +12,11 @@ local function fromBitflag(bitflag: typesext.U64Convertibles, flags: {[string]: 
 	return permissions
 end
 
-local function fromBitflagToSet(bitflag: typesext.U64Convertibles, flags: {[string]: typesext.U64Convertibles}): set.Set<string> 
-	local bf = typesext.U64(bitflag)
+local function fromBitflagToSet(bitflag: integer, flags: {[string]: integer}): set.Set<string> 
+	local bf = bitflag
 	local permissions = set.Set() :: set.Set<string>
 	for flag, permission in flags do
-		if bit.band(bf, permission) == (permission :: any) then
+		if integer.band(bf, permission) == permission then
 			permissions.add(flag)
 		end
 	end
