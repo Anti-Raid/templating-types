@@ -22,6 +22,21 @@ export type StateExecResult = {
     --- The timestamp when the record was last updated, in ISO 8601 format.
     last_updated_at: datetime.DateTime,
 } | {
+    op: "KvWithBlob",
+
+    --- The key of the record.
+    key: string,
+    --- The value of the record. This can be any type, depending on what was stored.
+    value: khronosvalue.KhronosValue,
+    --- The blob associated with the record, if any. This is used for storing small binary data that can be downloadable
+    blob: blob.Blob?,
+    --- The scopes the key has
+    scope: string,
+    --- The timestamp when the record was created, in ISO 8601 format.
+    created_at: datetime.DateTime,
+    --- The timestamp when the record was last updated, in ISO 8601 format.
+    last_updated_at: datetime.DateTime,
+} | {
     op: "GlobalKv",
 
     read key: string,
@@ -97,10 +112,19 @@ export type StateOp = {
     key: string,
     scope: string
 } | {
+    op: "KvGetWithBlob",
+    key: string,
+    scope: string
+} | {
+    op: "KvSignUrl",
+    key: string,
+    scope: string,
+} | {
     op: "KvSet",
     key: string,
     scope: string,
-    value: khronosvalue.KhronosValue
+    value: khronosvalue.KhronosValue,
+    blob: blob.BlobTaker?
 } | {
     op: "KvDelete",
     key: string,
@@ -139,28 +163,6 @@ export type StateOp = {
     scope: string
 }
 
---- Metadata about an object.
-export type ObjectMetadata = {
-    read key: string,
-    read last_modified: datetime.DateTime?,
-    read size: number,
-    read etag: string?,
-}
-
-export type ObjectStorageCall = 
-    | { op: "ListFileMetas", prefix: string? }
-    | { op: "GetFileMeta", key: string }
-    | { op: "GetFileUrl", key: string, expiry: datetime.TimeDelta }
-    | { op: "DownloadFile", key: string }
-    | { op: "UploadFile", key: string, data: blob.BlobTaker }
-    | { op: "DeleteFile", key: string }
-
-export type ObjectStorageResult = 
-    | { op: "ObjectMetadata", objs: { ObjectMetadata } }
-    | { op: "FileUrl", url: string }
-    | { op: "Blob", data: blob.Blob }
-    | { op: "Ack" }
-
 export type CdnCall = { op: "DownloadFile", url: string, as_buffer: boolean } -- only discord cdn urls are supported
 export type CdnResult = { op: "Blob", data: blob.Blob } | { op: "Buffer", data: buffer }
 
@@ -180,19 +182,6 @@ export type SyscallArgs = {
     --- db state remains unchanged/all changes from `op` are roll-backed.
     ops: {StateOp}
 } | {
-    op: "ObjectStorage",
-    --- Object storage is mainly useful over kv when dealing with blobs of data
-    --- (otherwise, kv is better+easier to use as it has support for serializing most AntiRaid types
-    --- along with atomicity guarantees). 
-    ---
-    --- As an example, datetimes should be stored using kv for automatic
-    --- conversion to/from the storage bit for you while object storage can be used for storing
-    --- backups etc.
-    ---
-    --- Object storage also works over HTTP calls and may be slower than key-value which 
-    --- may use a custom binary protocol or other optimizations
-    req: ObjectStorageCall
-} | {
     op: "Cdn",
     --- Cdn allows for downloading Discord CDN urls *only*
     req: CdnCall
@@ -209,9 +198,6 @@ export type SyscallRet = {
     op: "State",
     res: {StateExecResult},
     new_tenant_state: TenantState,
-} | {
-    op: "ObjectStorage",
-    res: ObjectStorageResult
 } | {
     op: "Cdn",
     res: CdnResult

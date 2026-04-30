@@ -1,5 +1,6 @@
 --!strict
 local Primitives = require"@antiraid-core/primitives"
+local blob = require("@antiraid-core/blob")
 local datetime = require"@antiraid/datetime"
 local typesext = require"@antiraid/typesext"
 
@@ -16,6 +17,19 @@ export type KeyRecord<T> = {
     read createdat: datetime.DateTime,
     --- The timestamp when the record was last updated at
     read lastupdatedat: datetime.DateTime,
+}
+
+--- KeyRecord enriched with blob data
+export type KeyRecordWithBlob<T> = KeyRecord<T> & {
+    --- The blob associated with the record, if any. This is used for storing small binary data that can be downloadable
+    read blob: blob.Blob?,
+}
+
+export type SignedUrl = {
+    --- The signed URL that can be used to access the blob. This URL will only be valid for a limited time, as specified by the expiry field.
+    read url: string,
+    --- The number of seconds until the URL expires. After this time, the URL will no longer work.
+    read expiry: number,
 }
 
 --- A key manager provides methods to add, remove and check keys with builtin caching
@@ -35,7 +49,8 @@ export type KeyManager<T> = {
     read exists: (key: string) -> boolean,
 
     --- Tries to synchronize key expiries from tenant state
-
+    --- @yields
+    read sync: () -> (),
 
     --- Lists all keys with their data
     ---
@@ -45,6 +60,14 @@ export type KeyManager<T> = {
 
     --- Gets a specific key's data
     read get: (key: string) -> KeyRecord<T>?,
+
+    --- Fetches the loaded kv blob associated with a key. This is used for storing small binary data that can be downloadable
+    read getwithblob: (key: string) -> KeyRecordWithBlob<T>?,
+
+    --- Generates a URL for downloading the blob associated with a key. This URL will not work if there is no blob or if the key does not exist.
+    ---
+    --- Additionally, the returned url will only be valid for `expiry` seconds, and will not work after that time.
+    read signbloburl: (key: string) -> SignedUrl,
 
     --- Returns the number of keys currently stored (approximate)
     read count: () -> number,
@@ -135,6 +158,40 @@ local function KeyManager<T>(
         return record
     end
 
+    --- getwithblob
+    local function getwithblob(key: string): KeyRecordWithBlob<T>?
+        local record = kexs[key]
+        if not record then return nil end
+
+        local res = ctx.syscall({op="State", ops={{ op = "KvGetWithBlob", key = key, scope = basescope }}})
+        assert(res.op == "State")
+
+        local kvres = res.res[1]
+        assert(kvres.op == "KvWithBlob")
+
+        return table.freeze{
+            key = record.key,
+            createdat = record.createdat,
+            lastupdatedat = record.lastupdatedat,
+            value = record.value,
+            blob = kvres.blob,
+        }
+    end
+
+    --- signbloburl
+    local function signbloburl(key: string): SignedUrl
+        local res = ctx.syscall({op="State", ops={{ op = "KvSignUrl", key = key, scope = basescope }}})
+        assert(res.op == "State")
+
+        local signres = res.res[1]
+        assert(signres.op == "KvSignedUrl")
+
+        return table.freeze{
+            url = signres.url,
+            expiry = signres.expiry,
+        }
+    end
+
     local self = {} :: KeyManager<T>
 
     --- Synchronize key expiries from KV store
@@ -185,6 +242,8 @@ local function KeyManager<T>(
         get = get,
         updatedata = updatedata,
         count = countkeys,
+        getwithblob = getwithblob,
+        signbloburl = signbloburl
     }
     self = _self -- For luau type reasons
 
