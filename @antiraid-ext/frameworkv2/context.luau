@@ -86,8 +86,6 @@ end
 export type Framework = {
     --- The underlying template context
     read ctx: Primitives.TemplateContext,
-    --- Underlying object storage bucket
-    read bucket: net.Bucket,
     --- Underlying cdn downloader
     read cdn: net.Cdn,
     --- Underlying statistics (+ other metadata) handler
@@ -108,7 +106,6 @@ local function Framework(ctx: Primitives.TemplateContext): Framework
 
     return table.freeze{
         ctx = ctx,
-        bucket = net.Bucket(ctx),
         cdn = net.Cdn(ctx),
         meta = net.Meta(ctx),
         userinfomanager = userinfomanager,

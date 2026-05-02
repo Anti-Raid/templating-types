@@ -37,10 +37,10 @@ export type SignedUrl = {
 --- Note that the associated data present should be small in size as all keys are loaded into memory.
 export type KeyManager<T> = {
     --- Makes a new key, returning the generated key
-    read add: (data: T, key: string?) -> string,
+    read add: (data: T, key: string?, blob: blob.BlobTaker?) -> string,
 
     --- Updates the data associated with a key. Does not affect anything but the data.
-    read updatedata: (key: string, data: T) -> (),
+    read updatedata: (key: string, data: T, blob: blob.BlobTaker?) -> (),
 
     --- Removes a key
     read remove: (key: string) -> (),
@@ -113,12 +113,12 @@ local function KeyManager<T>(
         return key
     end
 
-    local function add(data: T, ckey: string?)
+    local function add(data: T, ckey: string?, blob: blob.BlobTaker?)
         local key = ckey or _createkey()
         assert(not exists(key), `Generated key \`{key}\` already exists`)
 
         -- Record in kv store and subscribe to event via attachedop
-        ctx.loop.subscribe("@keym", basescope, { op = "KvSet", key = key, scope = basescope, value = data })
+        ctx.loop.subscribe("@keym", basescope, { op = "KvSet", key = key, scope = basescope, value = data, blob = blob })
         local now = datetime.UTC:now()
         kexs[key] = table.freeze{
             key = key,
@@ -131,7 +131,7 @@ local function KeyManager<T>(
         return key
     end
 
-    local function updatedata(key: string, data: T)
+    local function updatedata(key: string, data: T, blob: blob.BlobTaker?)
         if not exists(key) then 
             ctx.debug("[KeyManager] Attempted to update data for non-existent key: "..key)
             return
@@ -139,7 +139,7 @@ local function KeyManager<T>(
 
         -- Update in kv store, note that the delayqueue only stores key so we don't need to update it
         local record = kexs[key]
-        ctx.syscall({op="State", ops={{ op = "KvSet", key = key, scope = basescope, value = data }}})
+        ctx.syscall({op="State", ops={{ op = "KvSet", key = key, scope = basescope, value = data, blob = blob }}})
         kexs[key] = table.freeze{
             key = key,
             createdat = record.createdat,
@@ -160,9 +160,6 @@ local function KeyManager<T>(
 
     --- getwithblob
     local function getwithblob(key: string): KeyRecordWithBlob<T>?
-        local record = kexs[key]
-        if not record then return nil end
-
         local res = ctx.syscall({op="State", ops={{ op = "KvGetWithBlob", key = key, scope = basescope }}})
         assert(res.op == "State")
 
@@ -170,10 +167,10 @@ local function KeyManager<T>(
         assert(kvres.op == "KvWithBlob")
 
         return table.freeze{
-            key = record.key,
-            createdat = record.createdat,
-            lastupdatedat = record.lastupdatedat,
-            value = record.value,
+            key = kvres.key,
+            createdat = kvres.created_at,
+            lastupdatedat = kvres.last_updated_at,
+            value = kvres.value,
             blob = kvres.blob,
         }
     end
@@ -184,7 +181,7 @@ local function KeyManager<T>(
         assert(res.op == "State")
 
         local signres = res.res[1]
-        assert(signres.op == "KvSignedUrl")
+        assert(signres.op == "KvSignUrl")
 
         return table.freeze{
             url = signres.url,

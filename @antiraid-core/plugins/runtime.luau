@@ -37,6 +37,13 @@ export type StateExecResult = {
     --- The timestamp when the record was last updated, in ISO 8601 format.
     last_updated_at: datetime.DateTime,
 } | {
+    op: "KvSignUrl",
+
+    --- Url of the expiry
+    url: string,
+    --- The number of seconds until the URL expires. After this time, the URL will no longer work.
+    expiry: number,
+} | {
     op: "GlobalKv",
 
     read key: string,
