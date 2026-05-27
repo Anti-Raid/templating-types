@@ -144,12 +144,17 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
     }
 end
 
+export type SetupData = {
+    read ctx: Primitives.TemplateContext,
+    read updatetenantstate: (newts: runtime.TenantState) -> ()
+}
+
 --- @noyield
 ---
 --- Creates a new TemplateLoopManager instance at initialization. Using this outside of initialization may fail or lead to hard-to-debug errors
 ---
 --- Note: Do not use this outside of the initial loop creation
-local function newinitloop(syscall: runtime.RawSyscall, ts: runtime.TenantState, btd: runtime.BaseTenantData): Primitives.TemplateContext
+local function newinitloop(syscall: runtime.RawSyscall, ts: runtime.TenantState, btd: runtime.BaseTenantData): SetupData
     local tenantstate = ts
     local function dosyscall(args: runtime.SyscallArgs): runtime.SyscallRet
         local res = syscall:async(args)
@@ -175,7 +180,7 @@ local function newinitloop(syscall: runtime.RawSyscall, ts: runtime.TenantState,
     ctxany.discord = discord
     ctxany.loop = eventmanager
     
-    return ctx    
+    return table.freeze{ctx=ctx, updatetenantstate = function(newts: runtime.TenantState) tenantstate = newts end}    
 end
 
 return {
