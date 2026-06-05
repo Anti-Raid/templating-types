@@ -64,6 +64,11 @@ export type FormElement = {
     label: string,
     value: string
 } | {
+    type: "Text.User",
+    id: string,
+    label: string,
+    value: string
+} | {
     type: "Number",
     id: string,
     label: string,
