@@ -3,6 +3,7 @@ local dispatchutils = require"@antiraid-ext/events/dispatch"
 local context = require"./context"
 local LazyLoader = require"@antiraid-ext/sync/lazyload"
 local InteractionCreate = require "@antiraid-ext/events/discord/InteractionCreate"
+local WebSettings = require "@antiraid-ext/events/antiraid/WebSettings"
 local Primitives = require"@antiraid-core/primitives"
 local Interaction = require"@discord-types/interaction"
 local appcommands = require"@antiraid-ext/appcommands"
@@ -10,7 +11,8 @@ local errorHandler = require"@antiraid-ext/utils/errorhandle"
 
 type LdrType = {
     ctx: Primitives.TemplateContext,
-    commands: {[string]: context.Command} | {context.Command}
+    commands: {[string]: context.Command} | {context.Command},
+
 }
 
 local frameworkldr = LazyLoader<<context.Framework, LdrType>>(function(ldr) 
@@ -25,12 +27,12 @@ end)
 ---
 --- This is the main entry point for the framework to handle events.
 ---
---- Currently, ``dispatch`` handles app commands, button callbacks and commands key expiration events.
+--- Currently, ``dispatch`` handles app commands and button callbacks
 ---
 --- @param evt Primitives.Event The event to dispatch to
 --- @param ctx Primitives.TemplateContext The context to use for the event.
 --- @return nil
-local function setup(commands: {[string]: context.Command} | {context.Command}, ...: dispatchutils.EventCall)
+local function setup(commands: {[string]: context.Command} | {context.Command}, settingsHandler: context.SettingsHandler | nil, ...: dispatchutils.EventCall)
     return dispatchutils.eventList(
         InteractionCreate(function(ctx, interaction) 
             local framework = frameworkldr.get({ctx=ctx, commands=commands})
@@ -82,6 +84,15 @@ local function setup(commands: {[string]: context.Command} | {context.Command}, 
                 end
 
             end
+        end),
+        WebSettings(function(ctx, event, author)
+            if not settingsHandler then return nil end -- settings is unsupported
+            local framework = frameworkldr.get({ctx=ctx, commands=commands})
+            if event.type == "fetch_page" then 
+                local sctx = context.SettingsFetchPageContext(framework, author)
+                return settingsHandler.fetchpage(sctx)
+            end
+            return nil
         end),
         --[[
         GetSettings(function(ctx) 

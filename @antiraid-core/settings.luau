@@ -12,6 +12,9 @@ export type Event = {
     action_button_id: string, -- the clicked action button
     form_id: string, -- the id of the form containing the action button
     form_data: {[string]: any}? -- where key is the element id, value is the inputted data
+} | {
+    --- fetch the settings page
+    type: "fetch_page",
 }
 
 --- A collapsible block that opens up to a list of components when clicked
@@ -34,6 +37,16 @@ export type Component = {
     title: string?, -- optional title
     ephemeral: boolean, -- an ephemeral form is cleared on close (useful for create form collapsibles etc.)
     form: {FormElement}
+} | {
+    --- A form reference (to be resolved during frontend preprocessing)
+    ---
+    --- #FormRefs are merely a network optimization and should be rendered the same way as a form would
+    type: "#FormRef",
+    id: string,
+    tid: string, -- template id
+    title: string?, -- optional title
+    ephemeral: boolean, -- an ephemeral form is cleared on close (useful for create form collapsibles etc.)
+    data: {[string]: any} -- data to inject into the cloned template form
 } | {
     --- A collapsible set of blocks that open up to a set of inner components when clicked
     type: "Collapsible",
@@ -78,3 +91,10 @@ export type FormElement = {
     style: "Primary" | "Secondary" | "Danger",
     send_form: boolean, -- if set to true, will send the entire form state 
 }
+
+export type Page = {
+    components: {Component},
+    form_templates: {[string]: {FormElement}}? -- any form templates to be reused
+}
+
+return {}

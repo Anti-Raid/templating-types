@@ -2,6 +2,7 @@
 local discord = require"@discord-types/apiTypes"
 local discordRestTypes = require "@discord-types/restTypes"
 local Primitives = require"@antiraid-core/primitives"
+local settings = require"@antiraid-core/settings"
 local userinfomanager = require"@antiraid-ext/utils/userinfo"
 local canModeratorDo = require "@antiraid-ext/utils/modhierarchy".canModeratorDo
 local appcommands = require"@antiraid-ext/appcommands"
@@ -536,8 +537,6 @@ export type BaseContext = {
 
 --- Context for a message component interaction
 export type MessageComponentContext = BaseContext & {
-    --- The base framework
-    read framework: Framework,
     --- The interaction
     read interaction: InteractionManager,
 }
@@ -593,11 +592,32 @@ local function CommandAutocompleteContext(framework: Framework, interaction: dis
     }
 end
 
+--- The function that runs when a setting is invoked by the client.
+export type SettingsHandler = {
+    --- Fetch the settings page returning a settings.Page
+    fetchpage: (data: SettingsFetchPageContext) -> settings.Page
+}
+
+--- Context for a settings invokation
+export type SettingsFetchPageContext = BaseContext & {
+    --- The user who is performing the settings invokation
+    read author: string
+}
+
+local function SettingsFetchPageContext(framework: Framework, author: string): SettingsFetchPageContext
+    return table.freeze{
+        framework = framework,
+        ctx = framework.ctx,
+        author = author
+    }
+end
+
 return {
     Callbacks = Callbacks,
     Framework = Framework,
     InteractionManager = InteractionManager,
     MessageComponentContext = MessageComponentContext,
     CommandContext = CommandContext,
-    CommandAutocompleteContext = CommandAutocompleteContext
+    CommandAutocompleteContext = CommandAutocompleteContext,
+    SettingsFetchPageContext = SettingsFetchPageContext
 }
