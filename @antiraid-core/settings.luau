@@ -31,6 +31,13 @@ export type Component = {
     style: "Header" | "Paragraph",
     text: string
 } | {
+    --- a section block
+    type: "Section",
+    id: string,
+    title: string,
+    description: string,
+    entries: {Component}
+} | {
     --- A form (which contains a list of elements)
     type: "Form",
     id: string,
@@ -62,32 +69,38 @@ export type FormElement = {
     type: "Text",
     id: string,
     label: string,
+    description: string?,
     value: string
 } | {
     type: "Text.User",
     id: string,
     label: string,
+    description: string?,
     value: string
 } | {
     type: "Number",
     id: string,
     label: string,
+    description: string?,
     value: number
 } | {
     type: "Select.Text",
     id: string,
     label: string,
-    choices: {string},
+    description: string?,
+    choices: {{label: string, value: string}},
     value: string
 } | {
     type: "Toggle.Checkbox",
     id: string,
     label: string,
+    description: string?,
     value: boolean
 } | {
     type: "Toggle.Slider",
     id: string,
     label: string,
+    description: string?,
     value: boolean
 } | {
     type: "Button.Action",
