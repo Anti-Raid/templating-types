@@ -38,27 +38,15 @@ export type Component = {
     description: string,
     entries: {Component}
 } | {
-    --- A form (which contains a list of elements)
-    type: "Form",
+    --- A form reference
+    type: "FormSet",
     id: string,
-    title: string?, -- optional title
-    ephemeral: boolean, -- an ephemeral form is cleared on close (useful for create form collapsibles etc.)
-    form: {FormElement}
-} | {
-    --- A form reference (to be resolved during frontend preprocessing)
-    ---
-    --- #FormRefs are merely a network optimization and should be rendered the same way as a form would
-    type: "#FormRef",
-    id: string,
-    tid: string, -- template id
-    title: string?, -- optional title
-    ephemeral: boolean, -- an ephemeral form is cleared on close (useful for create form collapsibles etc.)
-    data: {[string]: any} -- data to inject into the cloned template form
+    form: {FormElement},
+    reorderable: boolean -- if set, a reorder event will be sent with the new list of ids
 } | {
     --- A collapsible set of blocks that open up to a set of inner components when clicked
     type: "Collapsible",
     collapsibles: {CollapsibleBlock},
-    reorderable: boolean -- if set, a reorder event will be sent with the new list of ids
 }
 
 export type FormElement = {
@@ -66,42 +54,55 @@ export type FormElement = {
     style: "Header" | "Paragraph",
     text: string
 } | {
+    -- text input
     type: "Text",
     id: string,
     label: string,
     description: string?,
-    value: string
+    placeholder: string?,
+    disabled: boolean?,
 } | {
+    -- user input
     type: "Text.User",
     id: string,
     label: string,
     description: string?,
-    value: string
+    placeholder: string?,
+    disabled: boolean?,
+} | {
+    -- list of strings
+    type: "Array.Text",
+    style: "Normal" | "Kittycat",
+    id: string,
+    label: string,
+    description: string?,
+    disabled: boolean?,
 } | {
     type: "Number",
     id: string,
     label: string,
     description: string?,
-    value: number
+    placeholder: string?,
+    disabled: boolean?,
 } | {
     type: "Select.Text",
     id: string,
     label: string,
     description: string?,
+    disabled: boolean?,
     choices: {{label: string, value: string}},
-    value: string
 } | {
     type: "Toggle.Checkbox",
     id: string,
     label: string,
     description: string?,
-    value: boolean
+    disabled: boolean?,
 } | {
     type: "Toggle.Slider",
     id: string,
     label: string,
     description: string?,
-    value: boolean
+    disabled: boolean?,
 } | {
     type: "Button.Action",
     id: string,
@@ -110,9 +111,22 @@ export type FormElement = {
     send_form: boolean, -- if set to true, will send the entire form state 
 }
 
+export type FormData = {
+    --- form id
+    id: string,
+    --- form title
+    title: string,
+    --- form data
+    data: {[string]: any},
+}
+
 export type Page = {
     components: {Component},
-    form_templates: {[string]: {FormElement}}? -- any form templates to be reused
+    --- form datas to expand every FormSet into
+    ---
+    --- for every FormSet, the frontend will expand the given data into the FormSet internally
+    ---
+    formdata: {[string]: {FormData}},
 }
 
 return {}
