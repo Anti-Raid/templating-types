@@ -410,7 +410,7 @@ end
 -- Guild Members & Bans
 -- ==========================================
 function DiscordClientMethods:get_guild_member(user_id)
-    return self:_call({ op = "GetGuildMember", data = { user_id = user_id } })
+    return self:_call({ op = "GetGuildMember", data = user_id })
 end
 function DiscordClientMethods:list_guild_members(data)
     return self:_call({ op = "ListGuildMembers", data = data })
@@ -434,7 +434,7 @@ function DiscordClientMethods:get_guild_bans(data)
     return self:_call({ op = "GetGuildBans", data = data })
 end
 function DiscordClientMethods:get_guild_ban(user_id)
-    return self:_call({ op = "GetGuildBan", data = { user_id = user_id } })
+    return self:_call({ op = "GetGuildBan", data = user_id })
 end
 function DiscordClientMethods:create_guild_ban(data)
     self:_call({ op = "CreateGuildBan", data = data })
