@@ -86,7 +86,7 @@ local function stringifybuffer(sb: StatusBuffer, tsmode: StringifyBufferTsMode?,
         end
     end
     
-    return statuses -- FIXED: Actually return the built array!
+    return statuses 
 end
 
 return { 

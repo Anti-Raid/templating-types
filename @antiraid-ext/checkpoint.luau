@@ -1,6 +1,7 @@
 --!strict
 local Primitives = require"@antiraid-core/primitives"
 local KeyExpiryManager = require "@antiraid-ext/keyexpirymanager"
+local sb = require "@antiraid-ext/utils/statusbuffer"
 local datetime = require"@antiraid/datetime"
 local typesext = require"@antiraid/typesext"
 
@@ -9,6 +10,8 @@ export type CheckpointContext<Data> = {
     read id: string,
     --- The template context
     read tctx: Primitives.TemplateContext,
+    --- The status buffer for the checkpointer
+    read sb: sb.StatusBuffer,
     --- Returns if we are resuming from a checkpoint
     read resumed: boolean,
     --- slate stores temporary data for the checkpoint step
@@ -26,7 +29,7 @@ export type CheckpointStep<Data> = {
 
 export type CheckpointManager<Data> = {
     --- Creates a new checkpoint
-    new: (initialdata: Data) -> ()
+    new: (initialdata: Data, sb: sb.StatusBuffer?) -> ()
 }
 
 type DataWithStep<Data> = {
@@ -42,7 +45,7 @@ type DataWithStep<Data> = {
 --- @param steps The steps of the checkpoint, in order. Each step should have a unique step identifier. When resuming from a checkpoint, the step identifier will be used to determine which step to resume from.
 local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: string, expiry: datetime.TimeDelta, steps: {CheckpointStep<Data>}): CheckpointManager<Data>
     if #steps == 0 then error("Checkpoint must have at least one step") end
-    local function loadinner(id: string, idatawithstep: DataWithStep<Data>, resumed: boolean, kexm: KeyExpiryManager.KeyExpiryManager<DataWithStep<Data>>) 
+    local function loadinner(id: string, idatawithstep: DataWithStep<Data>, resumed: boolean, kexm: KeyExpiryManager.KeyExpiryManager<DataWithStep<Data>>, sb: sb.StatusBuffer) 
         local atstep = false
         
         -- May be mutated in place
@@ -51,6 +54,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
         local cctx: CheckpointContext<Data>
         cctx = table.freeze{
             tctx = ctx,
+            sb = sb,
             data = function() return datawithstep.data end,
             id = id,
             resumed = resumed,
@@ -92,12 +96,12 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
         for _, record in records do 
             local id = record.key
             local datawithstep = record.value :: DataWithStep<Data>
-            task.spawn(loadinner, id, datawithstep, true, kexm)
+            task.spawn(loadinner, id, datawithstep, true, kexm, sb.StatusBuffer())
         end
         return nil
     end)
     
-    local function new(initialdata: Data) 
+    local function new(initialdata: Data, sbuf: sb.StatusBuffer?) 
         -- Implementation goes here
         local id = typesext.randstring(32)
         local currstep = steps[1].step
@@ -108,7 +112,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
 
         -- Store checkpoint and start the process
         kexm.add(expiry, data, id)
-        loadinner(id, data, false, kexm)
+        loadinner(id, data, false, kexm, sbuf or sb.StatusBuffer())
     end
 
     local self = {}

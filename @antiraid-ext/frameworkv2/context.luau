@@ -236,6 +236,10 @@ local function InteractionManager(ctx: Primitives.TemplateContext, framework: Fr
         end
         if finalFlags ~= 0 then data.flags = finalFlags end
         
+        -- fix for empty embeds and components etc
+        if data.embeds and #data.embeds == 0 then data.embeds = setmetatable({}, array_metatable) :: any end
+        if data.components and #data.components == 0 then data.components = setmetatable({}, array_metatable) :: any end
+        
         if not hasresponded then
             return createoriginalresponse({
                 type = InteractionCallbackType.ChannelMessageWithSource,
