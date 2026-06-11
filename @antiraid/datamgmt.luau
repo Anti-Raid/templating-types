@@ -48,12 +48,6 @@ local function aes256decrypt(data: blob.BlobTaker, key: string): blob.Blob
     error("Implemented internally in AntiRaid runtime!")
 end
 
---- Decrypts the Blob using AES256 decryption (Argon2id for key derivation)
---- Format: ``<salt><nonce><ciphertext>``
-local function aes256decryptcustom(salt: blob.BlobTaker, nonce: blob.BlobTaker, ciphertext: blob.BlobTaker, key: string): blob.Blob
-    error("Implemented internally in AntiRaid runtime!")
-end 
-
 --- Compresses the given data using the specified compression format and level
 local function compress(format: CompressionFormat, data: blob.BlobTaker, level: number?): blob.Blob
     error("Implemented internally in AntiRaid runtime!")
@@ -71,7 +65,6 @@ return {
     TarArchive = TarArchive,
     aes256encrypt = aes256encrypt,
     aes256decrypt = aes256decrypt,
-    aes256decryptcustom = aes256decryptcustom,
     compress = compress,
     decompress = decompress,
 }
