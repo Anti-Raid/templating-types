@@ -1,10 +1,10 @@
 --- Settings v2 events
 export type Event = {
-    --- reordering of a collapsible
-    type: "collapsible_reorder", 
-    --- id of the collapsible
+    --- reordering of a formset
+    type: "formset_reorder", 
+    --- id of the formset
     id: string,
-    --- new ordering of the collapsible block
+    --- new ordering of the formset block
     list: {string}
 } | {
     --- form action
