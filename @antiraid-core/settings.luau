@@ -10,6 +10,7 @@ export type Event = {
     --- form action
     type: "form_action",
     action_button_id: string, -- the clicked action button
+    formset_id: string, -- id of the form set containing the form
     form_id: string, -- the id of the form containing the action button
     form_data: {[string]: any}? -- where key is the element id, value is the inputted data
 } | {
