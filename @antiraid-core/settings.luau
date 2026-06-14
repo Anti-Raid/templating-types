@@ -26,6 +26,10 @@ export type DisplayElement = {
     --- a paragraph
     type: "Paragraph",
     text: string
+} | {
+    --- an error
+    type: "Error",
+    error: string
 }
 
 --- A base component
