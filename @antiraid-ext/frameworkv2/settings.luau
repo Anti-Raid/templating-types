@@ -9,7 +9,7 @@ type SelectOpts = { description: string?, disabled: boolean? }
 type ToggleOpts = { description: string?, disabled: boolean? }
 
 export type FormBuilder = {
-    textblock: (self: FormBuilder, style: "Header" | "Paragraph", text: string) -> FormBuilder,
+    display: (self: FormBuilder, element: settings.DisplayElement) -> FormBuilder,
     text: (self: FormBuilder, id: string, label: string, opts: TextOpts?) -> FormBuilder,
     text_user: (self: FormBuilder, id: string, label: string, opts: TextUserOpts?) -> FormBuilder,
     array_text: (self: FormBuilder, id: string, style: "Normal" | "Kittycat", label: string, opts: ArrayTextOpts?) -> FormBuilder,
@@ -27,8 +27,8 @@ local function FormBuilder(): FormBuilder
     local elements: {settings.FormElement} = {}
     local self = {}
 
-    function self:textblock(style: "Header" | "Paragraph", text: string): FormBuilder
-        table.insert(elements, { type = "TextBlock" :: "TextBlock", style = style, text = text })
+    function self:display(element: settings.DisplayElement): FormBuilder
+        table.insert(elements, { type = "DisplayElement" :: "DisplayElement", element = element })
         return self
     end
 
@@ -90,7 +90,7 @@ end
 export type SectionBuilder<T> = {
     data: T,
     extract: (self: SectionBuilder<T>) -> ({settings.Component}, {[string]: {settings.FormData}}),
-    textblock: (self: SectionBuilder<T>, style: "Header" | "Paragraph", text: string) -> SectionBuilder<T>,
+    display: (self: SectionBuilder<T>, element: settings.DisplayElement) -> SectionBuilder<T>,
     formset: (self: SectionBuilder<T>, id: string, form: {settings.FormElement}, reorderable: boolean) -> SectionBuilder<T>,
 }
 
@@ -99,8 +99,8 @@ local function SectionBuilder<T>(data: T): SectionBuilder<T>
     local formdata: {[string]: {settings.FormData}} = {}
     local self = {}
     
-    function self:textblock(style: "Header" | "Paragraph", text: string): SectionBuilder<T>
-        table.insert(components, { type = "TextBlock" :: "TextBlock", style = style, text = text })
+    function self:display(element: settings.DisplayElement): SectionBuilder<T>
+        table.insert(components, { type = "DisplayElement" :: "DisplayElement", element = element })
         return self
     end
 
@@ -121,7 +121,7 @@ export type PageBuilder<T> = {
     data: T,
     --- Add a section to the page
     section: (self: PageBuilder<T>, id: string, title: string, description: string, cb: (sb: SectionBuilder<T>) -> ()) -> PageBuilder<T>,    
-    textblock: (self: PageBuilder<T>, style: "Header" | "Paragraph", text: string) -> PageBuilder<T>,
+    display: (self: PageBuilder<T>, element: settings.DisplayElement) -> PageBuilder<T>,
     formset: (self: PageBuilder<T>, id: string, form: {settings.FormElement}, reorderable: boolean) -> PageBuilder<T>,
     addformdata: (self: PageBuilder<T>, id: string, fd: settings.FormData) -> PageBuilder<T>,
 
@@ -166,8 +166,8 @@ local function PageBuilder<T>(data: T): PageBuilder<T>
         return self
     end
 
-    function self:textblock(style: "Header" | "Paragraph", text: string): PageBuilder<T>
-        table.insert(components, { type = "TextBlock" :: "TextBlock", style = style, text = text })
+    function self:display(element: settings.DisplayElement): PageBuilder<T>
+        table.insert(components, { type = "DisplayElement" :: "DisplayElement", element = element })
         return self
     end
 

@@ -18,19 +18,21 @@ export type Event = {
     type: "fetch_page",
 }
 
---- A collapsible block that opens up to a list of components when clicked
-export type CollapsibleBlock = {
-    id: string,
-    label: string,
-    entries: {Component} -- the components that form the collapsible block
+export type DisplayElement = {
+    --- a header
+    type: "Header",
+    text: string
+} | {
+    --- a paragraph
+    type: "Paragraph",
+    text: string
 }
 
 --- A base component
 export type Component = {
-    --- a raw text block
-    type: "TextBlock",
-    style: "Header" | "Paragraph",
-    text: string
+    --- a display element
+    type: "DisplayElement",
+    element: DisplayElement
 } | {
     --- a section block
     type: "Section",
@@ -44,16 +46,12 @@ export type Component = {
     id: string,
     form: {FormElement},
     reorderable: boolean -- if set, a reorder event will be sent with the new list of ids
-} | {
-    --- A collapsible set of blocks that open up to a set of inner components when clicked
-    type: "Collapsible",
-    collapsibles: {CollapsibleBlock},
 }
 
 export type FormElement = {
-    type: "TextBlock",
-    style: "Header" | "Paragraph",
-    text: string
+    --- a display element
+    type: "DisplayElement",
+    element: DisplayElement
 } | {
     -- text input
     type: "Text",
