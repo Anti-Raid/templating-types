@@ -65,21 +65,20 @@ export type FormElement = {
     placeholder: string?,
     disabled: boolean?,
 } | {
-    -- user input
-    type: "Text.User",
-    id: string,
-    label: string,
-    description: string?,
-    placeholder: string?,
-    disabled: boolean?,
-} | {
     -- list of strings
     type: "Array.Text",
-    style: "Normal" | "Kittycat",
     id: string,
     label: string,
     description: string?,
     disabled: boolean?,
+} | {
+    -- list of strings with a set of available choices
+    type: "Select.Array.Text",
+    id: string,
+    label: string,
+    description: string?,
+    disabled: boolean?,
+    choices: {{label: string, value: string}},
 } | {
     type: "Number",
     id: string,
@@ -107,7 +106,7 @@ export type FormElement = {
     description: string?,
     disabled: boolean?,
 } | {
-    type: "Button.Action",
+    type: "Button.Action", -- TODO: move this to sep actions prop under the form to separate actions from state/data
     id: string,
     text: string,
     style: "Primary" | "Secondary" | "Danger",
