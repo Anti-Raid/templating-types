@@ -73,7 +73,7 @@ export type FormElement = {
     disabled: boolean?,
 } | {
     -- list of strings with a set of available choices
-    type: "Select.Array.Text",
+    type: "Array.Select.Text",
     id: string,
     label: string,
     description: string?,
@@ -92,15 +92,10 @@ export type FormElement = {
     label: string,
     description: string?,
     disabled: boolean?,
+    placeholder: string?,
     choices: {{label: string, value: string}},
 } | {
-    type: "Toggle.Checkbox",
-    id: string,
-    label: string,
-    description: string?,
-    disabled: boolean?,
-} | {
-    type: "Toggle.Slider",
+    type: "Boolean",
     id: string,
     label: string,
     description: string?,

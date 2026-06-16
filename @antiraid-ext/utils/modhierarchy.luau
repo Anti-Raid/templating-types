@@ -1,19 +1,6 @@
-local permissions = require "@discord-types/permission"
-local permissionsFromBf = permissions.fromBitFlag
 local kc = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local userinfo = require "./userinfo"
-
-local SupportedAltPerms: {[string]: permissions.Permissions} = {
-    ["moderation.sting"] = "ModerateMembers" :: "ModerateMembers",
-    ["moderation.curesting"] = "ModerateMembers" :: "ModerateMembers",
-    ["moderation.kick"] = "KickMembers" :: "KickMembers",
-    ["moderation.ban"] = "BanMembers" :: "BanMembers",
-    ["moderation.timeout"] = "ModerateMembers" :: "ModerateMembers",
-    ["moderation.unban"] = "BanMembers" :: "BanMembers",
-    ["moderation.viewlogchannel"] = "ViewAuditLog" :: "ViewAuditLog",
-    ["moderation.setlogchannel"] = "ManageChannels" :: "ManageChannels"
-}
 
 --- Errors if the moderator does not have cap `cap`. For most cases, `InteractionManager.assertpermission` is a better higher-level API to use here
 local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string) 
@@ -22,22 +9,10 @@ local function canModeratorDo(userinfo: userinfo.UserInfo, cap: string)
     end
 
     if not kc.has_perm(userinfo.kittycat_resolved_permissions, kc.Permission.from_string(cap)) then
-        -- Check if an alternative discord permission is present on the mod
-        if SupportedAltPerms[cap] then
-            local modPerms = permissionsFromBf(integer.fromstring(userinfo.discord_permissions))
-            if not table.find(modPerms, SupportedAltPerms[cap]) then
-                error({
-                    type = "MissingPermissions",
-                    perm = cap,
-                    altPerm = SupportedAltPerms[cap],
-                })
-            end
-        else
-            error({
-                type = "MissingPermissions",
-                perm = cap,
-            })
-        end
+        error({
+            type = "MissingPermissions",
+            perm = cap,
+        })
     end
 end
 
@@ -62,22 +37,10 @@ local function canModeratorAffectTarget(ctx: Primitives.TemplateContext, userinf
 
     -- Check caps
     if not kc.has_perm(userinfo.kittycat_resolved_permissions, kc.Permission.from_string(cap)) then
-        -- Check if an alternative discord permission is present on the mod
-        if SupportedAltPerms[cap] then
-            local modPerms = permissionsFromBf(integer.fromstring(userinfo.discord_permissions))
-            if not table.find(modPerms, SupportedAltPerms[cap]) then
-                error({
-                    type = "MissingPermissions",
-                    perm = cap,
-                    altPerm = SupportedAltPerms[cap],
-                })
-            end
-        else
-            error({
-                type = "MissingPermissions",
-                perm = cap,
-            })
-        end
+        error({
+            type = "MissingPermissions",
+            perm = cap,
+        })
     end
 
     -- Check hierarchy

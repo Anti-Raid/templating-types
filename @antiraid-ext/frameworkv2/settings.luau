@@ -5,18 +5,17 @@ type TextOpts = { description: string?, placeholder: string?, disabled: boolean?
 type TextUserOpts = { description: string?, placeholder: string?, disabled: boolean? }
 type ArrayTextOpts = { description: string?, disabled: boolean? }
 type NumberOpts = { description: string?, placeholder: string?, disabled: boolean? }
-type SelectOpts = { description: string?, disabled: boolean? }
+type SelectOpts = { description: string?, placeholder: string?, disabled: boolean? }
 type ToggleOpts = { description: string?, disabled: boolean? }
 
 export type FormBuilder = {
     display: (self: FormBuilder, element: settings.DisplayElement) -> FormBuilder,
     text: (self: FormBuilder, id: string, label: string, opts: TextOpts?) -> FormBuilder,
     array_text: (self: FormBuilder, id: string, label: string, opts: ArrayTextOpts?) -> FormBuilder,
-    select_array_text: (self: FormBuilder, id: string, label: string, choices: {{label: string, value: string}}, opts: ArrayTextOpts?) -> FormBuilder,
+    array_select_text: (self: FormBuilder, id: string, label: string, choices: {{label: string, value: string}}, opts: ArrayTextOpts?) -> FormBuilder,
     number: (self: FormBuilder, id: string, label: string, opts: NumberOpts?) -> FormBuilder,
     select_text: (self: FormBuilder, id: string, label: string, choices: {{label: string, value: string}}, opts: SelectOpts?) -> FormBuilder,
-    checkbox: (self: FormBuilder, id: string, label: string, opts: ToggleOpts?) -> FormBuilder,
-    slider: (self: FormBuilder, id: string, label: string, opts: ToggleOpts?) -> FormBuilder,
+    boolean: (self: FormBuilder, id: string, label: string, opts: ToggleOpts?) -> FormBuilder,
     button: (self: FormBuilder, id: string, text: string, style: "Primary" | "Secondary" | "Danger", send_form: boolean) -> FormBuilder,
     
     --- Return the built form elements
@@ -44,9 +43,9 @@ local function FormBuilder(): FormBuilder
         return self
     end
 
-    function self:select_array_text(id: string, label: string, choices: {{label: string, value: string}}, opts: ArrayTextOpts?): FormBuilder
+    function self:array_select_text(id: string, label: string, choices: {{label: string, value: string}}, opts: ArrayTextOpts?): FormBuilder
         opts = opts or {} :: ArrayTextOpts
-        table.insert(elements, { type = "Select.Array.Text" :: "Select.Array.Text", choices = choices, id = id, label = label, description = opts.description, disabled = opts.disabled })
+        table.insert(elements, { type = "Array.Select.Text" :: "Array.Select.Text", choices = choices, id = id, label = label, description = opts.description, disabled = opts.disabled })
         return self
     end
 
@@ -58,19 +57,13 @@ local function FormBuilder(): FormBuilder
 
     function self:select_text(id: string, label: string, choices: {{label: string, value: string}}, opts: SelectOpts?): FormBuilder
         opts = opts or {} :: SelectOpts
-        table.insert(elements, { type = "Select.Text" :: "Select.Text", id = id, label = label, choices = choices, description = opts.description, disabled = opts.disabled })
+        table.insert(elements, { type = "Select.Text" :: "Select.Text", id = id, label = label, choices = choices, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled })
         return self
     end
 
-    function self:checkbox(id: string, label: string, opts: ToggleOpts?): FormBuilder
+    function self:boolean(id: string, label: string, opts: ToggleOpts?): FormBuilder
         opts = opts or {} :: ToggleOpts
-        table.insert(elements, { type = "Toggle.Checkbox" :: "Toggle.Checkbox", id = id, label = label, description = opts.description, disabled = opts.disabled })
-        return self
-    end
-
-    function self:slider(id: string, label: string, opts: ToggleOpts?): FormBuilder
-        opts = opts or {} :: ToggleOpts
-        table.insert(elements, { type = "Toggle.Slider" :: "Toggle.Slider", id = id, label = label, description = opts.description, disabled = opts.disabled })
+        table.insert(elements, { type = "Boolean" :: "Boolean", id = id, label = label, description = opts.description, disabled = opts.disabled })
         return self
     end
 

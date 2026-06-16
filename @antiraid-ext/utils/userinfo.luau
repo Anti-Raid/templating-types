@@ -1,13 +1,9 @@
+--!strict
 local discord = require"@discord-types/apiTypes"
 local datetime = require"@antiraid/datetime"
 local Kittycat = require "@antiraid-core/kittycat"
 local Primitives = require "@antiraid-core/primitives"
 local KeyManager = require"../keymanager"
-
-export type GuildRolePermission = {
-    position: Kittycat.PartialStaffPosition,
-    createdat: datetime.DateTime
-}
 
 --- @class UserInfo
 ---
@@ -16,7 +12,6 @@ export type GuildRolePermission = {
 ---
 --- @field userid discord.Snowflake The ID of the user
 --- @field discord_permissions discord.Snowflake The users discord permissions
---- @field kittycat_staff_permissions Kittycat.StaffPermissions The users kittycat staff permissions
 --- @field kittycat_resolved_permissions {Kittycat.Permission} The users resolved kittycat permissions
 --- @field guild_owner_id discord.Snowflake The ID of the guild owner
 --- @field guild_roles {[discord.Snowflake]: discord.GuildRoleObject} The users guild roles (may not be present if guildRolesNeeded is not set)
@@ -25,12 +20,8 @@ export type GuildRolePermission = {
 export type UserInfo = {
     userid: discord.Snowflake,
     discord_permissions: discord.Snowflake,
-    kittycat_staff_permissions: Kittycat.StaffPermissions,
     kittycat_resolved_permissions: {Kittycat.Permission},
     guild_owner_id: discord.Snowflake,
-    guild_roles: {[discord.Snowflake]: discord.GuildRoleObject}?,
-    member_roles: {discord.Snowflake},
-    guild_permissions: {[discord.Snowflake]: GuildRolePermission}, 
     permission_override_entry: MemberPermissionOverrideEntry
 }
 
@@ -63,29 +54,6 @@ export type UserInfoManager = {
     --- @return UserInfo The UserInfo for the user
     get: (user_id: discord.Snowflake, interaction: discord.InteractionObject?) -> UserInfo,
 
-    --- Gets the guild permissions configured
-    --- @return {Kittycat.PartialStaffPosition} The permissions globally set for the guild
-    getGuildPermissions: () -> {GuildRolePermission},
-
-    --- Returns the data of a single role
-    --- @return GuildRolePermission The permissions globally set for the specific role on the guild
-    getGuildPermissionForRole: (roleid: discord.Snowflake) -> GuildRolePermission?,
-
-    --- Sets the guild permission for a position
-    --- @param position Kittycat.PartialStaffPosition The position to set the permissions for
-    --- @return nil
-    setGuildPermission: (position: Kittycat.PartialStaffPosition) -> nil,
-
-    --- Reorders the guild permissions for a list of roles
-    --- @param reorderList { {role_id: discord.Snowflake, index: number} } The list of roles to reorder with their new indices
-    --- @return nil
-    applyReorder: (reorderList: { {role_id: discord.Snowflake, index: number} }) -> nil,
-
-    --- Deletes the guild permission for a role
-    --- @param roleid discord.Snowflake The ID of the role to delete the permissions
-    --- @return nil
-    deleteGuildPermission: (roleid: discord.Snowflake) -> nil,
-
     --- Gets all member permission overrides available
     ---
     --- @return {MemberPermissionOverwriteEntry} The permission overrides available on the server
@@ -117,123 +85,7 @@ type IGuildMemberPermOverrides = {string}
 
 local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
     local self = {}
-    local guildperms = KeyManager<<IGuildPermissions>>(ctx, "builtins.guild_permissions")
     local guildmemberpermoverrides = KeyManager<<IGuildMemberPermOverrides>>(ctx, "builtins.guild_permissions.overrides")
-
-    local function getGuildPermissions(): {GuildRolePermission}
-        local permissionRecords = guildperms.list()
-
-        local userPositions: {GuildRolePermission} = {}
-        for _, record in permissionRecords do
-            local roleId = record.key
-            local index = record.value.index 
-            local permissionsSet = record.value.perms
-
-            local kittycatPermissions = table.create<<Kittycat.Permission>>(#permissionsSet)
-            for _, perm in permissionsSet do
-                local kittycatPerm = Kittycat.Permission.from_string(perm)
-                table.insert(kittycatPermissions, kittycatPerm)
-            end
-
-            table.insert(userPositions, {
-                position = {
-                    id = roleId,
-                    index = index,
-                    perms = kittycatPermissions,
-                },
-                createdat = record.createdat
-            })
-        end
-
-        return userPositions
-    end
-
-    local function getGuildPermissionForRole(roleid: discord.Snowflake): GuildRolePermission?
-        local record = guildperms.get(roleid)
-        if not record then return nil end
-        if not record.value.index or not record.value.perms then
-            error("internal error: index/perms not in role")
-        end
-
-        local roleId = record.key
-        local index = record.value.index 
-        local permissionsSet = record.value.perms
-
-        local kittycatPermissions = table.create<<Kittycat.Permission>>(#permissionsSet)
-        for _, perm in permissionsSet do
-            local kittycatPerm = Kittycat.Permission.from_string(perm)
-            table.insert(kittycatPermissions, kittycatPerm)
-        end
-
-        return {
-            position = {
-                id = roleId,
-                index = index,
-                perms = kittycatPermissions,
-            },
-            createdat = record.createdat
-        }
-    end
-
-    local function setGuildPermission(position: Kittycat.PartialStaffPosition): nil
-        assert(position.id, "Guild Role ID is required.")
-        assert(position.index, "Position index is required.")
-        assert(position.perms, "Position permissions are required.")
-
-        local permsSet = {}
-        for _, perm in position.perms do
-            table.insert(permsSet, tostring(perm))
-        end
-
-        local data: IGuildPermissions = {
-            index = position.index,
-            perms = permsSet,
-        }
-
-        if guildperms.exists(position.id) then 
-            guildperms.updatedata(position.id, data)
-        else
-            guildperms.add(data, position.id)
-        end
-
-        return nil
-    end
-
-    local function applyReorder(reorderList: { {role_id: discord.Snowflake, index: number} }): nil
-        assert(reorderList, "Reorder list is required.")
-
-        -- Ensure no repeated index/other checks
-        local indexes: {[number]: boolean} = {}
-        local updates: {[discord.Snowflake]: IGuildPermissions} = {}
-        for _, entry in reorderList do 
-            assert(entry.role_id, "Role ID is required.")
-            assert(entry.index, "Index is required.")
-
-            -- Ensure no repeated indexes
-            assert(not indexes[entry.index], "index  in reorder list")
-            indexes[entry.index] = true
-
-            -- Finally check if this role already uses this ID already and if not, add to updates
-            local record = guildperms.get(entry.role_id)
-            if not record then error("Role with ID " .. entry.role_id .. " does not exist in guild permissions.") end
-            if record.value.index == entry.index then continue end
-            updates[entry.role_id] = {
-                perms = record.value.perms,
-                index = entry.index
-            }
-        end
-
-        for roleid, entry in updates do
-            guildperms.updatedata(roleid, entry)
-        end
-
-        return nil
-    end
-
-    local function deleteGuildPermission(roleid: discord.Snowflake): nil
-        guildperms.remove(roleid)
-        return nil
-    end
 
     local function getMemberPermissionOverrides(): {MemberPermissionOverrideEntry} 
         local overridesList = guildmemberpermoverrides.list()
@@ -390,60 +242,23 @@ local function UserInfoManager(ctx: Primitives.TemplateContext): UserInfoManager
     local function get(user_id: discord.Snowflake, interaction: discord.InteractionObject?): UserInfo
         local stage1Data = getStage1Data(user_id, interaction)
 
-        local guildPerms = getGuildPermissions()
-
-        -- Convert to hashmap
-        local guildPermsMap = {}
-        for _, perm in guildPerms do
-            guildPermsMap[perm.position.id] = perm
-        end
-
-        local memberPositions = table.create(#guildPerms) :: {Kittycat.PartialStaffPosition}
-        for _, role in stage1Data.memberRoles do
-            local roleObj = guildPermsMap[role]
-            if roleObj then
-                table.insert(memberPositions, roleObj.position)
-            end
-        end
-
         local permOverrides = getMemberPermissionOverridesForUser(user_id)
 
         if stage1Data.guildOwnerId == user_id then 
             table.insert(permOverrides.perm_overrides, Kittycat.Permission.from_string("global.*"))    
         end
 
-        local staffPerms = Kittycat.StaffPermissions.new(memberPositions, permOverrides.perm_overrides)
-
-        local guildRolesMap = {}
-        if stage1Data.guildRoles then
-            for _, role in stage1Data.guildRoles do
-                if not role.id then
-                    continue -- Skip roles without an ID (this should be impossible)
-                end
-                guildRolesMap[role.id] = role
-            end
-        end
-
         return {
             userid = user_id,
             discord_permissions = stage1Data.resolvedPerms,
-            kittycat_staff_permissions = staffPerms,
-            kittycat_resolved_permissions = staffPerms:resolve(),
+            kittycat_resolved_permissions = permOverrides.perm_overrides,
             guild_owner_id = stage1Data.guildOwnerId,
-            guild_roles = guildRolesMap,
-            member_roles = stage1Data.memberRoles,
-            guild_permissions = guildPermsMap,
             permission_override_entry = permOverrides
         }
     end
 
     self.getStage1Data = getStage1Data
     self.get = get
-    self.getGuildPermissions = getGuildPermissions
-    self.getGuildPermissionForRole = getGuildPermissionForRole
-    self.setGuildPermission = setGuildPermission
-    self.applyReorder = applyReorder
-    self.deleteGuildPermission = deleteGuildPermission
     self.getMemberPermissionOverrides = getMemberPermissionOverrides
     self.getMemberPermissionOverridesForUser = getMemberPermissionOverridesForUser
     self.setMemberPermissionOverrides = setMemberPermissionOverrides
