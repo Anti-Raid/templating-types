@@ -1,4 +1,5 @@
 local settings = require("@antiraid-core/settings")
+local array_metatable = require"@antiraid/interop".array_metatable
 
 -- Optional parameter types for clean method signatures
 type TextOpts = { description: string?, placeholder: string?, disabled: boolean? }
@@ -16,14 +17,15 @@ export type FormBuilder = {
     number: (self: FormBuilder, id: string, label: string, opts: NumberOpts?) -> FormBuilder,
     select_text: (self: FormBuilder, id: string, label: string, choices: {{label: string, value: string}}, opts: SelectOpts?) -> FormBuilder,
     boolean: (self: FormBuilder, id: string, label: string, opts: ToggleOpts?) -> FormBuilder,
+
+    --- Creates a button action which then dispatches a settings action when pressed
     button: (self: FormBuilder, id: string, text: string, style: "Primary" | "Secondary" | "Danger", send_form: boolean) -> FormBuilder,
     
     --- Return the built form elements
-    build: (self: FormBuilder) -> {settings.FormElement}
+    build: (self: FormBuilder) -> ({settings.FormElement}, {settings.FormAction})
 }
 
-local function FormBuilder(): FormBuilder
-    local elements: {settings.FormElement} = {}
+local function FormBuilderWith(elements: {settings.FormElement}, actions: {settings.FormAction}): FormBuilder
     local self = {}
 
     function self:display(element: settings.DisplayElement): FormBuilder
@@ -68,28 +70,30 @@ local function FormBuilder(): FormBuilder
     end
 
     function self:button(id: string, text: string, style: "Primary" | "Secondary" | "Danger", send_form: boolean): FormBuilder
-        table.insert(elements, { type = "Button.Action" :: "Button.Action", id = id, text = text, style = style, send_form = send_form })
+        table.insert(actions, { type = "Button.Event" :: "Button.Event", id = id, text = text, style = style, send_form = send_form })
         return self
     end
 
     -- workaround for type solver bugs
-    local function _build(self: FormBuilder): {settings.FormElement} return elements end
+    local function _build(self: FormBuilder): ({settings.FormElement}, {settings.FormAction}) return elements, actions end
     self.build = _build
 
     return self
 end
 
+local function FormBuilder(): FormBuilder
+    return FormBuilderWith(setmetatable({}, array_metatable), setmetatable({}, array_metatable))
+end
+
 --- A scoped builder for inside sections
 export type SectionBuilder<T> = {
     data: T,
-    extract: (self: SectionBuilder<T>) -> ({settings.Component}, {[string]: {settings.FormData}}),
     display: (self: SectionBuilder<T>, element: settings.DisplayElement) -> SectionBuilder<T>,
-    formset: (self: SectionBuilder<T>, id: string, form: {settings.FormElement}, reorderable: boolean) -> SectionBuilder<T>,
+    formset: (self: SectionBuilder<T>, id: string, builder: FormBuilder, reorderable: boolean) -> SectionBuilder<T>,
+    addformdata: (self: SectionBuilder<T>, id: string, fd: settings.FormData) -> SectionBuilder<T>,
 }
 
-local function SectionBuilder<T>(data: T): SectionBuilder<T>
-    local components: {settings.Component} = {}
-    local formdata: {[string]: {settings.FormData}} = {}
+local function sectionBuilder<T>(data: T, components: {settings.Component}, formdata: {[string]: {settings.FormData}}): SectionBuilder<T>
     local self = {}
     
     function self:display(element: settings.DisplayElement): SectionBuilder<T>
@@ -97,14 +101,17 @@ local function SectionBuilder<T>(data: T): SectionBuilder<T>
         return self
     end
 
-    function self:formset(id: string, form: {settings.FormElement}, reorderable: boolean): SectionBuilder<T>
-        table.insert(components, { type = "FormSet" :: "FormSet", id = id, form = form, reorderable = reorderable })
+    function self:formset(id: string, builder: FormBuilder, reorderable: boolean): SectionBuilder<T>
+        local form, actions = builder:build()
+        table.insert(components, { type = "FormSet" :: "FormSet", id = id, form = form, actions = actions, reorderable = reorderable })
         return self
     end
 
-    -- workaround for type solver bugs
-    local function _extract(self: SectionBuilder<T>): ({settings.Component}, {[string]: {settings.FormData}}) return components, formdata end
-    self.extract = _extract
+    function self:addformdata(id: string, fd: settings.FormData): SectionBuilder<T> 
+        if not formdata[id] then formdata[id] = {fd} 
+        else table.insert(formdata[id], fd) end
+        return self
+    end
 
     self.data = data
     return self
@@ -115,7 +122,7 @@ export type PageBuilder<T> = {
     --- Add a section to the page
     section: (self: PageBuilder<T>, id: string, title: string, description: string, cb: (sb: SectionBuilder<T>) -> ()) -> PageBuilder<T>,    
     display: (self: PageBuilder<T>, element: settings.DisplayElement) -> PageBuilder<T>,
-    formset: (self: PageBuilder<T>, id: string, form: {settings.FormElement}, reorderable: boolean) -> PageBuilder<T>,
+    formset: (self: PageBuilder<T>, id: string, builder: FormBuilder, reorderable: boolean) -> PageBuilder<T>,
     addformdata: (self: PageBuilder<T>, id: string, fd: settings.FormData) -> PageBuilder<T>,
 
     --- Return the built page
@@ -123,33 +130,32 @@ export type PageBuilder<T> = {
 }
 
 local function PageBuilder<T>(data: T): PageBuilder<T> 
-    local components: {settings.Component} = {}
+    local components: {settings.Component} = setmetatable({}, array_metatable) :: any
     local formdata: {[string]: {settings.FormData}} = {}
     local self = {}
 
     function self:section(id: string, title: string, description: string, cb: (sb: SectionBuilder<T>) -> ()): PageBuilder<T>
-        local sb = SectionBuilder(self.data)
+        local seccomps: {settings.Component} = setmetatable({}, array_metatable) :: any
+
+        -- the passed section builder will add values directly to the passed comp/formdata ref
+        local sb = sectionBuilder(self.data, seccomps, formdata)
         cb(sb)
-        local comps, fts = sb:extract()
         
-        -- Extract the scoped components + form data
+        -- Extract the scoped components 
         table.insert(components, {
             type = "Section" :: "Section",
             id = id,
             title = title,
             description = description,
-            entries = comps
+            entries = seccomps
         })
-        for tid, elements in fts do 
-            assert(not formdata[tid], `form data for '{tid}' already exists in page [add from section]`)
-            formdata[tid] = elements
-        end
 
         return self
     end
 
-    function self:formset(id: string, form: {settings.FormElement}, reorderable: boolean): PageBuilder<T>
-        table.insert(components, { type = "FormSet" :: "FormSet", id = id, form = form, reorderable = reorderable })
+    function self:formset(id: string, builder: FormBuilder, reorderable: boolean): PageBuilder<T>
+        local form, actions = builder:build()
+        table.insert(components, { type = "FormSet" :: "FormSet", id = id, form = form, actions = actions, reorderable = reorderable })
         return self
     end
 
@@ -172,4 +178,4 @@ local function PageBuilder<T>(data: T): PageBuilder<T>
     return self :: PageBuilder<T>
 end
 
-return table.freeze{ FormBuilder = FormBuilder, PageBuilder = PageBuilder }
+return table.freeze{ FormBuilder = FormBuilder, FormBuilderWith = FormBuilderWith, PageBuilder = PageBuilder }

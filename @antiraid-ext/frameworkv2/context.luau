@@ -17,6 +17,7 @@ local ButtonBuilder = require"@discord-types/builders/message/components/button"
 local array_metatable = require"@antiraid/interop".array_metatable
 local unit = require"./unit"
 local net = require"@antiraid-ext/system/net"
+local assertext = require"@antiraid-ext/assert"
 
 export type Command = {
     --- Discord command definition.
@@ -599,7 +600,9 @@ end
 --- The function that runs when a setting is invoked by the client.
 export type SettingsHandler = {
     --- Fetch the settings page returning a settings.Page
-    fetchpage: (data: SettingsFetchPageContext) -> settings.Page
+    fetchpage: (data: SettingsFetchPageContext) -> settings.Page,
+    --- A map of formset id's to a function that performs form actions for said formset
+    formactions: {[string]: (data: SettingsFormActionContext) -> ()}
 }
 
 --- Context for a settings invokation
@@ -616,6 +619,61 @@ local function SettingsFetchPageContext(framework: Framework, author: string): S
     }
 end
 
+--- Context for a settings invokation
+export type SettingsFormActionContext = BaseContext & {
+    --- The user who is performing the settings invokation
+    read author: string,
+    --- The clicked action button's id
+    read action_button_id: string, 
+    --- ID of the form set containing the form
+    read formset_id: string,
+    --- The id of the form containing the action button
+    read form_id: string,
+    --- Where key is the element id, value is the inputted data
+    read form_data: {[string]: any}?,
+
+    --- Get string from args
+    read argstring: (name: string) -> string,
+    --- Get number from args
+    read argnumber: (name: string) -> number,
+    --- Get boolean from args
+    read argboolean: (name: string) -> boolean,
+    --- Get a list of strings from args
+    read argstringlist: (name: string) -> {string}
+}
+
+local function SettingsFormActionContext(framework: Framework, author: string, action_button_id: string, formset_id: string, form_id: string, form_data: {[string]: any}?): SettingsFormActionContext
+    return table.freeze{
+        framework = framework,
+        ctx = framework.ctx,
+        author = author,
+        action_button_id = action_button_id,
+        formset_id = formset_id,
+        form_id = form_id,
+        form_data = form_data,
+        argstring = function(name: string): string
+            assert(form_data, "Validation Error: No form data sent!")
+            local arg = form_data[name]
+            return assertext.assertString(name, arg)
+        end,
+        argnumber = function(name: string): number
+            assert(form_data, "Validation Error: No form data sent!")
+            local arg = form_data[name]
+            return assertext.assertFloat(name, arg)
+        end,
+        argboolean = function(name: string): boolean
+            assert(form_data, "Validation Error: No form data sent!")
+            local arg = form_data[name]
+            return assertext.assertBoolean(name, arg)
+        end,
+        argstringlist = function(name: string): {string}
+            assert(form_data, "Validation Error: No form data sent!")
+            local arg = form_data[name]
+            return assertext.assertStringArray(name, arg)
+        end
+    }
+end
+
 return {
     Callbacks = Callbacks,
     Framework = Framework,
@@ -623,5 +681,6 @@ return {
     MessageComponentContext = MessageComponentContext,
     CommandContext = CommandContext,
     CommandAutocompleteContext = CommandAutocompleteContext,
-    SettingsFetchPageContext = SettingsFetchPageContext
+    SettingsFetchPageContext = SettingsFetchPageContext,
+    SettingsFormActionContext = SettingsFormActionContext
 }

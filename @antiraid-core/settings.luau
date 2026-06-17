@@ -1,7 +1,44 @@
+--[[
+# Settings (v2) protocol:
+
+## Base Types not listed in this file
+
+export type DispatchResult<T> = {
+    type: "ok" | "err",
+    id: string, -- template's id
+    value: T, -- value within it
+} 
+
+## Frontend
+
+To start, a fetch_page Event must be sent which will return a DispatchResult<Page>[], the frontend can then render the comps however it wants 
+(see willow in template-worker devutils/willow) but must ensure to keep a relation between the forms in a formset + some tracking of their ordering
++ some way to know+mutate the values of FormElement's within a form (excluding DisplayElements which must be read-only). The template id each page was 
+sent in must also be tracked and will hereby be called page-template-id
+
+### Form Actions
+
+If a user clicks an action button (FormAction with type Button.Event), follow the below steps to create the form_action Event to send:
+
+If send_form is true on the action button, create the form_data object with the following rules:
+- All elements (FormElement) within the currently open form must be looped through. 
+- If the element is a DispatchElement, ignore,
+- Otherwise, form_data[FormElement.id] = FormElement.value
+
+Set __tloop_template_id to page-template-id
+Set action_button_id to the id of the action button the user pressed
+Set formset_id to the id of the formset containing the form the action button was contained in
+Set form_id to the id of the form the action button was contained in
+
+The result of a form_action Event is either a any response (todo: improve this) or a error (seen as a msyscall error) as tloop will perform selective dispatch
+due to special logic included for the __tloop_template_id key and will directly call into the desired template w/o any DispatchResult intermediaries etc.
+]]
+
 --- Settings v2 events
 export type Event = {
     --- reordering of a formset
     type: "formset_reorder", 
+    __tloop_template_id: string, -- the template id to dispatch to, used by tloop to selectively dispatch
     --- id of the formset
     id: string,
     --- new ordering of the formset block
@@ -9,6 +46,7 @@ export type Event = {
 } | {
     --- form action
     type: "form_action",
+    __tloop_template_id: string, -- the template id to dispatch to, used by tloop to selectively dispatch
     action_button_id: string, -- the clicked action button
     formset_id: string, -- id of the form set containing the form
     form_id: string, -- the id of the form containing the action button
@@ -49,9 +87,20 @@ export type Component = {
     type: "FormSet",
     id: string,
     form: {FormElement},
+    actions: {FormAction},
     reorderable: boolean -- if set, a reorder event will be sent with the new list of ids
 }
 
+--- Form actions
+export type FormAction = {
+    type: "Button.Event",
+    id: string,
+    text: string,
+    style: "Primary" | "Secondary" | "Danger",
+    send_form: boolean, -- if set to true, will send the entire form state 
+}
+
+--- Form elements
 export type FormElement = {
     --- a display element
     type: "DisplayElement",
@@ -100,12 +149,6 @@ export type FormElement = {
     label: string,
     description: string?,
     disabled: boolean?,
-} | {
-    type: "Button.Action", -- TODO: move this to sep actions prop under the form to separate actions from state/data
-    id: string,
-    text: string,
-    style: "Primary" | "Secondary" | "Danger",
-    send_form: boolean, -- if set to true, will send the entire form state 
 }
 
 export type FormData = {

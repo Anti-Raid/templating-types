@@ -91,6 +91,12 @@ local function setup(commands: {[string]: context.Command} | {context.Command}, 
             if event.type == "fetch_page" then 
                 local sctx = context.SettingsFetchPageContext(framework, author)
                 return settingsHandler.fetchpage(sctx)
+            elseif event.type == "form_action" then
+                assert(type(event.__tloop_template_id) == "string", "no __tloop_template_id sent in WebSettings event, this is a violation of the settings spec")
+                local action = settingsHandler.formactions[event.formset_id]
+                if not action then return nil end -- setting has no actions tied to it
+                local sctx = context.SettingsFormActionContext(framework, author, event.action_button_id, event.formset_id, event.form_id, event.form_data)
+                return action(sctx)
             end
             return nil
         end),

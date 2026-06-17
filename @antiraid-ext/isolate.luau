@@ -2,7 +2,6 @@
 local Primitives = require"@antiraid-core/primitives"
 local typesext = require"@antiraid/typesext"
 local luau = require"@antiraid/luau"
-local channel = require"@antiraid/channel"
 local LazyLoad = require"@antiraid-ext/sync/lazyload"
 
 export type Isolate = {
@@ -12,14 +11,8 @@ export type Isolate = {
     --- The global table of the isolate.
     read global_table: {[any]: any},
 
-    --- Spawns a task to dispatch an event to this isolate.
-    read dispatchEvent: (rootctx: Primitives.TemplateContext, event: Primitives.Event, stream: channel.Stream<Primitives.DispatchResult>) -> (),
-
     --- Fires an event 'in-thread' and returns the result directly.
     read runEvent: (rootctx: Primitives.TemplateContext, event: Primitives.Event) -> any,
-
-    --- Same as runEvent, but returns a IsolateResult
-    read runEventResult: (rootctx: Primitives.TemplateContext, event: Primitives.Event) -> Primitives.DispatchResult,
 }
 
 --- Creates a new isolate with its own global table and require function
@@ -54,12 +47,6 @@ local function new(id: string, vfs: typesext.Vfs, expose: {[any]: any}): Isolate
 
     isolate.id = id
     isolate.global_table = globaltable
-    isolate.dispatchEvent = function(rootctx: Primitives.TemplateContext, event: Primitives.Event, stream: channel.Stream<Primitives.DispatchResult>): ()
-        task.spawn(function() 
-            local res = isolate.runEventResult(rootctx, event)
-            stream.tx:send(res)
-        end)
-    end
     isolate.runEvent = function(rootctx: Primitives.TemplateContext, event: Primitives.Event): any 
         local entrypoint = entrypointloader.get()
 
@@ -71,16 +58,6 @@ local function new(id: string, vfs: typesext.Vfs, expose: {[any]: any}): Isolate
             return (func :: (Primitives.TemplateContext, Primitives.Event) -> any)(rootctx, event)
         else 
             return nil
-        end
-    end
-
-    isolate.runEventResult = function(rootctx: Primitives.TemplateContext, event: Primitives.Event): Primitives.DispatchResult
-        local ok, res = xpcall(isolate.runEvent, function(e) return debug.traceback(tostring(e), 2) end, rootctx, event)
-
-        if ok then
-            return {type = "ok", id = id, value = res}
-        else
-            return {type = "err", id = id, value = res}
         end
     end
 

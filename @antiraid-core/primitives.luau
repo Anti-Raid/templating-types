@@ -1,6 +1,5 @@
 local runtimeP = require("@antiraid-core/plugins/runtime")
 local Discord = require"@antiraid-ext/system/discord"
-local channel = require"@antiraid/channel"
 
 --- An event that has been dispatched to the template. 
 --- 
@@ -25,10 +24,8 @@ export type DispatchResult = {
 export type Dispatchable = {
     --- ID of the dispatchable
     read id: string,
-    --- Spawns a task to dispatch an event to this dispatchable.
-    read dispatchEvent: (rootctx: TemplateContext, event: Event, stream: channel.Stream<DispatchResult>) -> (),
-    --- Executes the event in the same thread (no yield)
-    read runEventResult: (rootctx: TemplateContext, event: Event) -> DispatchResult,
+    --- Fires an event 'in-thread' and returns the result directly.
+    read runEvent: (rootctx: TemplateContext, event: Event) -> any,
 }
 
 export type SyscallFn = (args: runtimeP.SyscallArgs) -> runtimeP.SyscallRet
@@ -47,11 +44,10 @@ export type EventManager = {
     read isSubscribed: (event: string, system: string) -> boolean,
 
     --- Dispatch an event to all attached isolates, returning the result as desired
-    ---
-    --- If `event` is passed, the sub-context created for each template will have the event set to it.
-    ---
-    --- If `targetId` is passed, the event will only be sent to the targetted id
-    read dispatch: (event: Event, targetId: string?) -> {DispatchResult},
+    read dispatch: (event: Event) -> {DispatchResult},
+
+    --- Dispatch an event to the specified template isolates, returning the result as desired
+    read dispatchSingle: (event: Event, id: string) -> any,
 
     --- Attach an isolate to the loop
     read attach: (isolate: Dispatchable) -> (),

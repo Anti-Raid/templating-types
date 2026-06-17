@@ -81,16 +81,32 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
         end)
     end
 
-    local function dispatch(event: Primitives.Event, targetId: string?): {Primitives.DispatchResult}
+    local function _runEventResult(dispatchable: Primitives.Dispatchable, rootctx: Primitives.TemplateContext, event: Primitives.Event): Primitives.DispatchResult
+        local ok, res = xpcall(dispatchable.runEvent, function(e) return debug.traceback(tostring(e), 2) end, rootctx, event)
+
+        if ok then
+            return {type = "ok", id = dispatchable.id, value = res}
+        else
+            return {type = "err", id = dispatchable.id, value = res}
+        end
+    end
+
+    local function _dispatchEvent(dispatchable: Primitives.Dispatchable, rootctx: Primitives.TemplateContext, event: Primitives.Event, stream: channel.Stream<Primitives.DispatchResult>): ()
+        task.spawn(function() 
+            local res = _runEventResult(dispatchable, rootctx, event)
+            stream.tx:send(res)
+        end)
+    end
+
+    local function dispatch(event: Primitives.Event): {Primitives.DispatchResult}
         if attachedisolatescount == 0 then return {} end -- unlikely but could happen
 
         -- Fast path: if there are no attached isolates besides builtins, we can avoid creating a new thread
-        ctx.debug("[TemplateLoopManager] Dispatching event", event.name, "to ", targetId and `with id {targetId}` or "with no target id")
+        ctx.debug("[TemplateLoopManager] Dispatching event", event.name)
         if attachedisolatescount == 1 then
             local _, isol = next(attachedisolates)
             assert(isol)
-            if targetId and isol.id ~= targetId then return {} end -- Ignore non-targetted template
-            local ret = isol.runEventResult(ctx, event)
+            local ret = _runEventResult(isol, ctx, event)
             if ret.type == "err" then 
                 ctx.debug("[TemplateLoopManager] Error dispatching event to builtins template:", ret)
                 return {ret}
@@ -101,12 +117,8 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
         local chan: channel.Stream<Primitives.DispatchResult> = channel.Stream<<Primitives.DispatchResult>>()
         local numitems = 0
         for _, isol in attachedisolates do
-            if targetId and isol.id ~= targetId then
-                continue -- Ignore non-targetted template
-            end
-
             -- Dispatch event to isolate
-            isol.dispatchEvent(ctx, event, chan)
+            _dispatchEvent(isol, ctx, event, chan)
             numitems += 1
         end
 
@@ -115,6 +127,12 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
             -- TODO: Log warning about timeout
         end
         return results
+    end
+
+    local function dispatchSingle(event: Primitives.Event, id: string): any
+        local isol = attachedisolates[id]
+        if not isol then return nil end
+        return isol.runEvent(ctx, event)
     end
 
     local function attach(isolate: Primitives.Dispatchable) 
@@ -139,6 +157,7 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
         subscribe = subscribe,
         unsubscribe = unsubscribe,
         dispatch = dispatch,
+        dispatchSingle = dispatchSingle,
         attach = attach,
         detach = detach
     }
