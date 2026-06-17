@@ -22,7 +22,7 @@ If a user clicks an action button (FormAction with type Button.Event), follow th
 
 If send_form is true on the action button, create the form_data object with the following rules:
 - All elements (FormElement) within the currently open form must be looped through. 
-- If the element is a DispatchElement, ignore,
+- If the element is a DisplayElements, ignore,
 - Otherwise, form_data[FormElement.id] = FormElement.value
 
 Set __tloop_template_id to page-template-id
