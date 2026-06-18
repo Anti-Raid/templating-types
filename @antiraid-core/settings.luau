@@ -9,12 +9,27 @@ export type DispatchResult<T> = {
     value: T, -- value within it
 } 
 
+## Format
+
+All settings v2 payloads are events sent via msyscall's Bot->DispatchEvent op with the following base properties:
+
+- `name`: WebSettings
+- `author`: Author of the user invoking the setting (msyscall will auto-fill this in when using DispatchEvent)
+- `data`: Data of type `Event` as shown on this page. Like all DispatchEvent requests, all data must follow the KhronosValue format
+
+# Basic architecture
+
+There are a few things any settings v2 client must architecturally support:
+
+- The frontend must keep track of which forms are in a formset as well as the order of forms within a formset
+- The frontend must have some way to keep track of the formdata (``{[string]: {FormData}}``) hereby called frontend-formdata
+- The frontend must have some way to apply a formdata patchset from the server (hereby called formdata-patchset) to the frontend-formdata
+-  The template id each page was sent in must also be tracked and will hereby be called page-template-id.
+
 ## Frontend
 
-To start, a fetch_page Event must be sent which will return a DispatchResult<Page>[], the frontend can then render the comps however it wants 
-(see willow in template-worker devutils/willow) but must ensure to keep a relation between the forms in a formset + some tracking of their ordering
-+ some way to know+mutate the values of FormElement's within a form (excluding DisplayElements which must be read-only). The template id each page was 
-sent in must also be tracked and will hereby be called page-template-id
+To start, a fetch_page Event must be sent which will return a DispatchResult<Page>[], the frontend can then parse+render the comps however it wants 
+(see willow in template-worker devutils/willow) [TODO: improve this section]
 
 ### Form Actions
 
@@ -54,6 +69,15 @@ export type Event = {
 } | {
     --- fetch the settings page
     type: "fetch_page",
+}
+
+export type EventResponse = {
+    --- action does not need any client side state change, keep whatever user input the user currently has
+    type: "noop"
+} | {
+    --- update form data
+    type: "patch_formdata",
+    new_formdata: {[string]: {FormData}}
 }
 
 export type DisplayElement = {
