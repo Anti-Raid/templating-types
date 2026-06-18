@@ -39,7 +39,12 @@ For example, a Text with a choices of type=Fixed may be rendered as a select box
 custom MultiSelect component or a HTML select multiple.
 
 Note: it is perfectly allowed for a frontend to *downgrade* choices it does not support (or cannot render) to the default rendering for Text/Array.Text. 
-For example, a type=Channel/type=Role in a frontend without fetched guild info etc may be rendered as a raw text box
+For example, a type=Channel/type=Role in a frontend without fetched guild info etc may be rendered as a raw text box. The choice=nil option is
+the bare minimum required when rendering Text/Array.Text.
+
+Some other specifications for individual types:
+
+- type=Channel: Should cover all *non-category* channels
 
 ### Form Actions
 
@@ -138,7 +143,7 @@ export type Choices = {
     type: "Fixed",
     choices: {{label: string, value: string}}
 } | {
-    type: "Channel"
+    type: "Channel" -- all non-category channels
 } | {
     type: "Role"
 }
