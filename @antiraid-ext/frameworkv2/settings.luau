@@ -4,18 +4,16 @@ local array_metatable = require"@antiraid/interop".array_metatable
 -- Optional parameter types for clean method signatures
 type TextOpts = { description: string?, placeholder: string?, disabled: boolean? }
 type TextUserOpts = { description: string?, placeholder: string?, disabled: boolean? }
-type ArrayTextOpts = { description: string?, disabled: boolean? }
+type ArrayTextOpts = { description: string?, disabled: boolean?, placeholder: string?, }
 type NumberOpts = { description: string?, placeholder: string?, disabled: boolean? }
 type SelectOpts = { description: string?, placeholder: string?, disabled: boolean? }
 type ToggleOpts = { description: string?, disabled: boolean? }
 
 export type FormBuilder = {
     display: (self: FormBuilder, element: settings.DisplayElement) -> FormBuilder,
-    text: (self: FormBuilder, id: string, label: string, opts: TextOpts?) -> FormBuilder,
-    array_text: (self: FormBuilder, id: string, label: string, opts: ArrayTextOpts?) -> FormBuilder,
-    array_select_text: (self: FormBuilder, id: string, label: string, choices: {{label: string, value: string}}, opts: ArrayTextOpts?) -> FormBuilder,
+    text: (self: FormBuilder, id: string, label: string, opts: TextOpts?, choices: settings.Choices?) -> FormBuilder,
+    array_text: (self: FormBuilder, id: string, label: string, opts: ArrayTextOpts?, choices: settings.Choices?) -> FormBuilder,
     number: (self: FormBuilder, id: string, label: string, opts: NumberOpts?) -> FormBuilder,
-    select_text: (self: FormBuilder, id: string, label: string, choices: {{label: string, value: string}}, opts: SelectOpts?) -> FormBuilder,
     boolean: (self: FormBuilder, id: string, label: string, opts: ToggleOpts?) -> FormBuilder,
 
     --- Creates a button action which then dispatches a settings action when pressed
@@ -33,33 +31,21 @@ local function FormBuilderWith(elements: {settings.FormElement}, actions: {setti
         return self
     end
 
-    function self:text(id: string, label: string, opts: TextOpts?): FormBuilder
+    function self:text(id: string, label: string, opts: TextOpts?, choices: settings.Choices?): FormBuilder
         opts = opts or {} :: TextOpts
-        table.insert(elements, { type = "Text" :: "Text", id = id, label = label, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled })
+        table.insert(elements, { type = "Text" :: "Text", id = id, label = label, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled, choices = choices })
         return self
     end
 
-    function self:array_text(id: string, label: string, opts: ArrayTextOpts?): FormBuilder
+    function self:array_text(id: string, label: string, opts: ArrayTextOpts?, choices: settings.Choices?): FormBuilder
         opts = opts or {} :: ArrayTextOpts
-        table.insert(elements, { type = "Array.Text" :: "Array.Text", id = id, label = label, description = opts.description, disabled = opts.disabled })
-        return self
-    end
-
-    function self:array_select_text(id: string, label: string, choices: {{label: string, value: string}}, opts: ArrayTextOpts?): FormBuilder
-        opts = opts or {} :: ArrayTextOpts
-        table.insert(elements, { type = "Array.Select.Text" :: "Array.Select.Text", choices = choices, id = id, label = label, description = opts.description, disabled = opts.disabled })
+        table.insert(elements, { type = "Array.Text" :: "Array.Text", id = id, label = label, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled, choices = choices })
         return self
     end
 
     function self:number(id: string, label: string, opts: NumberOpts?): FormBuilder
         opts = opts or {} :: NumberOpts
         table.insert(elements, { type = "Number" :: "Number", id = id, label = label, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled })
-        return self
-    end
-
-    function self:select_text(id: string, label: string, choices: {{label: string, value: string}}, opts: SelectOpts?): FormBuilder
-        opts = opts or {} :: SelectOpts
-        table.insert(elements, { type = "Select.Text" :: "Select.Text", id = id, label = label, choices = choices, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled })
         return self
     end
 

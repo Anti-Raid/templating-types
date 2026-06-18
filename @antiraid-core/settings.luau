@@ -31,6 +31,16 @@ There are a few things any settings v2 client must architecturally support:
 To start, a fetch_page Event must be sent which will return a DispatchResult<Page>[], the frontend can then parse+render the comps however it wants 
 (see willow in template-worker devutils/willow) [TODO: improve this section]
 
+### Choices
+
+A Text and/or Array.Text input may contain an optional `choices` property that may act as a *hint* to the frontend on how to render the Text/Array.Text input.
+
+For example, a Text with a choices of type=Fixed may be rendered as a select box. Similarly, a Array.Text with a choices of type=Fixed may be rendered with a 
+custom MultiSelect component or a HTML select multiple.
+
+Note: it is perfectly allowed for a frontend to *downgrade* choices it does not support (or cannot render) to the default rendering for Text/Array.Text. 
+For example, a type=Channel/type=Role in a frontend without fetched guild info etc may be rendered as a raw text box
+
 ### Form Actions
 
 If a user clicks an action button (FormAction with type Button.Event), follow the below steps to create the form_action Event to send:
@@ -124,6 +134,15 @@ export type FormAction = {
     send_form: boolean, -- if set to true, will send the entire form state 
 }
 
+export type Choices = {
+    type: "Fixed",
+    choices: {{label: string, value: string}}
+} | {
+    type: "Channel"
+} | {
+    type: "Role"
+}
+
 --- Form elements
 export type FormElement = {
     --- a display element
@@ -137,6 +156,7 @@ export type FormElement = {
     description: string?,
     placeholder: string?,
     disabled: boolean?,
+    choices: Choices?
 } | {
     -- list of strings
     type: "Array.Text",
@@ -144,14 +164,8 @@ export type FormElement = {
     label: string,
     description: string?,
     disabled: boolean?,
-} | {
-    -- list of strings with a set of available choices
-    type: "Array.Select.Text",
-    id: string,
-    label: string,
-    description: string?,
-    disabled: boolean?,
-    choices: {{label: string, value: string}},
+    placeholder: string?,
+    choices: Choices?
 } | {
     type: "Number",
     id: string,
@@ -159,14 +173,6 @@ export type FormElement = {
     description: string?,
     placeholder: string?,
     disabled: boolean?,
-} | {
-    type: "Select.Text",
-    id: string,
-    label: string,
-    description: string?,
-    disabled: boolean?,
-    placeholder: string?,
-    choices: {{label: string, value: string}},
 } | {
     type: "Boolean",
     id: string,
