@@ -146,6 +146,8 @@ export type Choices = {
     type: "Channel" -- all non-category channels
 } | {
     type: "Role"
+} | {
+    type: "Member"
 }
 
 --- Form elements
