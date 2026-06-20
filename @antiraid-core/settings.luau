@@ -92,8 +92,10 @@ Comments begin with ; and continue to the end of the line.
 
 ### Execution
 
-- Strings like "hello" must not be evaluated as a symbol (one way to achieve this is to wrap the string in a quote like: (quote "hello"))
-- A quoted expression like '<expr> should have the same effect as (quote <expr>). 
+- Strings and symbols are distinct data types. String literals (e.g., "hello") evaluate to themselves as string primitives
+- Unquoted symbols (e.g. my-var) are evaluated as dynamic variable lookups in the lexical scope.
+- A quoted expression like '<expr> should have the same effect as (quote <expr>). Quoting a symbol (e.g., 'my-var) returns an interned 
+symbol rather than performing a variable lookup.
 - Multiple top-level expressions should be evaluated sequentially with the result being the result of the last expression (one way
 to achieve this is to parse multiple top-level expressions expr1 expr2... in a do block like (do expr1 expr2 ...))
 
@@ -123,14 +125,15 @@ Implementations must enforce strict arity and type checking, throwing errors on 
 
 #### Special Forms
 - define (varname: symbol, value: expr): Evaluates value and binds it to varname in the current scope. Arity: 2.
-- get (varname: symbol): Dynamically looks up a variable. Arity: 1.
 - do (expr...): Evaluates arguments sequentially. Returns the result of the last expression. Arity: >= 1.
-- lambda ([params...], body: expr): Returns a closure capturing the current lexical scope. Arity: 2.
+- lambda ([params...], body: expr): Returns a closure capturing the current lexical scope. If multiple body expressions are provided, 
+they are evaluated sequentially with the last result returned Arity: >= 2.
 - if (cond, true_expr, false_expr): Evaluates cond. If truthy, evaluates and returns true_expr, else false_expr. Arity: 3.
 - cond (clauses...): Each clause must be a list of exactly two elements: [condition, expr]. Each condition must be executed in 
 order. Upon encountering the first truthy clause condition (or the exact symbol 'else'), expr is evaluated and returned. If no 
 conditions match, returns null. Throws an error if zero clauses are provided or if any clause is malformed. Arity: >= 1.
-- quote (expr): Returns the expression without evaluating it. Arity: 1.
+- quote (expr): Returns the expression without evaluating it. Any raw identifiers within the quoted expression (or deeply nested 
+within quoted lists) are converte into symbols. Arity: 1.
 
 #### List Operations
 - list (expr...): Evaluates arguments and returns them as a native array. Arity: >= 0.
@@ -149,7 +152,7 @@ otheriwse checks pointer equality
 - equal? + equals?: Similar to Scheme's equal? but does a deep recursive comparison for lists
 - not: Returns true if the expression is falsy, otherwise returns false
 - <, >, <=, >= (expr1, expr2): Strict comparison. Arity: 2.
-- type? (expr): Returns one of the following strings: "null", "string", "number", "boolean", "procedure", "list", or "unknown". Arity: 1.
+- type? (expr): Returns one of the following strings: "null", "string", "symbol", "number", "boolean", "procedure", "list", or "unknown". Arity: 1.
 
 #### Mathematics
 - +, -, *, / (expr...): Evaluates sequentially from left to right. Arity: >= 2.
