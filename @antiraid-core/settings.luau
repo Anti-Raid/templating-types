@@ -24,12 +24,13 @@ There are a few things any settings v2 client must architecturally support:
 - The frontend must keep track of which forms are in a formset as well as the order of forms within a formset
 - The frontend must have some way to keep track of the formdata (``{[string]: {FormData}}``) hereby called frontend-formdata
 - The frontend must have some way to apply a formdata patchset from the server (hereby called formdata-patchset) to the frontend-formdata
--  The template id each page was sent in must also be tracked and will hereby be called page-template-id.
+- The template id each page was sent in must also be tracked and will hereby be called page-template-id.
 
 ## Frontend
 
 To start, a fetch_page Event must be sent which will return a DispatchResult<Page>[], the frontend can then parse+render the comps however it wants 
-(see willow in template-worker devutils/willow) [TODO: improve this section]
+(see willow in template-worker devutils/willow) [TODO: improve this section, also add note that initial frontend-formdata should include all fields w/o branch
+evaluation]. Note that every FormElement that is not a DisplayElement must have a unique id to all other form elements (including form elements in branches)
 
 ### Choices
 
@@ -53,6 +54,8 @@ If a user clicks an action button (FormAction with type Button.Event), follow th
 If send_form is true on the action button, create the form_data object with the following rules:
 - All elements (FormElement) within the currently open form must be looped through. 
 - If the element is a DisplayElements, ignore,
+- If the element is a Branch, then compute the branch using Anima w/ disableLambda+disableDefine and if it evaluates to a truthy value, then recursively 
+loop over the FormElements of the branch and follow the same rules listed here on those elements using the same in-creation form_data.
 - Otherwise, form_data[FormElement.id] = FormElement.value
 
 Set __tloop_template_id to page-template-id
@@ -107,6 +110,12 @@ cannot be reassigned or mutated whatsoever for sandboxing purposes.
 4. Anima does not support macros/custom syntax extensions. Compliant implementations of Anima must not support these features.
 
 5. It is not allowed for user-code to override a builtin using define. Compliant implementations of Anima should error if an attempt to do so is detected
+
+6. Compliant implementations of Anima should support the following options:
+- disableLambda (disables creation of closures using lambda)
+- disableDefine (disables setting values to scope to define)
+- maxSteps (the maximum number of steps that anima code is allowed to use up. Each vm loop should use 1 step and future functions defined in the spec may
+be defined to take up additional steps in addition to the fixed 1 step cost)
 
 ### Supported Features/Builtins
 
@@ -270,6 +279,10 @@ export type FormElement = {
     label: string,
     description: string?,
     disabled: boolean?,
+} | {
+    type: "Branch",
+    cond: string, -- anima s-expression
+    elems: {FormElement} -- if Branch is true
 }
 
 export type FormData = {

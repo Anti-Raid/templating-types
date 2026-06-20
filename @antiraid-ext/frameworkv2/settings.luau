@@ -15,6 +15,7 @@ export type FormBuilder = {
     array_text: (self: FormBuilder, id: string, label: string, opts: ArrayTextOpts?, choices: settings.Choices?) -> FormBuilder,
     number: (self: FormBuilder, id: string, label: string, opts: NumberOpts?) -> FormBuilder,
     boolean: (self: FormBuilder, id: string, label: string, opts: ToggleOpts?) -> FormBuilder,
+    branch: (self: FormBuilder, cond: string, ifbranch: FormBuilder) -> FormBuilder,
 
     --- Creates a button action which then dispatches a settings action when pressed
     button: (self: FormBuilder, id: string, text: string, style: "Primary" | "Secondary" | "Danger", send_form: boolean) -> FormBuilder,
@@ -57,6 +58,13 @@ local function FormBuilderWith(elements: {settings.FormElement}, actions: {setti
 
     function self:button(id: string, text: string, style: "Primary" | "Secondary" | "Danger", send_form: boolean): FormBuilder
         table.insert(actions, { type = "Button.Event" :: "Button.Event", id = id, text = text, style = style, send_form = send_form })
+        return self
+    end
+
+    function self:branch(cond: string, ifbranch: FormBuilder): FormBuilder 
+        local fe, a = ifbranch:build()
+        if #a > 0 then error("Branches cannot contain actions") end
+        table.insert(elements, { type = "Branch" :: "Branch", cond = cond, elems = fe })
         return self
     end
 
