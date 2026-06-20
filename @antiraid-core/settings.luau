@@ -62,6 +62,90 @@ Set form_id to the id of the form the action button was contained in
 
 The result of a form_action Event is either a any response (todo: improve this) or a error (seen as a msyscall error) as tloop will perform selective dispatch
 due to special logic included for the __tloop_template_id key and will directly call into the desired template w/o any DispatchResult intermediaries etc.
+
+## Anima
+
+Anima is the language used by form branches and validation in settings v2. It is designed based of s-expressions to be fairly minimal
+
+### Grammar
+
+Anima uses a (simplified) Scheme-like grammar based on 's-expressions'
+
+```
+<program>   ::= <expr>* 
+<expr>      ::= <primitive> | <list> | <quoted>
+<primitive> ::= <null> | <boolean> | <number> | <string> | <symbol>
+<null>    ::= null
+<boolean> ::= true | false
+<number>  ::= [0-9]+ ("." [0-9]+)? 
+<string>  ::= "[json/lisp escaped string]"
+<special> ::= ( | ) | [ | ] | ; | " | '
+<symbol>  ::= [character (excluding <special> and whitespace)]+
+<list>    ::= (<expr>*) | [<expr>*]
+<quoted>  ::= '<expr>
+```
+
+Comments begin with ; and continue to the end of the line.
+
+### Execution
+
+- Strings like "hello" must not be evaluated as a symbol (one way to achieve this is to wrap the string in a quote like: (quote "hello"))
+- A quoted expression like '<expr> should have the same effect as (quote <expr>). 
+- Multiple top-level expressions should be evaluated sequentially with the result being the result of the last expression (one way
+to achieve this is to parse multiple top-level expressions expr1 expr2... in a do block like (do expr1 expr2 ...))
+
+### Other Rules
+
+1. Like Scheme, Anima makes use of lexical scoping. Nested scopes inherit parent variables and can 'shadow' parent variables of the same name.
+`define` strictly mutates or initializes within the local execution scope and never the parent scope and variables in the outermost scope 
+cannot be reassigned or mutated whatsoever for sandboxing purposes.
+
+2. Truthiness: false and null are falsey. All other values are truthy.
+
+3. Tail-Call Optimization (TCO): The runtime MUST execute the final expression in do, if, and, or, and custom procedure calls without allocating a new frame on the host call stack.
+
+4. Anima does not support macros/custom syntax extensions. Compliant implementations of Anima must not support these features.
+
+5. It is not allowed for user-code to override a builtin using define. Compliant implementations of Anima should error if an attempt to do so is detected
+
+### Supported Features/Builtins
+
+Implementations must enforce strict arity and type checking, throwing errors on mismatch.
+
+#### Special Forms
+- define (varname: symbol, value: expr): Evaluates value and binds it to varname in the current scope. Arity: 2.
+- get (varname: symbol): Dynamically looks up a variable. Arity: 1.
+- do (expr...): Evaluates arguments sequentially. Returns the result of the last expression. Arity: >= 1.
+- lambda ([params...], body: expr): Returns a closure capturing the current lexical scope. Arity: 2.
+- if (cond, true_expr, false_expr): Evaluates cond. If truthy, evaluates and returns true_expr, else false_expr. Arity: 3.
+- cond (clauses...): Each clause must be a list of exactly two elements: [condition, expr]. Each condition must be executed in 
+order. Upon encountering the first truthy clause condition (or the exact symbol 'else'), expr is evaluated and returned. If no 
+conditions match, returns null. Throws an error if zero clauses are provided or if any clause is malformed. Arity: >= 1.
+- quote (expr): Returns the expression without evaluating it. Arity: 1.
+
+#### List Operations
+- list (expr...): Evaluates arguments and returns them as a native array. Arity: >= 0.
+- car (list): Returns the first element of the list. Throws if the list is empty. Arity: 1.
+- cdr (list): Returns a new list excluding the first element. Throws if the list is empty. Arity: 1.
+- last (list): Returns the final element of the list. Throws if the list is empty. Arity: 1.
+- length (list | string): Returns the integer length. Returns 0 if the argument is neither a list nor string. Arity: 1.
+- contains (list, item): Returns a boolean indicating strict inclusion of item within list. Arity: 2.
+
+#### Logic & Type Checking
+- and (expr...): Short-circuits on the first falsey evaluation. Returns true if 0 arguments.
+- or (expr...): Short-circuits on the first truthy evaluation. Returns false if 0 arguments.
+- =: Checks if two number expressions are equal. Errors if either expression is not a number
+- eq? + eqv?: Similar to Scheme's eqv?. If number/string, checks equality of num/string even if in different memory locations, 
+otheriwse checks pointer equality
+- equal? + equals?: Similar to Scheme's equal? but does a deep recursive comparison for lists
+- not: Returns true if the expression is falsy, otherwise returns false
+- <, >, <=, >= (expr1, expr2): Strict comparison. Arity: 2.
+- type? (expr): Returns one of the following strings: "null", "string", "number", "boolean", "procedure", "list", or "unknown". Arity: 1.
+
+#### Mathematics
+- +, -, *, / (expr...): Evaluates sequentially from left to right. Arity: >= 2.
+- modulo (expr1, expr2): Returns the mathematical remainder. Arity: 2.
+
 ]]
 
 --- Settings v2 events
