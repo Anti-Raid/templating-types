@@ -113,7 +113,10 @@ cannot be reassigned or mutated whatsoever for sandboxing purposes.
 
 5. It is not allowed for user-code to override a builtin using define. Compliant implementations of Anima should error if an attempt to do so is detected
 
-6. Compliant implementations of Anima should support the following options:
+6. Like Scheme, all procedures in Anima (including builtin procedures that are *not* special forms) must be first class. Furthermore, both builtin
+and user-defined procedures must return `procedure` if type? is called on it.
+
+7. Compliant implementations of Anima should support the following options:
 - disableLambda (disables creation of closures using lambda)
 - disableDefine (disables setting values to scope to define)
 - maxSteps (the maximum number of steps that anima code is allowed to use up. Each vm loop should use 1 step and future functions defined in the spec may
@@ -123,17 +126,32 @@ be defined to take up additional steps in addition to the fixed 1 step cost)
 
 Implementations must enforce strict arity and type checking, throwing errors on mismatch.
 
-#### Special Forms
+### Special Forms
+
+OP_DEFINE, 
+OP_QUOTE, 
+OP_LAMBDA, 
+OP_IF, 
+OP_COND, 
+OP_ELSE, 
+OP_AND, 
+OP_OR, 
+OP_DO
+
 - define (varname: symbol, value: expr): Evaluates value and binds it to varname in the current scope. Arity: 2.
-- do (expr...): Evaluates arguments sequentially. Returns the result of the last expression. Arity: >= 1.
+- quote (expr): Returns the expression without evaluating it. Any raw identifiers within the quoted expression (or deeply nested 
+within quoted lists) are converte into symbols. Arity: 1.
 - lambda ([params...], body: expr): Returns a closure capturing the current lexical scope. If multiple body expressions are provided, 
 they are evaluated sequentially with the last result returned Arity: >= 2.
 - if (cond, true_expr, false_expr): Evaluates cond. If truthy, evaluates and returns true_expr, else false_expr. Arity: 3.
 - cond (clauses...): Each clause must be a list of exactly two elements: [condition, expr]. Each condition must be executed in 
 order. Upon encountering the first truthy clause condition (or the exact symbol 'else'), expr is evaluated and returned. If no 
 conditions match, returns null. Throws an error if zero clauses are provided or if any clause is malformed. Arity: >= 1.
-- quote (expr): Returns the expression without evaluating it. Any raw identifiers within the quoted expression (or deeply nested 
-within quoted lists) are converte into symbols. Arity: 1.
+- and (expr...): Short-circuits on the first falsey evaluation. Returns true if 0 arguments.
+- or (expr...): Short-circuits on the first truthy evaluation. Returns false if 0 arguments.
+- do (expr...): Evaluates arguments sequentially. Returns the result of the last expression. Arity: >= 1.
+
+### Builtin procedures
 
 #### List Operations
 - list (expr...): Evaluates arguments and returns them as a native array. Arity: >= 0.
@@ -144,15 +162,13 @@ within quoted lists) are converte into symbols. Arity: 1.
 - contains (list, item): Returns a boolean indicating strict inclusion of item within list. Arity: 2.
 
 #### Logic & Type Checking
-- and (expr...): Short-circuits on the first falsey evaluation. Returns true if 0 arguments.
-- or (expr...): Short-circuits on the first truthy evaluation. Returns false if 0 arguments.
-- =: Checks if two number expressions are equal. Errors if either expression is not a number
+- =: Checks if `n` number expressions are equal. Errors if any expression is not a number. Arity: >= 2.
 - eq? + eqv?: Similar to Scheme's eqv?. If number/string, checks equality of num/string even if in different memory locations, 
-otheriwse checks pointer equality
+otheriwse checks pointer equality. Arity: 2
 - equal? + equals?: Similar to Scheme's equal? but does a deep recursive comparison for lists
 - not: Returns true if the expression is falsy, otherwise returns false
-- <, >, <=, >= (expr1, expr2): Strict comparison. Arity: 2.
-- type? (expr): Returns one of the following strings: "null", "string", "symbol", "number", "boolean", "procedure", "list", or "unknown". Arity: 1.
+- <, >, <=, >= (expr1, expr2, ... exprN): Strict comparison between expr1 to exprN. Arity: >= 2.
+- type? (expr): Returns one of the following strings: "null", "string", "syArity: >= 2.mbol", "number", "boolean", "procedure", "list", or "unknown". Arity: 1.
 
 #### Mathematics
 - +, -, *, / (expr...): Evaluates sequentially from left to right. Arity: >= 2.
