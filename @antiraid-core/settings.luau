@@ -122,7 +122,8 @@ export type FormElement = {
     disabled: boolean?,
 } | {
     type: "Branch",
-    cond: string, -- anima s-expression
+    id: string, -- branch id, passed into the branch cond as a param as `id`
+    cond: string, -- anima s-expression (`props` will be the first param followed by `id`)
     elems: {FormElement} -- if Branch is true
 }
 
