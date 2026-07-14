@@ -1,5 +1,4 @@
 --!nocheck
-local lazy = require("@antiraid-core/lazy")
 local discord = require("@antiraid-core/plugins/discord")
 local discordRest = require("@discord-types/restTypes")
 local discordApi = require("@discord-types/apiTypes")
@@ -78,9 +77,6 @@ export type DiscordClient = {
 
     --- Deletes a channel permission
     delete_channel_permission: (self: DiscordClient, data: discord.DeleteChannelPermissionOptions) -> (),
-
-    --- Follows an announcement channel
-    follow_announcement_channel: (self: DiscordClient, data: discord.FollowAnnouncementChannelOptions) -> discord.LazyChannelObject,
 
     -- ==========================================
     -- Guild Base
@@ -201,9 +197,6 @@ export type DiscordClient = {
     --- Creates a message
     create_message: (self: DiscordClient, data: discord.CreateMessageOptions) -> discord.LazyMessageObject,
 
-    --- Crossposts a message to an announcement channel
-    crosspost_message: (self: DiscordClient, data: discord.CrosspostMessageOptions) -> discord.LazyMessageObject,
-    
     --- Edits a message
     edit_message: (self: DiscordClient, data: discord.EditMessageOptions) -> discord.LazyMessageObject,
 
@@ -225,9 +218,6 @@ export type DiscordClient = {
 
     --- Deletes a reaction another user has made on a message
     delete_user_reaction: (self: DiscordClient, data: discord.DeleteUserReactionOptions) -> (),
-
-    --- Gets all users who have reacted with the provided reaction based on provided criteria
-    get_reactions: (self: DiscordClient, data: discord.GetReactionsOptions) -> discord.LazyUsersObject,
 
     --- Deletes all reactions on a message
     delete_all_reactions: (self: DiscordClient, data: discord.DeleteAllReactionsOptions) -> (),
@@ -267,26 +257,8 @@ export type DiscordClient = {
     -- Webhooks
     -- ==========================================
 
-    --- Creates a webhook in a channel
-    create_webhook: (self: DiscordClient, data: { channel_id: string, data: discordRest.CreateWebhookRequest, reason: string? }) -> lazy.Lazy<discordApi.WebhookObject>,
-
-    --- Gets all webhooks in a channel
-    get_channel_webhooks: (self: DiscordClient, channel_id: string) -> lazy.Lazy<{discordApi.WebhookObject}>,
-
-    --- Gets all webhooks in the guild
-    get_guild_webhooks: (self: DiscordClient) -> lazy.Lazy<{discordApi.WebhookObject}>,
-
-    --- Gets a specific webhook
-    get_webhook: (self: DiscordClient, webhook_id: string) -> lazy.Lazy<discordApi.WebhookObject>,
-
-    --- Modifies a webhook
-    modify_webhook: (self: DiscordClient, data: { webhook_id: string, data: discordRest.ModifyWebhookRequest, reason: string? }) -> lazy.Lazy<discordApi.WebhookObject>,
-
     --- Deletes a webhook
     delete_webhook: (self: DiscordClient, webhook_id: string) -> (),
-
-    --- Executes a webhook
-    execute_webhook: (self: DiscordClient, data: { webhook_id: string, webhook_token: string, data: discordRest.ExecuteWebhookRequest }) -> lazy.Lazy<discordApi.MessageObject?>,
 }
 
 -- Pre-allocate the shared metatable exactly once
@@ -377,9 +349,6 @@ end
 function DiscordClientMethods:delete_channel_permission(data)
     self:_call({ op = "DeleteChannelPermission", data = data })
 end
-function DiscordClientMethods:follow_announcement_channel(data)
-    return self:_call({ op = "FollowAnnouncementChannel", data = data })
-end
 
 -- ==========================================
 -- Guild Base
@@ -410,7 +379,7 @@ end
 -- Guild Members & Bans
 -- ==========================================
 function DiscordClientMethods:get_guild_member(user_id)
-    return self:_call({ op = "GetGuildMember", data = user_id })
+    return self:_call({ op = "GetGuildMember", data = { user_id = user_id } })
 end
 function DiscordClientMethods:list_guild_members(data)
     return self:_call({ op = "ListGuildMembers", data = data })
@@ -434,7 +403,7 @@ function DiscordClientMethods:get_guild_bans(data)
     return self:_call({ op = "GetGuildBans", data = data })
 end
 function DiscordClientMethods:get_guild_ban(user_id)
-    return self:_call({ op = "GetGuildBan", data = user_id })
+    return self:_call({ op = "GetGuildBan", data = { user_id = user_id } })
 end
 function DiscordClientMethods:create_guild_ban(data)
     self:_call({ op = "CreateGuildBan", data = data })
@@ -499,9 +468,6 @@ end
 function DiscordClientMethods:create_message(data)
     return self:_call({ op = "CreateMessage", data = data })
 end
-function DiscordClientMethods:crosspost_message(data)
-    return self:_call({ op = "CrosspostMessage", data = data })
-end
 function DiscordClientMethods:edit_message(data)
     return self:_call({ op = "EditMessage", data = data })
 end
@@ -523,9 +489,6 @@ function DiscordClientMethods:delete_own_reaction(data)
 end
 function DiscordClientMethods:delete_user_reaction(data)
     self:_call({ op = "DeleteUserReaction", data = data })
-end
-function DiscordClientMethods:get_reactions(data)
-    return self:_call({ op = "GetReactions", data = data })
 end
 function DiscordClientMethods:delete_all_reactions(data)
     self:_call({ op = "DeleteAllReactions", data = data })
@@ -565,26 +528,8 @@ end
 -- ==========================================
 -- Webhooks
 -- ==========================================
-function DiscordClientMethods:create_webhook(data)
-    return self:_call({ op = "CreateWebhook", data = data })
-end
-function DiscordClientMethods:get_channel_webhooks(channel_id)
-    return self:_call({ op = "GetChannelWebhooks", data = { channel_id = channel_id } })
-end
-function DiscordClientMethods:get_guild_webhooks()
-    return self:_call({ op = "GetGuildWebhooks", data = {} })
-end
-function DiscordClientMethods:get_webhook(webhook_id)
-    return self:_call({ op = "GetWebhook", data = { webhook_id = webhook_id } })
-end
-function DiscordClientMethods:modify_webhook(data)
-    return self:_call({ op = "ModifyWebhook", data = data })
-end
 function DiscordClientMethods:delete_webhook(webhook_id)
     self:_call({ op = "DeleteWebhook", data = { webhook_id = webhook_id } })
-end
-function DiscordClientMethods:execute_webhook(data)
-    return self:_call({ op = "ExecuteWebhook", data = data })
 end
 
 -- ==========================================

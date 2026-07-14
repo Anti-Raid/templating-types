@@ -179,19 +179,6 @@ export type DeleteUserReactionOptions = {
     reaction: ReactionType
 }
 
---- Normal = normal reaction, burst is a super reaction
-export type ReactionTypeEnum = "Normal" | "Burst"
-
---- Options for getting reactions on a message
-export type GetReactionsOptions = {
-    channel_id: discord.Snowflake,
-    message_id: discord.Snowflake,
-    reaction: ReactionType,
-    type: ReactionTypeEnum?, -- Normal or burst/super reaction
-    after: discord.Snowflake?, -- After which ID to use
-    limit: number?,
-}
-
 --- Options for deleting all reactions on a message
 export type DeleteAllReactionsForEmojiOptions = {
     channel_id: discord.Snowflake,
@@ -722,8 +709,6 @@ export type DiscordRequest =
     | { op: "DeleteOwnReaction", data: DeleteOwnReactionOptions }
     --- Deletes a reaction another user has made on a message
     | { op: "DeleteUserReaction", data: DeleteUserReactionOptions }
-    --- Gets all users who have reacted with the provided reaction based on provided criteria
-    | { op: "GetReactions", data: GetReactionsOptions }
     --- Deletes all reactions on a message
     | { op: "DeleteAllReactions", data: DeleteAllReactionsOptions }
     --- Deletes all reactions for a specific emoji on a message
@@ -831,7 +816,6 @@ export type DiscordResponse =
     | { op: "CreateReaction" } -- Ack
     | { op: "DeleteOwnReaction" } -- Ack
     | { op: "DeleteUserReaction" } -- Ack
-    | { op: "GetReactions", res: LazyUsersObject }
     | { op: "DeleteAllReactions" } -- Ack
     | { op: "DeleteAllReactionsForEmoji" } -- Ack
 
