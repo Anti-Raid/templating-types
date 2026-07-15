@@ -39,7 +39,6 @@ export type BotStatus = {
 }
 
 export type BotConfig = {
-    main_server: string,
     support_server_invite: string,
     client_id: string,
 }
@@ -142,7 +141,7 @@ export type MBotSyscall =
 
 export type MBotSyscallRet = 
     | { op: "CommandList", commands: { any } }
-    | { op: "BotConfig", main_server: string, support_server_invite: string, client_id: string }
+    | { op: "BotConfig", support_server_invite: string, client_id: string }
     | { op: "BotStatus", status: BotStatus }
     | { op: "KhronosValue", data: khronosvalue.KhronosValue }
     | { op: "State", res: { StateExecResult }, new_tenant_state: TenantState? }
