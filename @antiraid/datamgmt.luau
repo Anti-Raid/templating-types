@@ -14,8 +14,6 @@ export type TarArchive = {
     toblob: (self: TarArchive) -> blob.Blob,
 }
 
-export type CompressionFormat = "gzip" | "brotli" | "zlib"
-
 --- Creates a new Blob from the given data
 local function newblob(data: blob.BlobTaker): blob.Blob
     error("Implemented internally in AntiRaid runtime!")
@@ -48,13 +46,13 @@ local function aes256decrypt(data: blob.BlobTaker, key: string): blob.Blob
     error("Implemented internally in AntiRaid runtime!")
 end
 
---- Compresses the given data using the specified compression format and level
-local function compress(format: CompressionFormat, data: blob.BlobTaker, level: number?): blob.Blob
+--- Compresses the given data with gzip using the specified compression level
+local function compressgzip(data: blob.BlobTaker, level: number?): blob.Blob
     error("Implemented internally in AntiRaid runtime!")
 end
 
---- Decompresses the given data using the specified compression format
-local function decompress(format: CompressionFormat, data: blob.BlobTaker): blob.Blob
+--- Decompresses the given data with gzip
+local function decompressgzip(data: blob.BlobTaker): blob.Blob
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -65,6 +63,6 @@ return {
     TarArchive = TarArchive,
     aes256encrypt = aes256encrypt,
     aes256decrypt = aes256decrypt,
-    compress = compress,
-    decompress = decompress,
+    compressgzip = compressgzip,
+    decompressgzip = decompressgzip,
 }
