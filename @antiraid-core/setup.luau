@@ -143,26 +143,19 @@ local function StreamManager(ctx: Primitives.TemplateContext): Primitives.Stream
     local stream_tx = ctx.btd().stream_tx
     local stream_rx = ctx.btd().stream_rx
     
-    local function send(id: number, msg: any)
-        stream_tx:send({ op = "Msg", id = id, msg = msg :: any })
-    end
-    
     local function close(id: number)
         stream_tx:send({ op = "Close", id = id })
     end
     
-    local function broadcast(msg: any)
-        for id, _ in connections do
-            send(id, msg)
-        end
-    end
-
     local function publish(topic: string, msg: any)
         local subs = subscriptions[topic]
         if not subs then return end
+        local conn_ids = {}
+        local payload: Primitives.StreamClientPayload = { t = "msg", n = topic, msg = msg }
         for id, _ in subs do
-            send(id, msg)
+            table.insert(conn_ids, id)
         end
+        stream_tx:pubsync(conn_ids, payload)
     end
     
     local function start_background_task()
@@ -210,7 +203,6 @@ local function StreamManager(ctx: Primitives.TemplateContext): Primitives.Stream
     start_background_task()
     
     return table.freeze({
-        broadcast = broadcast,
         publish = publish
     })
 end

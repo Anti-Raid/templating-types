@@ -91,9 +91,6 @@ export type StreamClientPayload = {
 }
 
 export type StreamManager = {
-    --- Broadcast a message to all active connections
-    read broadcast: (msg: any) -> (),
-
     --- Publish a message to all connections subscribed to a specific topic
     read publish: (topic: string, msg: any) -> (),
 }

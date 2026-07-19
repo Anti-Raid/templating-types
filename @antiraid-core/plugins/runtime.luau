@@ -125,7 +125,13 @@ export type CtlMessage = {
 
 export type StreamTx = {
     --- @yields
-    send: (self: StreamTx, msg: LtcMessage) -> ()
+    send: (self: StreamTx, msg: LtcMessage) -> (),
+
+    --- @noyield
+    pubsync: (self: StreamTx, conn_ids: {number}, msg: any) -> (),
+    
+    --- @yields
+    pub: (self: StreamTx, conn_ids: {number}, msg: any) -> ()
 }
 
 export type StreamRx = {
