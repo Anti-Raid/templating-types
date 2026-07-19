@@ -90,11 +90,11 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
     local function dispatch(event: Primitives.Event): {Primitives.DispatchResult}
         if attachedisolatescount == 0 then return {} end -- unlikely but could happen
 
-        local results = table.create(attachedisolatescount)
+        local results = table.create<<Primitives.DispatchResult>>(attachedisolatescount)
         for _, isol in attachedisolates do 
             local ret = _runEventResult(isol, ctx, event)
             if ret.type == "err" then
-                -- Silently ignore for now as ctx.debug is removed
+                ctx.stream.publish("debug", { message = ret.value, source = isol.id })
             end
             table.insert(results, ret)
         end
@@ -167,7 +167,7 @@ local function StreamManager(ctx: Primitives.TemplateContext): Primitives.Stream
     
     local function start_background_task()
         task.spawn(function()
-            local ok, err = pcall(function()
+            local ok, _err = pcall(function()
                 while true do
                     local msg = stream_rx:recv()
                     if not msg then break end

@@ -74,7 +74,7 @@ local function setup(commands: {[string]: context.Command} | {context.Command}, 
                 local ok, cerr = xpcall(command.autocompleter, errorHandler.errorHandler, cctx)
                 if not ok then 
                     local err = (cerr :: any) :: errorHandler.HandledError
-                    -- Silently ignore error for now as ctx.debug is removed
+                    ctx.stream.publish("debug", { message = err, source = "<framework>" })
                     return
                 end
 
@@ -100,41 +100,6 @@ local function setup(commands: {[string]: context.Command} | {context.Command}, 
             end
             return nil
         end),
-        --[[
-        GetSettings(function(ctx) 
-            local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
-
-            if not framework.data then
-                _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
-            end
-
-            local frameworkdata = framework.data :: coretypes.BaseFrameworkData
-
-            return frameworkdata.settings
-        end),
-        ExecuteSetting(function(ctx, data)
-            local framework = getFramework() or error("Framework not found! Make sure to set it up before calling Framework.setup!")
-
-            if not framework.data then
-                _setupFrameworkBaseData(ctx, framework) -- Perform one time setup of the framework base data
-            end
-
-            local frameworkdata = framework.data :: coretypes.BaseFrameworkData
-
-            local setting = framework.base.getsettings()[data.id]
-            if not setting then
-                return nil
-            end
-
-            if not setting.execute then
-                error("Setting execute function not found: " .. data.id)
-            end
-
-            return setting.execute(data, {
-                ctx = ctx,
-                userinfomanager = frameworkdata.userinfomanager,
-            })
-        end),]]
         ...
     )
 end
