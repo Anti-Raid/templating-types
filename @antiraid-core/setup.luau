@@ -142,7 +142,7 @@ local function StreamManager(ctx: Primitives.TemplateContext): Primitives.Stream
     local subscriptions: {[string]: {[number]: boolean}} = {}
     local stream_tx = ctx.btd().stream_tx
     local stream_rx = ctx.btd().stream_rx
-    
+
     local function close(id: number)
         stream_tx:send({ op = "Close", id = id })
     end
@@ -151,7 +151,7 @@ local function StreamManager(ctx: Primitives.TemplateContext): Primitives.Stream
         local subs = subscriptions[topic]
         if not subs then return end
         local conn_ids = {}
-        local payload: Primitives.StreamClientPayload = { t = "msg", n = topic, msg = msg }
+        local payload: Primitives.StreamClientPayload = { t = "msg" :: "msg", n = topic, msg = msg }
         for id, _ in subs do
             table.insert(conn_ids, id)
         end
