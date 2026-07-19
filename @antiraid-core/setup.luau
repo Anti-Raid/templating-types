@@ -14,12 +14,6 @@ local Discord = require"@antiraid-ext/system/discord"
 -- Start code
 
 --- @noyield
-local function dummyprint() 
-    if _G._debug then return _G._debug end
-    return function(...) end
-end
-
---- @noyield
 local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventManager
     local eventrefmu = MutexFn() -- Mutex for synchronizing access to event refs
     local exposedvfs = ctx.btd().base_vfs
@@ -27,7 +21,14 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
         ["builtins"] = isolate.new("builtins", typesext.Vfs.newoverlay({
             exposedvfs.Builtins or error("Internal error: Builtins VFS not found in exposed VFSs"),
             exposedvfs.TemplatingTypes or error("Internal error: TemplatingTypes VFS not found in exposed VFSs"),
-        }), {})
+        }), {
+            print = function(...)
+                local str = (typesext.fmtpretty :: any)(...)
+                if ctx.stream then
+                    ctx.stream.publish("print", { type = "Log", message = str, source = "builtins" })
+                end
+            end
+        })
     } -- map of all attached isolates
     local attachedisolatescount = 1 -- initially only one attached isolate
 
@@ -89,12 +90,11 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
     local function dispatch(event: Primitives.Event): {Primitives.DispatchResult}
         if attachedisolatescount == 0 then return {} end -- unlikely but could happen
 
-        ctx.debug("[TemplateLoopManager] Dispatching event", event.name)
-        local results = table.create<<Primitives.DispatchResult>>(attachedisolatescount)
+        local results = table.create(attachedisolatescount)
         for _, isol in attachedisolates do 
             local ret = _runEventResult(isol, ctx, event)
-            if ret.type == "err" then 
-                ctx.debug(`[TemplateLoopManager] Error dispatching event to {isol.id}:`, ret)
+            if ret.type == "err" then
+                -- Silently ignore for now as ctx.debug is removed
             end
             table.insert(results, ret)
         end
@@ -136,6 +136,85 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
     }
 end
 
+--- @noyield
+local function StreamManager(ctx: Primitives.TemplateContext): Primitives.StreamManager
+    local connections: {[number]: string} = {}
+    local subscriptions: {[string]: {[number]: boolean}} = {}
+    local stream_tx = ctx.btd().stream_tx
+    local stream_rx = ctx.btd().stream_rx
+    
+    local function send(id: number, msg: any)
+        stream_tx:send({ op = "Msg", id = id, msg = msg :: any })
+    end
+    
+    local function close(id: number)
+        stream_tx:send({ op = "Close", id = id })
+    end
+    
+    local function broadcast(msg: any)
+        for id, _ in connections do
+            send(id, msg)
+        end
+    end
+
+    local function publish(topic: string, msg: any)
+        local subs = subscriptions[topic]
+        if not subs then return end
+        for id, _ in subs do
+            send(id, msg)
+        end
+    end
+    
+    local function start_background_task()
+        task.spawn(function()
+            local ok, err = pcall(function()
+                while true do
+                    local msg = stream_rx:recv()
+                    if not msg then break end
+                    
+                    if msg.type == "NewConn" then
+                        connections[msg.id] = msg.user_id
+                    elseif msg.type == "CloseConn" then
+                        connections[msg.id] = nil
+                        for _, subs in subscriptions do
+                            subs[msg.id] = nil
+                        end
+                    elseif msg.type == "Msg" then
+                        local payload = msg.msg :: Primitives.StreamClientPayload
+                        if type(payload) == "table" and type(payload.n) == "string" then
+                            if payload.t == "sub" then
+                                local topic = payload.n
+                                if not subscriptions[topic] then subscriptions[topic] = {} end
+                                subscriptions[topic][msg.id] = true
+                            elseif payload.t == "unsub" then
+                                local topic = payload.n
+                                if subscriptions[topic] then subscriptions[topic][msg.id] = nil end
+                            elseif payload.t == "msg" and payload.msg ~= nil then
+                                -- Message routing can be added here if needed in the future
+                            else
+                                close(msg.id)
+                            end
+                        else
+                            close(msg.id)
+                        end
+                    end
+                end
+            end)
+            
+            if not ok then
+                task.wait(1)
+                start_background_task()
+            end
+        end)
+    end
+    start_background_task()
+    
+    return table.freeze({
+        broadcast = broadcast,
+        publish = publish
+    })
+end
+
 export type SetupData = {
     read ctx: Primitives.TemplateContext,
     read updatetenantstate: (newts: runtime.TenantState) -> ()
@@ -157,20 +236,23 @@ local function newinitloop(syscall: runtime.RawSyscall, ts: runtime.TenantState,
     local function dotenantstate() return tenantstate end
     local eventmanager: Primitives.EventManager
     local discord: Discord.DiscordClient
+    local streammanager: Primitives.StreamManager
     local ctx: Primitives.TemplateContext = {
         syscall = dosyscall,
         btd = dobtd,
         tenantstate = dotenantstate,
-        debug = dummyprint(),
         loop = eventmanager,
-        discord = discord
+        discord = discord,
+        stream = streammanager,
     }
     eventmanager = EventManager(ctx)
     discord = Discord(ctx)
+    streammanager = StreamManager(ctx)
 
     local ctxany = ctx :: any
     ctxany.discord = discord
     ctxany.loop = eventmanager
+    ctxany.stream = streammanager
     
     return table.freeze{ctx=ctx, updatetenantstate = function(newts: runtime.TenantState) tenantstate = newts end}    
 end
@@ -178,5 +260,6 @@ end
 return {
     newinitloop = newinitloop,
     EventManager = EventManager,
+    StreamManager = StreamManager,
     Discord = Discord
 }

@@ -43,7 +43,6 @@ local function createjail(rootctx: Primitives.TemplateContext, jc: JailConfig): 
         syscall = jailcall,
         tenantstate = rootctx.tenantstate,
         btd = rootctx.btd,
-        debug = rootctx.debug,
         loop = eventmanager,
         discord = discord
     }

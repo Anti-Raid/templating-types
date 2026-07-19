@@ -267,11 +267,6 @@ DiscordClientMethods.__index = DiscordClientMethods
 
 -- Internal Syscall Helper (Now a method)
 function DiscordClientMethods:_call(req: any): any
-    self._ctx.debug("res", {
-        op = "Discord",
-        req = req
-    })
-
     local res = self._ctx.syscall({
         op = "Discord",
         req = req

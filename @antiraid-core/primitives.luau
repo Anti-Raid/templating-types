@@ -74,11 +74,29 @@ export type TemplateContext = {
     --- Returns the underlying discord client wrapper
     read discord: Discord.DiscordClient,
 
-    --- Logs a debug message
-    read debug: (...any) -> (),
-
     --- Event manager/'loop' of the context
     read loop: EventManager,
+    
+    --- Stream manager for the context
+    read stream: StreamManager,
+}
+
+export type StreamClientPayload = {
+    t: "sub" | "unsub",
+    n: string,
+} | {
+    t: "msg",
+    n: string,
+    msg: any,
+}
+
+export type StreamManager = {
+    --- Broadcast a message to all active connections
+    read broadcast: (msg: any) -> (),
+
+    --- Publish a message to all connections subscribed to a specific topic
+    read publish: (topic: string, msg: any) -> (),
 }
 
 return {}
+

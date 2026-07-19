@@ -74,7 +74,7 @@ local function setup(commands: {[string]: context.Command} | {context.Command}, 
                 local ok, cerr = xpcall(command.autocompleter, errorHandler.errorHandler, cctx)
                 if not ok then 
                     local err = (cerr :: any) :: errorHandler.HandledError
-                    if err.traceback then framework.ctx.debug(`[Framework.DispatchAutocomplete] Error in autocomplete of \`{parsedcmd.baseName}\``, err.traceback) end
+                    -- Silently ignore error for now as ctx.debug is removed
                     return
                 end
 

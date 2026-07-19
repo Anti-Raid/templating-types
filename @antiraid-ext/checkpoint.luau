@@ -68,8 +68,8 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
             if step.step == datawithstep.step then atstep = true end -- We got the step
             if atstep then 
                 local ok, res = xpcall(step.fn, debug.traceback :: any, cctx)
-                if not ok then 
-                    ctx.debug("[CheckpointManager] Error in checkpoint step", step.step, "for checkpoint", id, ":", res)
+                if res ~= "OK" then
+                    -- error handled silently
                     kexm.remove(id) -- Remove checkpoint on error to prevent getting stuck
                     error(res)
                 else 
@@ -92,7 +92,7 @@ local function CheckpointManager<Data>(ctx: Primitives.TemplateContext, baseid: 
     end, function(records, kexm) 
         assert(kexm, "Internal error: kexm should not be nil in checkpoint manager callback")
         -- On init, resume any checkpoints
-        ctx.debug("[CheckpointManrecordager] Resuming checkpoints", records, "id:", baseid)
+        -- Resuming checkpoints
         for _, record in records do 
             local id = record.key
             local datawithstep = record.value :: DataWithStep<Data>

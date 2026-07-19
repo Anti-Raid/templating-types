@@ -81,14 +81,12 @@ local function KeyManager<T>(
     basescope: string,
     oninit: ((records: {[string]: KeyRecord<T>}, km: KeyManager<T>) -> any)?
 ): KeyManager<T>
-    ctx.debug("[KeyManager] Initializing KeyManager")
-
     local kexs = {} :: {[string]: KeyRecord<T>}
     local count = 0
 
     local function remove(key: string) 
         if not kexs[key] then return end -- Remove associated key + data
-        ctx.debug("[KeyManager] Removing key: "..key)
+        -- Remove key
         ctx.syscall({op="State", ops={{ op = "KvDelete", key = key, scope = basescope }}})
         kexs[key] = nil
         count = count - 1
@@ -132,8 +130,7 @@ local function KeyManager<T>(
     end
 
     local function updatedata(key: string, data: T, blob: blob.BlobTaker?)
-        if not exists(key) then 
-            ctx.debug("[KeyManager] Attempted to update data for non-existent key: "..key)
+        if not exists(key) then
             return
         end
 
@@ -194,7 +191,7 @@ local function KeyManager<T>(
     --- Synchronize key expiries from KV store
     local function sync() 
         -- Fetch existing key expiries from kv
-        ctx.debug("[KeyManager] Syncing keys from tenant state")
+        -- Syncing keys from tenant state
         local kexdata = ctx.syscall({op="State", ops={{ op = "KvFind", query = "%%", scope = basescope}}})
         assert(kexdata.op == "State")
         local newkexs: {[string]: KeyRecord<T>} = {}
@@ -212,15 +209,15 @@ local function KeyManager<T>(
         end
         kexs = newkexs -- Replace with new data
         count = newcount
-        ctx.debug("[KeyManager] Synced keys. Count: "..count)
+        -- Synced keys
 
         -- Call oninit callback if provided
         if oninit then 
             task.spawn(function()
                 if not oninit then return end -- needed for luau new type solver
                 local ok, res = xpcall(oninit, debug.traceback :: any, kexs, self)
-                if not ok then 
-                    ctx.debug("[KeyManager] Error in oninit callback: "..tostring(res))
+                if not ok then
+                    -- Error in oninit callback
                 end
             end)
         end

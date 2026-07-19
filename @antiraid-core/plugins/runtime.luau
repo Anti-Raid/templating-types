@@ -101,6 +101,38 @@ export type Id = {
     read tenant_id: string
 }
 
+export type LtcMessage = {
+    op: "Msg",
+    msg: khronosvalue.KhronosValue,
+    id: number,
+} | {
+    op: "Close",
+    id: number,
+}
+
+export type CtlMessage = {
+    type: "NewConn",
+    id: number,
+    user_id: string,
+} | {
+    type: "CloseConn",
+    id: number,
+} | {
+    type: "Msg",
+    id: number,
+    msg: khronosvalue.KhronosValue,
+}
+
+export type StreamTx = {
+    --- @yields
+    send: (self: StreamTx, msg: LtcMessage) -> ()
+}
+
+export type StreamRx = {
+    --- @yields
+    recv: (self: StreamRx) -> CtlMessage
+}
+
 export type BaseTenantData = {
     read bot: discord.UserObject,
     read id: Id,
@@ -108,6 +140,8 @@ export type BaseTenantData = {
     read base_vfs: { [string]: typesext.Vfs },
     read support_server: string,
     read website: string,
+    read stream_tx: StreamTx,
+    read stream_rx: StreamRx,
 }
 
 export type StateOp = {
@@ -175,8 +209,6 @@ export type CdnResult = { op: "Blob", data: blob.Blob } | { op: "Buffer", data: 
 
 export type MetaCall = { op: "GetStats" } 
 export type MetaResult = { op: "Stats", total_guilds: number, total_users: number, last_started_at: datetime.DateTime, } 
-
-export type StreamCall = { op: "NewStream" }
 
 --- The arguments to be passed into a system call
 export type SyscallArgs = {
