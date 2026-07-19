@@ -1,27 +1,26 @@
 local datetime = require"@antiraid/datetime"
 
-export type StreamSender<T> = {
-    --- Once called, sends a value to the channel ignoring any errors
-    read send: (self: StreamSender<T>, message: T) -> (),
-    --- Once called, sends a value to the channel erroring if the channel is already closed
-    read sendstrict: (self: StreamSender<T>, message: T) -> (),
+export type BroadcastTx<T> = {
+    --- Once called, sends a value to the channel. If no recievers, returns (0, message), otherwise (num_recv, nil)
+    read send: (self: BroadcastTx<T>, message: T) -> (number, T?),
+    --- Creates a new receiver that will listen for all new messages from the point newsub is called
+    read newsub: (self: BroadcastTx<T>) -> BroadcastRx<T>,
+    --- Returns once the underlying stream channel is closed
+    ---
+    --- @yields
+    read waitforclosed: (self: BroadcastTx<T>) -> (),
+}
+
+export type BroadcastRx<T> = {
+    --- Waits for a value to be sent to the channel and receives it returning (T, nil, 0)
+    ---
+    --- If no more senders, returns (nil, "closed", 0)
+    --- If the reciever has lagged, returns (nil, "lagged", amt)
+    read recv: (self: BroadcastRx<T>) -> (T?, string?, number),
+    --- Same as recv but with a timeout.
+    read recvtimeout: (self: BroadcastRx<T>, timeout: datetime.TimeDelta) -> (T?, string?, number),
     --- Returns if the underlying stream channel is closed
-    read isclosed: (self: StreamSender<T>) -> boolean,
-}
-
---- A oneshot channel allows sending and receiving a single value across tasks (Lua threads etc.)
-export type StreamReceiver<T> = {
-    --- Waits for a value to be sent to the channel and receives it.
-    read recv: (self: StreamReceiver<T>) -> T,
-    --- Waits for a value to be sent to the channel and receives it, with a timeout.
-    read recvtimeout: (self: StreamReceiver<T>, timeout: datetime.TimeDelta) -> T,
-    --- Waits for a batch of messages or until timeout
-    read recvbatch: (self: StreamReceiver<T>, expecteditems: number, timeout: datetime.TimeDelta) -> ({T}, "completed" | "closed" | "timeout")
-}
-
-export type Stream<T> = {
-    read tx: StreamSender<T>,
-    read rx: StreamReceiver<T>
+    read isclosed: (self: BroadcastRx<T>) -> boolean,
 }
 
 --- A delay channel allows sending values that will be received after a specified delay
@@ -54,7 +53,8 @@ export type KeyHandle<T> = typeof(setmetatable({} :: {
     __eq: (self: KeyHandle<T>, other: KeyHandle<T>) -> boolean,
 }))
 
-local function Stream<T>(): Stream<T>
+--- cap must be <= 5
+local function BroadcastChannel<T>(cap: number): (BroadcastTx<T>, BroadcastRx<T>)
     error("Implemented internally in AntiRaid runtime!")
 end
 
@@ -63,6 +63,6 @@ local function DelayChannel<T>(): DelayChannel<T>
 end
 
 return {
-    Stream = Stream,
+    BroadcastChannel = BroadcastChannel,
     DelayChannel = DelayChannel,
 }

@@ -99,6 +99,14 @@ export type FormElement = {
     disabled: boolean?,
     choices: Choices?
 } | {
+    -- datetime input
+    type: "DateTime",
+    id: string,
+    label: string,
+    description: string?,
+    placeholder: string?,
+    disabled: boolean?,
+} | {
     -- list of strings
     type: "Array.Text",
     id: string,

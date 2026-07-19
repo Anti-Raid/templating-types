@@ -12,6 +12,7 @@ type ToggleOpts = { description: string?, disabled: boolean? }
 export type FormBuilder = {
     display: (self: FormBuilder, element: settings.DisplayElement) -> FormBuilder,
     text: (self: FormBuilder, id: string, label: string, opts: TextOpts?, choices: settings.Choices?) -> FormBuilder,
+    datetime: (self: FormBuilder, id: string, label: string, opts: TextOpts?) -> FormBuilder,
     array_text: (self: FormBuilder, id: string, label: string, opts: ArrayTextOpts?, choices: settings.Choices?) -> FormBuilder,
     number: (self: FormBuilder, id: string, label: string, opts: NumberOpts?) -> FormBuilder,
     boolean: (self: FormBuilder, id: string, label: string, opts: ToggleOpts?) -> FormBuilder,
@@ -35,6 +36,12 @@ local function FormBuilderWith(elements: {settings.FormElement}, actions: {setti
     function self:text(id: string, label: string, opts: TextOpts?, choices: settings.Choices?): FormBuilder
         opts = opts or {} :: TextOpts
         table.insert(elements, { type = "Text" :: "Text", id = id, label = label, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled, choices = choices })
+        return self
+    end
+
+    function self:datetime(id: string, label: string, opts: TextOpts?): FormBuilder
+        opts = opts or {} :: TextOpts
+        table.insert(elements, { type = "DateTime" :: "DateTime", id = id, label = label, description = opts.description, placeholder = opts.placeholder, disabled = opts.disabled })
         return self
     end
 

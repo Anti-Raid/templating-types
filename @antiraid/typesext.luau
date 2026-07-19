@@ -52,9 +52,15 @@ end
 --- Only for advanced use-cases
 local Vfs = {} :: Vfs
 
+--- Pretty prints `...` to a string
+local function fmtpretty(...): string
+    error("Implemented internally in AntiRaid runtime!")
+end
+
 return {
     randstring = randstring,
     createglobalproxy = createglobalproxy,
     createvfs = createvfs,
     Vfs = Vfs,
+    fmtpretty = fmtpretty
 }

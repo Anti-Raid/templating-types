@@ -3,8 +3,6 @@
 local Primitives = require"@antiraid-core/primitives"
 local runtime = require"@antiraid-core/plugins/runtime"
 local isolate = require"@antiraid-ext/isolate"
-local channel = require"@antiraid/channel"
-local datetime = require"@antiraid/datetime"
 local MutexFn = require"@antiraid-ext/sync/mutex"
 local typesext = require"@antiraid/typesext"
 local Discord = require"@antiraid-ext/system/discord"
@@ -12,9 +10,6 @@ local Discord = require"@antiraid-ext/system/discord"
 -- Flags 
 
 -- Other constants
-
---- How long to wait for template dispatch results before timing out and moving on (to avoid hanging the entire dispatch if a template is hanging)
-local TEMPLATE_DISPATCH_TIMEOUT = datetime.timedelta_seconds(5) -- 5 seconds
 
 -- Start code
 
@@ -91,41 +86,19 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
         end
     end
 
-    local function _dispatchEvent(dispatchable: Primitives.Dispatchable, rootctx: Primitives.TemplateContext, event: Primitives.Event, stream: channel.Stream<Primitives.DispatchResult>): ()
-        task.spawn(function() 
-            local res = _runEventResult(dispatchable, rootctx, event)
-            stream.tx:send(res)
-        end)
-    end
-
     local function dispatch(event: Primitives.Event): {Primitives.DispatchResult}
         if attachedisolatescount == 0 then return {} end -- unlikely but could happen
 
-        -- Fast path: if there are no attached isolates besides builtins, we can avoid creating a new thread
         ctx.debug("[TemplateLoopManager] Dispatching event", event.name)
-        if attachedisolatescount == 1 then
-            local _, isol = next(attachedisolates)
-            assert(isol)
+        local results = table.create<<Primitives.DispatchResult>>(attachedisolatescount)
+        for _, isol in attachedisolates do 
             local ret = _runEventResult(isol, ctx, event)
             if ret.type == "err" then 
-                ctx.debug("[TemplateLoopManager] Error dispatching event to builtins template:", ret)
-                return {ret}
+                ctx.debug(`[TemplateLoopManager] Error dispatching event to {isol.id}:`, ret)
             end
-            return {ret}
+            table.insert(results, ret)
         end
         
-        local chan: channel.Stream<Primitives.DispatchResult> = channel.Stream<<Primitives.DispatchResult>>()
-        local numitems = 0
-        for _, isol in attachedisolates do
-            -- Dispatch event to isolate
-            _dispatchEvent(isol, ctx, event, chan)
-            numitems += 1
-        end
-
-        local results, timedout = chan.rx:recvbatch(numitems, TEMPLATE_DISPATCH_TIMEOUT)
-        if timedout == "timeout" then
-            -- TODO: Log warning about timeout
-        end
         return results
     end
 

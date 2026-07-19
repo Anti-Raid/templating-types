@@ -176,6 +176,8 @@ export type CdnResult = { op: "Blob", data: blob.Blob } | { op: "Buffer", data: 
 export type MetaCall = { op: "GetStats" } 
 export type MetaResult = { op: "Stats", total_guilds: number, total_users: number, last_started_at: datetime.DateTime, } 
 
+export type StreamCall = { op: "NewStream" }
+
 --- The arguments to be passed into a system call
 export type SyscallArgs = {
     op: "State",
