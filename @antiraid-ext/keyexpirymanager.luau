@@ -107,7 +107,7 @@ local function KeyExpiryManager<T>(
 
         local ok, res = xpcall(callback, debug.traceback :: any, kex)
         if not ok then 
-            -- Error handled silently
+            ctx.stream.publish("error", res)
         end
 
         -- Remove the key expiry only after dispatching
@@ -130,6 +130,7 @@ local function KeyExpiryManager<T>(
         while true do
                 local success, err = pcall(_loop)
                 if not success then
+                    ctx.stream.publish("error", err)
                     task.wait(1) -- Prevent CPU spin
                 end
             end
@@ -276,7 +277,7 @@ local function KeyExpiryManager<T>(
                 if not oninit then return end -- needed for luau new type solver
                 local ok, res = xpcall(oninit, debug.traceback :: any, kexs, self)
                 if not ok then 
-                    -- error handled silently
+                    ctx.stream.publish("error", res)
                 end
             end)
         end

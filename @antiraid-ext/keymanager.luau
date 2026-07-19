@@ -217,7 +217,7 @@ local function KeyManager<T>(
                 if not oninit then return end -- needed for luau new type solver
                 local ok, res = xpcall(oninit, debug.traceback :: any, kexs, self)
                 if not ok then
-                    -- Error in oninit callback
+                    ctx.stream.publish("error", res)
                 end
             end)
         end

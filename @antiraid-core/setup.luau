@@ -24,9 +24,7 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
         }), {
             print = function(...)
                 local str = (typesext.fmtpretty :: any)(...)
-                if ctx.stream then
-                    ctx.stream.publish("print", { type = "Log", message = str, source = "builtins" })
-                end
+                ctx.stream.publish("print", { type = "Log", message = str, source = "builtins" })
             end
         })
     } -- map of all attached isolates
@@ -89,7 +87,7 @@ local function EventManager(ctx: Primitives.TemplateContext): Primitives.EventMa
 
     local function dispatch(event: Primitives.Event): {Primitives.DispatchResult}
         if attachedisolatescount == 0 then return {} end -- unlikely but could happen
-
+        ctx.stream.publish("debug", "Dispatching event " .. event.name)
         local results = table.create<<Primitives.DispatchResult>>(attachedisolatescount)
         for _, isol in attachedisolates do 
             local ret = _runEventResult(isol, ctx, event)
